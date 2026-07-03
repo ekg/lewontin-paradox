@@ -55,8 +55,7 @@ theorem required_per_site_selection (Nₑ s F : ℝ) (hN : 0 < Nₑ) (hF : 1 ≤
 
 For strongly deleterious mutations (selection `s`, genomic deleterious
 mutation rate `U`), the BGS reduction strength is `U/s`. For strong
-selection (`4·Nₑ·s ≫ 1`) this is **independent of `Nₑ`**, so — per Hermisson
-& Pfanner (2024) — BGS does not compress the *scaling* of diversity with
+selection (`4·Nₑ·s ≫ 1`) this is **independent of `Nₑ`**, so — Buffalo (2021) — BGS does not compress the *scaling* of diversity with
 `Nₑ` (it scales diversity by a constant factor, leaving the linear `Nₑ`
 dependence intact). gBGC, by contrast, scales linearly with `Nₑ` (see
 `GBGC.lean`).

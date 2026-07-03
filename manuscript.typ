@@ -30,8 +30,9 @@
   varies by only ~2 orders of magnitude across metazoans whose census
   population sizes span ~7 — is unresolved; current linked-selection models
   do not fully flatten the diversity–size relationship
-  (#link("https://doi.org/10.7554/eLife.67509")[Hermisson & Pfanner 2024]).
-  We argue that the standard mutation–selection–drift balance at W/S sites
+  (#link("https://doi.org/10.7554/eLife.67509")[Buffalo 2021]); across 172
+  metazoan taxa the $pi$–$N_c$ slope is only $~0.11$ (vs. 1 under
+  neutrality). We argue that the standard mutation–selection–drift balance at W/S sites
   under GC-biased gene conversion (gBGC) supplies the missing flattening:
   in large populations it saturates to an $N_e$-independent floor
   $2 mu \/ (u delta)$, where $u$ is the per-site conversion-coverage rate
@@ -55,7 +56,7 @@ within-species $pi$ ranges only ~$10^(-4)$ to $10^(-2)$ — the
 "paradox of variation" first noted by #link("https://doi.org/10.1086/419073")[Lewontin (1974)]. The leading
 candidate resolution, selection at linked sites (hitchhiking and background
 selection), has recently been shown quantitatively insufficient to flatten
-the relationship (#link("https://doi.org/10.7554/eLife.67509")[Hermisson & Pfanner 2024]); weak genetic draft
+the relationship (#link("https://doi.org/10.7554/eLife.67509")[Buffalo 2021]); weak genetic draft
 from sparse sweeps gives a sub-linear but not flat scaling
 (#link("https://doi.org/10.1101/2023.07.19.549703")[Achaz & Schertzer 2023]).
 
@@ -139,19 +140,23 @@ which point it has no substrate and stops. (Lean:
 
 The flattening above requires $delta > 0$ and substantial $u$; these are
 not accidents. Meiotic recombination (DSB repair) is essential for
-chromromosome segregation and fertility. Non-crossover resolution via
-synthesis-dependent strand annealing or a double-Holliday-junction
-intermediate requires the invading strand to form a stable heteroduplex
-and for the junction to *migrate* away from the DSB; branch migration
-requires near-identity, since mismatches impede it. Thus conversion only
-occurs between near-identical sequences, and conversion *makes* sequences
-more identical — a positive feedback (homology enables conversion,
-conversion maintains homology). Because recombination is essential,
-selection maintains the homology that conversion maintains, keeping the
-genome in a "recombino-genic" state and, with it, the GC-biased repair
-machinery ($delta > 0$) and high conversion rates ($u$). This is the
-evolutionary cause of the parameters that make the saturation bite, not a
-separate diversity-reducing force. (Lean:
+chromosome segregation and fertility. Recent high-resolution work
+(#link("https://doi.org/10.1016/j.molcel.2021.08.003")[Ahuja et al. 2021])
+shows that both non-crossover (NCO) and crossover (CO) products form by
+synthesis-dependent strand annealing, with multiple rounds of strand
+invasion and template switching; CO-specific double-Holliday-junction
+formation then proceeds via *extensive branch migration* (a median of
+$>= 0.66$ kb, in $87%$ of COs). Branch migration through parental duplex
+requires near-identity — mismatches impede it and trigger heteroduplex
+rejection — so conversion only occurs between near-identical sequences,
+and conversion *makes* sequences more identical: a positive feedback
+(homology enables conversion, conversion maintains homology). Because
+recombination is essential, selection maintains the homology that
+conversion maintains, keeping the genome in a "recombino-genic" state
+and, with it, the GC-biased repair machinery ($delta > 0$) and high
+conversion rates ($u$). This is the evolutionary cause of the parameters
+that make the saturation bite, not a separate diversity-reducing force.
+(Lean:
 #link("https://github.com/ekg/lewontin-paradox/blob/main/lean/src/LewontinParadox/RecombinationHomology.lean")[`RecombinationHomology.lean`].)
 
 = Mutation–selection–drift balance at W/S sites: the saturation
@@ -197,6 +202,42 @@ empirical input. (Lean:
 #link("https://github.com/ekg/lewontin-paradox/blob/main/lean/src/LewontinParadox/ObservableFraction.lean")[`ObservableFraction.lean`],
 #link("https://github.com/ekg/lewontin-paradox/blob/main/lean/src/LewontinParadox/Bounds.lean")[`Bounds.lean`].)
 
+= A preliminary test against cross-species data
+
+Using Buffalo's (2021) combined dataset of 172 metazoan taxa (census
+sizes $N_c$ estimated from body mass and range; pairwise diversity $pi$
+from #link("https://doi.org/10.1371/journal.pbio.1001388")[Leffler et al. 2012],
+#link("https://doi.org/10.1371/journal.pbio.1002112")[Corbett-Detig et al. 2015],
+#link("https://doi.org/10.1038/nature13685")[Romiguier et al. 2014]), we
+fit (i) a power law $pi ~ N_c^b$ and (ii) the saturating
+model $pi = 4 mu N_c\[(1 - X) + X/(1 + N_c/K)]$ with $mu$ fixed
+($10^(-8)$), $K = 1/(2 u delta)$ the crossover, and $X$ the W/S fraction
+under strong gBGC.
+
+- Power law: $log_(10) pi = -3.24 + 0.110 dot log_(10) N_c$, $R^2 = 0.264$
+  (reproducing Buffalo's OLS, $b approx 0.13$).
+- Quadratic curvature test: the log–log relationship is weakly *concave*
+  (negative quadratic coefficient), consistent with saturation, but the
+  $R^2$ gain is negligible ($0.268$ vs. $0.264$).
+- Saturating fit: it drives to $X -> 1$ (near-full saturation) and fits
+  *worse* ($R^2 < 0$). The reason is diagnostic: at $N_c = 10^(15)$,
+  neutral $4 N_c mu approx 4 times 10^7$ is $~9$ orders above observed
+  $pi approx 10^(-2)$, so suppressing the unsaturated linear part
+  requires $X approx 1$ — biologically extreme. The backed-out floor
+  $2 mu/(u delta) approx 7 times 10^(-3)$ and $u_"eff" approx 1.6 times
+  10^(-5)$ (if $delta = 0.18$) land in the plausible range, but the fit is
+  degenerate.
+
+*Honest read.* gBGC saturation is qualitatively more consistent than
+background selection (which predicts slope $~1$; observed $0.11$, concave),
+but a simple saturating fit to *total* $pi$ does not beat a power law, and
+the $X -> 1$ limit shows gBGC alone (with $N_e approx N_c$) cannot suppress
+the whole genome — it must combine with $N_e/N_c$ reduction (sweepstakes
+reproduction, demography; emphasized by Buffalo 2021) or linked selection.
+The clean test requires *W/S-stratified* $pi$ (where the saturation should be
+cleanest), not the total-$pi$ cloud. (Code and fits: supplementary; data
+from #link("https://github.com/vsbuffalo/paradox_variation")[`vsbuffalo/paradox_variation`].)
+
 = Limits and open questions
 
 The saturation flattens *W/S-site* diversity; genome-wide flattening is
@@ -220,7 +261,7 @@ partial:
 - *Comparables.* Whether gBGC's $N_e$-scaled saturation can be
   distinguished from, or combined with, weak genetic draft
   (#link("https://doi.org/10.1101/2023.07.19.549703")[Achaz & Schertzer 2023]) and reassessed linked
-  selection (#link("https://doi.org/10.7554/eLife.67509")[Hermisson & Pfanner 2024]) is an open empirical
+  selection (#link("https://doi.org/10.7554/eLife.67509")[Buffalo 2021]) is an open empirical
   question.
 
 = The formalization
@@ -245,7 +286,11 @@ cd lean && lake build
 #text(size: 9pt)[
   - Achaz G, Schertzer E (2023). Weak genetic draft and Lewontin's paradox. _bioRxiv_ 2023.07.19.549703. \
   - Corbett-Detig R et al. (2015). Natural selection constrains neutral diversity across a wide range of species. _PLOS Biol_ 13: e1002112. \
-  - Hermisson J, Pfanner C (2024). Quantifying the relationship between genetic diversity and population size... _eLife_ 67509. \
+  - Ahuja JS et al. (2021). Repeated strand invasion and extensive branch migration are hallmarks of meiotic recombination. _Mol Cell_ 81: 4258. \
+  - Buffalo V (2021). Quantifying the relationship between genetic diversity and population size suggests natural selection cannot explain Lewontin's Paradox. _eLife_ 10: e67509. \
+  - Barton HJ, Zeng K (2021). The effective population size modulates the strength of GC biased gene conversion in two passerines. _bioRxiv_ 2021.04.20.440602. \
+  - Tisdale et al. (2024). Previously unmeasured genetic diversity explains part of Lewontin's paradox in a k-mer-based meta-analysis of 112 plant species. _Evol Lett_. \
+  - Buffalo V (2021). Quantifying the relationship between genetic diversity and population size... _eLife_ 67509. \
   - Lewontin RC (1974). _The Genetic Basis of Evolutionary Change._ Columbia Univ. Press. \
   - Wiuf C, Hein J (2000). The coalescent with gene conversion. _Genetics_ 155: 451–462. \
   - Cole F, Jasin M, Keeney S (2012). Preaching about the converted. _DNA Repair_ 11: 617. \

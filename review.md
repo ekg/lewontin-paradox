@@ -20,7 +20,7 @@ formalization (in `lean/`).
   taxa despite vast `N` differences. (Note: `main.md` cites this as
   *Am. J. Hum. Genet.*; it is in fact *PLoS Biology*, PMID 22984349.)
 - **Ellegren & Galtier (2016, Nat. Rev. Genet.)** review the determinants.
-- **Hermisson & Pfanner (2024, eLife)** show quantitatively that current
+- **Buffalo (2021, eLife)** show quantitatively that current
   *linked-selection* models (hitchhiking + background selection), even
   parameterized to Drosophila, **cannot** flatten the diversity–`N`
   relationship enough — there is a genuine gap.
@@ -247,7 +247,7 @@ it in this form.
    separate, quantitative question — not "homogenization of IBD tracts."
 3. The actually-promising `N`-compressing mechanisms in the literature
    are **weak genetic draft** (Achaz & Schertzer 2023) and the linked-
-   selection models reassessed by Hermisson & Pfanner (2024) — both
+   selection models reassessed by Buffalo (2021) — both
    selection-based, both genuinely sub-linear in `N`. A rigorous
    comparison of those against the *data* (not against a conversion-
    homogenization strawman) is the productive direction.

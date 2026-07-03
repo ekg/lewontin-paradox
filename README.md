@@ -7,7 +7,7 @@ relationship** and thereby resolves **Lewontin's paradox of variation**.
 > Across metazoans, census population sizes span ~7 orders of magnitude, yet
 > neutral nucleotide diversity π varies by only ~2. The leading candidate
 > (linked selection) does not fully flatten the relationship
-> ([Hermisson & Pfanner 2024](https://doi.org/10.7554/eLife.67509)). We argue
+> ([Buffalo 2021](https://doi.org/10.7554/eLife.67509)). We argue
 > that the standard **mutation–selection–drift balance at W/S sites under gBGC**
 > saturates to an Nₑ-independent floor `2μ/(uδ)` in large populations — the form
 > previously (and incorrectly) sought via "gene-conversion homogenization,"
