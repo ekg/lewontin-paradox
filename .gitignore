@@ -1,0 +1,17 @@
+# Lean / lake build artifacts (do not commit — 3GB of Mathlib oleans)
+**/.lake/
+*.olean
+*.ilean
+*.trace
+*.c
+*.setup.json
+
+# editor / os
+.DS_Store
+*~
+.*.swp
+.idea/
+.vscode/
+
+# typst build output (optional; uncomment to ignore)
+# manuscript.pdf

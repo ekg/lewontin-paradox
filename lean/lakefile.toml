@@ -1,0 +1,10 @@
+name = "LewontinParadox"
+defaultTargets = ["LewontinParadox"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+
+[[lean_lib]]
+name = "LewontinParadox"
+srcDir = "src"
