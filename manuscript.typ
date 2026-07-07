@@ -208,34 +208,77 @@ Using Buffalo's (2021) combined dataset of 172 metazoan taxa (census
 sizes $N_c$ estimated from body mass and range; pairwise diversity $pi$
 from #link("https://doi.org/10.1371/journal.pbio.1001388")[Leffler et al. 2012],
 #link("https://doi.org/10.1371/journal.pbio.1002112")[Corbett-Detig et al. 2015],
-#link("https://doi.org/10.1038/nature13685")[Romiguier et al. 2014]), we
-fit (i) a power law $pi ~ N_c^b$ and (ii) the saturating
-model $pi = 4 mu N_c\[(1 - X) + X/(1 + N_c/K)]$ with $mu$ fixed
-($10^(-8)$), $K = 1/(2 u delta)$ the crossover, and $X$ the W/S fraction
-under strong gBGC.
+#link("https://doi.org/10.1038/nature13685")[Romiguier et al. 2014]), we extend
+Buffalo's own regression framework by adding a saturating model and a
+recombination-residual sign test that discriminates gBGC from background
+selection (BGS).
+
+#figure(
+  image("analysis/fig_extend_buffalo.png", width: 100%),
+  caption: [Extending Buffalo (2021). _Left:_ $log_(10) pi$ vs $log_(10) N_c$
+  for 172 metazoans, with the power law (dashed) and a saturating power law
+  (solid). The relationship is a rising-then-plateau: the low-$N_c$ half has
+  slope $+0.118$ ($p=0.002$), the high-$N_c$ half slope $+0.018$ ($p=0.58$,
+  flat). _Right:_ $pi$ residual (from the power law) against genetic map
+  length, both residualized for $N_c$. BGS predicts a positive residual
+  (recombination protects diversity); gBGC predicts a negative one (biased
+  repair erodes it). The partial correlation is negative ($r=-0.22$), in the
+  gBGC direction, though underpowered ($n=39$, $p=0.17$).],
+) <fig_buffalo>
+
+*Model comparison (AIC).* On the 172 taxa:
 
 - Power law: $log_(10) pi = -3.24 + 0.110 dot log_(10) N_c$, $R^2 = 0.264$
   (reproducing Buffalo's OLS, $b approx 0.13$).
-- Quadratic curvature test: the log–log relationship is weakly *concave*
-  (negative quadratic coefficient), consistent with saturation, but the
-  $R^2$ gain is negligible ($0.268$ vs. $0.264$).
-- Saturating fit: it drives to $X -> 1$ (near-full saturation) and fits
-  *worse* ($R^2 < 0$). The reason is diagnostic: at $N_c = 10^(15)$,
-  neutral $4 N_c mu approx 4 times 10^7$ is $~9$ orders above observed
-  $pi approx 10^(-2)$, so suppressing the unsaturated linear part
-  requires $X approx 1$ — biologically extreme. The backed-out floor
-  $2 mu/(u delta) approx 7 times 10^(-3)$ and $u_"eff" approx 1.6 times
-  10^(-5)$ (if $delta = 0.18$) land in the plausible range, but the fit is
-  degenerate.
+- Quadratic: weakly concave (negative coefficient), but $Delta "AIC" = +1.0$ —
+  the curvature is not justified by the data.
+- Pure saturation (Michaelis--Menten, $pi = V_max N_c/(K+N_c)$, i.e. our
+  model at $X = 1$): *rejected*, $Delta "AIC" = +179$. It forces a neutral
+  slope of $1$ at low $N_c$, but the low-$N_c$ end is far shallower than
+  neutral, so it overshoots.
+- Saturating power law $pi = A N_c^gamma / (1 + (N_c/K)^gamma)$ (low-$N_c$
+  slope $gamma$, high-$N_c$ plateau): $gamma = 0.16$, plateau
+  $pi approx 0.026$ above $N_c approx 10^(12)$, $R^2 = 0.272$ — but
+  $Delta "AIC" approx 0$, statistically *tied* with the flat power law.
 
-*Honest read.* gBGC saturation is qualitatively more consistent than
-background selection (which predicts slope $~1$; observed $0.11$, concave),
-but a simple saturating fit to *total* $pi$ does not beat a power law, and
-the $X -> 1$ limit shows gBGC alone (with $N_e approx N_c$) cannot suppress
-the whole genome — it must combine with $N_e/N_c$ reduction (sweepstakes
-reproduction, demography; emphasized by Buffalo 2021) or linked selection.
-The clean test requires *W/S-stratified* $pi$ (where the saturation should be
-cleanest), not the total-$pi$ cloud. (Code and fits: supplementary; data
+*The structure.* The curve is a rising-then-plateau (@fig_buffalo). The
+high-$N_c$ plateau (slope $approx 0$) is the qualitative signature of gBGC
+saturation: $B = 4 N_e b$ grows with $N_e$, so gBGC saturates and diversity
+is suppressed exactly where the curve goes flat. The low-$N_c$ rise is
+shallow (slope $0.12$, not the neutral $1.0$), and this is *not* gBGC (gBGC
+is weak at low $N_e$); it is $N_e/N_c$ reduction (sweepstakes reproduction,
+demography) — Buffalo's own territory. So the two mechanisms split along
+$N_c$: gBGC is the overlooked high-$N_c$ part; Buffalo explains the
+low-$N_c$ part. Neither alone is the whole story.
+
+*Under-identification.* The between-species scatter is large ($R^2 = 0.27$),
+so the curvature does not beat a straight power law ($Delta "AIC" approx 0$),
+and pure saturation is rejected ($Delta "AIC" = +179$). Total-$pi$
+cross-species data therefore *cannot* statistically establish gBGC
+saturation — it is under-identified. This is precisely why Buffalo (and
+prior work) could not see gBGC in total $pi$, and it is why stratification
+is essential.
+
+*Recombination sign test.* BGS and gBGC make *opposite* predictions about
+recombination: BGS says high recombination $arrow$ *higher* $pi$ (it
+protects diversity); gBGC says high recombination $arrow$ *lower* $pi$
+(biased repair erodes it). Regressing the power-law residual on genetic map
+length, controlling for $N_c$, gives a *negative* partial correlation
+($r = -0.22$, $n = 39$, $p = 0.17$); genome size gives $r = -0.23$
+($p = 0.17$). The sign is in the gBGC direction, not the BGS direction —
+suggestive, though underpowered (Buffalo's recombination column is sparse:
+the recombination-rate column has only $n = 18$ joint values).
+
+*Honest read.* Extending Buffalo delivers a qualitative decomposition — gBGC
+saturation for the high-$N_c$ plateau, $N_e/N_c$ reduction for the
+low-$N_c$ shallow rise — and a recombination-residual sign that points to
+gBGC over BGS, both from Buffalo's own data. But total $pi$ is
+under-identified: the essential, discriminating test is *W/S-stratified*
+$pi$ (the saturation should be sharp at W/S sites and absent at non-W/S
+sites, a qualitative prediction not defeated by scatter) together with
+*GC-content saturation* (gBGC's hallmark: equilibrium GC plateaus with
+$N_e$). No published dataset has compiled these across species; building
+it is the next step. (Code and fits: `analysis/extend_buffalo.py`; data
 from #link("https://github.com/vsbuffalo/paradox_variation")[`vsbuffalo/paradox_variation`].)
 
 = Limits and open questions
