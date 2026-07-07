@@ -16,3 +16,4 @@
 # typst build output (optional; uncomment to ignore)
 # manuscript.pdf
 .wg
+analysis/data/

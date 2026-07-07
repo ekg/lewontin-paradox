@@ -137,6 +137,7 @@ which point it has no substrate and stops. (Lean:
 #link("https://github.com/ekg/lewontin-paradox/blob/main/lean/src/LewontinParadox/Saturation.lean")[`Saturation.lean`].)
 
 = The recombination requirement: why $delta > 0$ and $u$ are maintained
+<sec-recomb>
 
 The flattening above requires $delta > 0$ and substantial $u$; these are
 not accidents. Meiotic recombination (DSB repair) is essential for
@@ -281,6 +282,96 @@ $N_e$). No published dataset has compiled these across species; building
 it is the next step. (Code and fits: `analysis/extend_buffalo.py`; data
 from #link("https://github.com/vsbuffalo/paradox_variation")[`vsbuffalo/paradox_variation`].)
 
+= The discriminating test: composition and gBGC strength across species
+
+Total $pi$ is under-identified for gBGC (above), but gBGC saturation has
+two cross-species signatures that the $pi$-cloud cannot obscure, because
+they are different observables: _composition_ (the equilibrium GC content
+at W/S-accessible sites, $"GC"^*$, rises with $N_e$ and then saturates) and
+_scaling_ (the gBGC strength $B = 4 N_e b$ is linear in $N_e$, Lean:
+#link("https://github.com/ekg/lewontin-paradox/blob/main/lean/src/LewontinParadox/GBGC.lean")[`GBGC.lean`]).
+Background selection predicts neither. These have been measured across
+species — and the result is the essential, nuanced finding of this
+investigation: gBGC scales with $N_e$ _within_ clades but not _across_
+clades, exactly as the homology-maintenance mechanism of @sec-recomb
+predicts.
+
+*Within clade: composition and strength both track $N_e$.*
+#link("https://doi.org/10.1101/gr.104372.109")[Romiguier et al. 2010], in
+33 mammal genomes, found third-codon-position GC content _increases_ with
+$N_e$: a significant negative correlation of $"GC"_3$ with body mass
+($rho = -0.44$, $p = 0.013$) and of GC3 divergence with body mass
+($rho = -0.69$, $p < 10^-4$), robust to phylogenetic control, with the
+same trend within orders (tenrec $>$ elephant, monkeys $>$ apes, microbats
+$>$ megabats, shrews $>$ hedgehogs). Since body mass is inverse to $N_e$,
+this is GC3 content rises with $N_e$ — the composition signature of gBGC,
+within mammals. #link("https://doi.org/10.1186/s13059-014-0549-1")[Weber et
+al. 2014] found the same in birds ("base composition evolution is
+substantially modulated by species life history", consistent with more
+effective gBGC in large populations). On the strength axis,
+#link("https://doi.org/10.1101/2021.04.20.440602")[Barton & Zeng 2021]
+measured $B = 4 N_e b$ in two passerines and found it roughly _double_ in
+the zebra finch, matching its twofold greater $N_e$ — a direct, clean
+test of $B prop N_e$ within a clade. So within a clade the
+machinery is conserved and gBGC scales with $N_e$: both the composition
+and the strength signatures hold, and saturation therefore bites at high
+$N_e$ within clades. This is the overlooked part.
+
+*Across clades: the strength signature vanishes.*
+#link("https://doi.org/10.1093/molbev/msy015")[Galtier et al. 2018], in
+30 metazoan species spanning the full $N_e$ range, estimated $B = 4 N_e b$
+from the site-frequency spectrum and found _no_ relationship between $B$
+and $N_e$ (propagule size, $p_N/p_S$, longevity). Their diagnosis: $B =
+4 N_e (r l b_0)$, so $B prop N_e$ only if the per-base conversion
+bias $b = r l b_0$ (recombination rate $times$ tract length $times$ repair
+bias) is constant; across distantly related taxa $r$, $l$, and $b_0$ vary
+substantially and may be _inversely_ related to $N_e$, canceling the
+$N_e$ effect. They note, consistently, that genomic GC content tracks
+$N_e$-related traits _within_ mammals and birds but the relationship
+attenuates across the full metazoan range — "B would only respond to
+$N_e$ at a relatively small time scale." This is the central challenge to
+the saturation model: taken at face value, $B$ not scaling with $N_e$
+across species means gBGC does not necessarily saturate at high $N_e$ in a
+_cross-species_ comparison.
+
+*Reconciliation: the homology-maintenance mechanism predicts exactly this.*
+The mechanism of @sec-recomb resolves the within-clade / across-clade
+tension mechanistically. Within a clade the recombination machinery —
+recombination rate $r$, conversion tract length $l$, and the GC-biased
+repair $b_0 = delta$ — is conserved, so $b$ is approximately constant and
+$B = 4 N_e b prop N_e$; $"GC"^*$ rises and saturates with $N_e$;
+the high-$N_e$ plateau of @fig_buffalo is gBGC saturation. Across deep
+divergence the machinery drifts (PRDM9 turnover, karyotype and
+recombination-landscape shifts), so $b$ varies and the cross-species
+$B$--$N_e$ correlation is scrambled — which is precisely why the
+Tier-1 total-$pi$ fit is degenerate. The decisive point is that our
+mechanism predicts the _sign_ of this drift: because meiotic
+recombination (DSB repair) is essential (#link("https://doi.org/10.1016/j.molcel.2021.08.003")[Ahuja et al. 2021]),
+selection maintains the recombino-genic state — the homology that
+conversion requires, the GC-biased repair ($delta > 0$), and high
+conversion rates ($u$). So $b$ should _not_ systematically invert with
+$N_e$, contra the "inverse $b_0$" hypothesis of Galtier et al.; the
+across-clade scatter is the transient drift of the recombination
+landscape that selection repeatedly corrects, not a stable inverse
+coupling. This yields a testable prediction: the cross-species
+$B$--$N_e$ correlation, null across all metazoans (Galtier et al.),
+should be _restored_ when one controls for conservation of the
+recombination machinery (PRDM9 status, karyotype, recombination-rate
+class) — i.e. the within-clade $B prop N_e$ should reappear as a
+_within-recombination-class_ effect across clades.
+
+*Synthesis.* gBGC saturation is a real, $N_e$-scaled, within-clade force
+that flattens diversity at high $N_e$ (the composition and strength
+evidence agree, and it is what the model predicts) — a big and
+overlooked part of Lewontin's Paradox. It is _not_ the whole story: the
+low-$N_c$ shallow rise is $N_e/N_c$ reduction (Buffalo's territory), and
+the cross-species attenuation of the strength signature (Galtier et al.)
+shows the recombination machinery varies enough across deep clades to
+scramble the simple $B prop N_e$ law in total-$pi$ data. The model
+therefore predicts the within-clade plateau and explains the
+across-clade under-identification, rather than claiming a single
+saturation law for all metazoans.
+
 = Limits and open questions
 
 The saturation flattens *W/S-site* diversity; genome-wide flattening is
@@ -333,7 +424,10 @@ cd lean && lake build
   - Buffalo V (2021). Quantifying the relationship between genetic diversity and population size suggests natural selection cannot explain Lewontin's Paradox. _eLife_ 10: e67509. \
   - Barton HJ, Zeng K (2021). The effective population size modulates the strength of GC biased gene conversion in two passerines. _bioRxiv_ 2021.04.20.440602. \
   - Tisdale et al. (2024). Previously unmeasured genetic diversity explains part of Lewontin's paradox in a k-mer-based meta-analysis of 112 plant species. _Evol Lett_. \
-  - Buffalo V (2021). Quantifying the relationship between genetic diversity and population size... _eLife_ 67509. \
+  - Romiguier J et al. (2010). Contrasting GC-content dynamics across 33 mammalian genomes: relationship with life-history traits and chromosome sizes. _Genome Res_ 20: 1001. \
+  - Weber CC et al. (2014). Evidence for GC-biased gene conversion as a driver of between-lineage differences in avian base composition. _Genome Biol_ 15: 549. \
+  - Galtier N et al. (2018). Codon usage bias in animals: disentangling the effects of natural selection, effective population size, and GC-biased gene conversion. _Mol Biol Evol_ 35: 1092. \
+  - Galtier N, Rousselle M (2020). How much does Ne vary among species? _Genetics_ 216: 559. \
   - Lewontin RC (1974). _The Genetic Basis of Evolutionary Change._ Columbia Univ. Press. \
   - Wiuf C, Hein J (2000). The coalescent with gene conversion. _Genetics_ 155: 451–462. \
   - Cole F, Jasin M, Keeney S (2012). Preaching about the converted. _DNA Repair_ 11: 617. \

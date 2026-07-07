@@ -68,9 +68,40 @@ cd lean && lake build      # fetches+builds the Mathlib slice once (~15 min firs
 
 ## Status
 
-Draft. Open empirical questions: the effective per-site conversion rate `u_eff`
+Draft, with a first empirical pass against Buffalo's (2021) 172-taxon
+metazoan dataset (`analysis/extend_buffalo.py`). Findings:
+
+- **Tier 1 (n=172):** the curve is a *rising-then-plateau* — low-Nc half
+  slope +0.118 (p=0.002), high-Nc half +0.018 (p=0.58, flat). AIC model
+  comparison: power law (slope 0.110, R²=0.264) ties a saturating power law
+  (ΔAIC≈0); pure Michaelis-Menten (X=1) is rejected (ΔAIC=+179). Total π is
+  *under-identified* for gBGC.
+- **Tier 2 (n=18–39):** recombination-residual sign test — BGS predicts +,
+  gBGC predicts −. Map-length partial r=−0.22 (ctrl Nc), genome-size
+  r=−0.23: the *gBGC direction*, not BGS (underpowered).
+- **Tier 3 (the discriminating test, literature):** gBGC's two cross-species
+  signatures. *Within clade*, both hold — composition: GC3 rises with Ne
+  (mammals, Romiguier 2010: ρ=−0.44 vs body mass; birds, Weber 2014);
+  strength: B=4Neb ∝ Ne (passerines, Barton & Zeng 2021, ~2× with 2× Ne).
+  *Across clades*, the strength signature vanishes (Galtier 2018, 30 metazoans:
+  B ⊥ Ne, because r·l·b0 varies). The §4 homology-maintenance mechanism
+  *predicts exactly this* — within-clade machinery conserved → B∝Ne →
+  saturation at high Ne; across-clade drift of the recombination landscape →
+  attenuation, with selection re-maintaining δ>0 and high u (contra Galtier's
+  "inverse b0"). Testable prediction: the cross-species B–Ne correlation
+  should reappear within recombination-machinery classes.
+
+**Bottom line:** gBGC saturation is a real, Ne-scaled, within-clade force that
+flattens diversity at high Ne — a big and overlooked part of Lewontin's
+Paradox, not the whole story. The low-Nc shallow rise is Ne/Nc reduction
+(Buffalo's territory); the across-clade attenuation of the strength
+signature is the drift of the recombination machinery that selection
+repeatedly corrects.
+
+Open empirical questions: the effective per-site conversion rate `u_eff`
 (the "silent-conversion" measurement problem), the W/S fraction under strong
-gBGC, and the linked neutral reduction from gBGC.
+gBGC, the linked neutral reduction from gBGC, and the within-recombination-class
+B–Ne correlation test.
 
 ## Author
 
