@@ -1,0 +1,19 @@
+{
+  "length_bp": 10000,
+  "reference_pansn": "truth#1#chr1",
+  "query_pansn": "truth#2#chr1",
+  "ownership_core": [0, 10000],
+  "padding_bp": 10000,
+  "merge_distance_bp": 0,
+  "lace_min_threads": 2,
+  "variants": [
+    {"kind": "SNP", "position_1based": 1001, "ref": "A", "alt": "G", "expected_count": 1},
+    {"kind": "insertion", "position_1based": 5001, "ref": "A", "alt": "AT", "expected_count": 1},
+    {"kind": "deletion", "position_1based": 9001, "ref": "AT", "alt": "A", "expected_count": 1}
+  ],
+  "direct_paf_callable_denominator_required": true,
+  "expected_phase_audit": "orientation_inverted",
+  "phase_sensitive_eligible": false,
+  "impg_execution_approved": false,
+  "reason": "Pinned source is preserved, but Cargo.lock still contains branch and unqualified Git sources; execution remains fail-closed until fully Guix-vendored."
+}

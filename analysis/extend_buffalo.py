@@ -15,12 +15,16 @@ Tier 2 (n=18-39): discriminating recombination sign test.
   gBGC predicts residual ~ -recombination   (biased repair erodes diversity).
   The sign discriminates the two forces. We control for Nc.
 """
-import sys, csv, math
+import sys, csv, math, os
+from pathlib import Path
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy import stats
 
-DATA = "/tmp/paradox_variation/data/combined_data.tsv"
+DATA = Path(os.environ.get(
+    "BUFFALO_DATA",
+    Path(__file__).resolve().parent / "data" / "buffalo" / "combined_data.tsv",
+))
 
 def load():
     rows = list(csv.DictReader(open(DATA), delimiter="\t"))

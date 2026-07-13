@@ -1,0 +1,16 @@
+{
+  "normalized_bcf_logical_name": "truth.normalized.bcf",
+  "normalized_bcf_sha256": "4298823a52e9978236fc326678c7e678be898cb87d9bc112df16c458b8059b48",
+  "normalized_bcf_index_sha256": "5e3465fbfb078c0656458e17995dad9522f9a7715f075b9468d4f3754f197a83",
+  "callable_bed": "expected.callable.bed",
+  "fourfold_intersection_bed": "expected.4d.bed",
+  "callable_bases": 12,
+  "variant_snv_count": 2,
+  "variant_indel_count": 2,
+  "fourfold_callable_bases": 4,
+  "fourfold_by_class": {"S": 1, "W": 3},
+  "allele_truth": [
+    {"contig": "chr1", "position_1based": 3, "ref": "T", "alt": "C", "genotypes": ["0|1"]},
+    {"contig": "chr1", "position_1based": 20, "ref": "T", "alt": "C", "genotypes": ["0|1"]}
+  ]
+}

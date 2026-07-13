@@ -1,0 +1,879 @@
+{
+  "core_count": 173,
+  "core_rule": "diversity_not_NA_and_pred_log10_N_not_NA",
+  "source": {
+    "commit": "b8f91d5c34675733db8cae8dcab625dcbb55c30a",
+    "path": "data/combined_data.tsv",
+    "repository": "https://github.com/vsbuffalo/paradox_variation.git",
+    "sha256": "df559451dad94b53ba8675e09811708107a57eeb6ffe8f72b944bcbbf3a1f2eb",
+    "size_bytes": 171863,
+    "url": "https://raw.githubusercontent.com/vsbuffalo/paradox_variation/b8f91d5c34675733db8cae8dcab625dcbb55c30a/data/combined_data.tsv"
+  },
+  "species": [
+    {
+      "buffalo_diversity": "0.00727197",
+      "buffalo_pred_log10_N": "11.066602451255369",
+      "scientific_name": "Abatus agassizi"
+    },
+    {
+      "buffalo_diversity": "0.0088125",
+      "buffalo_pred_log10_N": "13.41890759893784",
+      "scientific_name": "Acyrthosiphon pisum"
+    },
+    {
+      "buffalo_diversity": "0.01421",
+      "buffalo_pred_log10_N": "14.360999627393882",
+      "scientific_name": "Aedes aegypti"
+    },
+    {
+      "buffalo_diversity": "0.0059",
+      "buffalo_pred_log10_N": "9.245133568016353",
+      "scientific_name": "Agelaius phoeniceus"
+    },
+    {
+      "buffalo_diversity": "0.00135",
+      "buffalo_pred_log10_N": "6.2308759148410235",
+      "scientific_name": "Ailuropoda melanoleuca"
+    },
+    {
+      "buffalo_diversity": "0.0449719",
+      "buffalo_pred_log10_N": "10.163409272461077",
+      "scientific_name": "Allolobophora chlorotica"
+    },
+    {
+      "buffalo_diversity": "0.023700000000000002",
+      "buffalo_pred_log10_N": "6.007279159000476",
+      "scientific_name": "Amphimedon queenslandica"
+    },
+    {
+      "buffalo_diversity": "0.022000000000000002",
+      "buffalo_pred_log10_N": "13.665252519460575",
+      "scientific_name": "Anopheles arabiensis"
+    },
+    {
+      "buffalo_diversity": "0.02947415109212225",
+      "buffalo_pred_log10_N": "13.774331255103972",
+      "scientific_name": "Anopheles gambiae"
+    },
+    {
+      "buffalo_diversity": "0.0124",
+      "buffalo_pred_log10_N": "12.584868176648294",
+      "scientific_name": "Anopheles merus"
+    },
+    {
+      "buffalo_diversity": "0.022799999999999997",
+      "buffalo_pred_log10_N": "11.970805098310707",
+      "scientific_name": "Anopheles quadriannulatus"
+    },
+    {
+      "buffalo_diversity": "0.00848",
+      "buffalo_pred_log10_N": "12.326106734387935",
+      "scientific_name": "Apis cerana"
+    },
+    {
+      "buffalo_diversity": "0.007352465743638745",
+      "buffalo_pred_log10_N": "12.420231037532867",
+      "scientific_name": "Apis mellifera"
+    },
+    {
+      "buffalo_diversity": "0.0265455",
+      "buffalo_pred_log10_N": "8.825971470744676",
+      "scientific_name": "Aporrectodea icterica"
+    },
+    {
+      "buffalo_diversity": "0.00263499",
+      "buffalo_pred_log10_N": "6.478053207702797",
+      "scientific_name": "Aptenodytes patagonicus"
+    },
+    {
+      "buffalo_diversity": "0.001143",
+      "buffalo_pred_log10_N": "8.055638437463793",
+      "scientific_name": "Aquila clanga/pomarina"
+    },
+    {
+      "buffalo_diversity": "0.0185015",
+      "buffalo_pred_log10_N": "11.416248267499743",
+      "scientific_name": "Armadillidium nasatum"
+    },
+    {
+      "buffalo_diversity": "0.0187064",
+      "buffalo_pred_log10_N": "12.095904456351107",
+      "scientific_name": "Armadillidium vulgare"
+    },
+    {
+      "buffalo_diversity": "0.01072",
+      "buffalo_pred_log10_N": "11.34706828578026",
+      "scientific_name": "Artemia franciscana"
+    },
+    {
+      "buffalo_diversity": "0.0059074",
+      "buffalo_pred_log10_N": "11.838679124812531",
+      "scientific_name": "Artemia salina"
+    },
+    {
+      "buffalo_diversity": "0.0023",
+      "buffalo_pred_log10_N": "11.028856010057499",
+      "scientific_name": "Bactrocera depressa"
+    },
+    {
+      "buffalo_diversity": "0.00387",
+      "buffalo_pred_log10_N": "7.0072163248195345",
+      "scientific_name": "Balaenoptera bonaerensis"
+    },
+    {
+      "buffalo_diversity": "0.0276330106765374",
+      "buffalo_pred_log10_N": "10.097899045142208",
+      "scientific_name": "Bombyx mandarina"
+    },
+    {
+      "buffalo_diversity": "0.0012129503490739102",
+      "buffalo_pred_log10_N": "6.850150367336139",
+      "scientific_name": "Bos taurus"
+    },
+    {
+      "buffalo_diversity": "0.0834581",
+      "buffalo_pred_log10_N": "12.595731913117552",
+      "scientific_name": "Bostrycapulus aculeatus"
+    },
+    {
+      "buffalo_diversity": "0.002907267566300975",
+      "buffalo_pred_log10_N": "15.183158639952977",
+      "scientific_name": "Caenorhabditis elegans"
+    },
+    {
+      "buffalo_diversity": "0.00123",
+      "buffalo_pred_log10_N": "8.439980516295373",
+      "scientific_name": "Callithrix jacchus"
+    },
+    {
+      "buffalo_diversity": "0.00332756",
+      "buffalo_pred_log10_N": "11.43856230471875",
+      "scientific_name": "Camponotus aethiops"
+    },
+    {
+      "buffalo_diversity": "0.00164517",
+      "buffalo_pred_log10_N": "11.30793970675221",
+      "scientific_name": "Camponotus ligniperdus"
+    },
+    {
+      "buffalo_diversity": "0.001712",
+      "buffalo_pred_log10_N": "8.666961590513239",
+      "scientific_name": "Canis latrans/lupus"
+    },
+    {
+      "buffalo_diversity": "0.0014913104212410302",
+      "buffalo_pred_log10_N": "7.9126426087215895",
+      "scientific_name": "Canis lupus"
+    },
+    {
+      "buffalo_diversity": "0.00871331",
+      "buffalo_pred_log10_N": "10.448615185187572",
+      "scientific_name": "Carcinus aestuarii"
+    },
+    {
+      "buffalo_diversity": "0.011265",
+      "buffalo_pred_log10_N": "12.038541828466615",
+      "scientific_name": "Cecidostiba fungosa"
+    },
+    {
+      "buffalo_diversity": "0.02951",
+      "buffalo_pred_log10_N": "13.864781308675477",
+      "scientific_name": "Ceratitis capitata"
+    },
+    {
+      "buffalo_diversity": "0.00163381",
+      "buffalo_pred_log10_N": "4.520317603709664",
+      "scientific_name": "Chelonoidis nigra"
+    },
+    {
+      "buffalo_diversity": "0.00233",
+      "buffalo_pred_log10_N": "7.355842594130447",
+      "scientific_name": "Chlorocebus aethiops"
+    },
+    {
+      "buffalo_diversity": "0.010333333333333333",
+      "buffalo_pred_log10_N": "6.991932834591689",
+      "scientific_name": "Cichla pleiozona"
+    },
+    {
+      "buffalo_diversity": "0.029688075",
+      "buffalo_pred_log10_N": "9.010834562381046",
+      "scientific_name": "Ciona intestinalis"
+    },
+    {
+      "buffalo_diversity": "0.0801",
+      "buffalo_pred_log10_N": "8.141271135526765",
+      "scientific_name": "Ciona savignyi"
+    },
+    {
+      "buffalo_diversity": "0.03318",
+      "buffalo_pred_log10_N": "9.578145148069686",
+      "scientific_name": "Crassostrea gigas"
+    },
+    {
+      "buffalo_diversity": "0.0225892",
+      "buffalo_pred_log10_N": "10.818384769184131",
+      "scientific_name": "Crepidula fornicata"
+    },
+    {
+      "buffalo_diversity": "0.0250816",
+      "buffalo_pred_log10_N": "13.085881484296722",
+      "scientific_name": "Crepidula plana"
+    },
+    {
+      "buffalo_diversity": "0.0327737",
+      "buffalo_pred_log10_N": "12.299442963090575",
+      "scientific_name": "Culex hortensis"
+    },
+    {
+      "buffalo_diversity": "0.0412972",
+      "buffalo_pred_log10_N": "13.010138132322588",
+      "scientific_name": "Culex pipiens"
+    },
+    {
+      "buffalo_diversity": "0.0163186",
+      "buffalo_pred_log10_N": "11.437907364975",
+      "scientific_name": "Culex torrentium"
+    },
+    {
+      "buffalo_diversity": "0.00640178383438718",
+      "buffalo_pred_log10_N": "7.247628816865876",
+      "scientific_name": "Cynoglossus semilaevis"
+    },
+    {
+      "buffalo_diversity": "0.038988400000000006",
+      "buffalo_pred_log10_N": "13.359633308281735",
+      "scientific_name": "Cystodytes dellechiajei"
+    },
+    {
+      "buffalo_diversity": "0.009173960860790491",
+      "buffalo_pred_log10_N": "10.599487030636016",
+      "scientific_name": "Danio rerio"
+    },
+    {
+      "buffalo_diversity": "0.013179999999999999",
+      "buffalo_pred_log10_N": "12.333797109647673",
+      "scientific_name": "Daphnia magna"
+    },
+    {
+      "buffalo_diversity": "0.011765000000000001",
+      "buffalo_pred_log10_N": "11.898556543440653",
+      "scientific_name": "Daphnia obtusa"
+    },
+    {
+      "buffalo_diversity": "0.022029999999999998",
+      "buffalo_pred_log10_N": "12.400372406466426",
+      "scientific_name": "Daphnia pulex"
+    },
+    {
+      "buffalo_diversity": "0.020225",
+      "buffalo_pred_log10_N": "11.941036332778046",
+      "scientific_name": "Daphnia pulicaria"
+    },
+    {
+      "buffalo_diversity": "0.00153",
+      "buffalo_pred_log10_N": "8.184694656814962",
+      "scientific_name": "Dasypus novemcinctus"
+    },
+    {
+      "buffalo_diversity": "7.3e-4",
+      "buffalo_pred_log10_N": "6.339011297902625",
+      "scientific_name": "Daubentonia madagascariensis"
+    },
+    {
+      "buffalo_diversity": "0.02153",
+      "buffalo_pred_log10_N": "13.142955571520782",
+      "scientific_name": "Drosophila americana"
+    },
+    {
+      "buffalo_diversity": "0.0236",
+      "buffalo_pred_log10_N": "14.233605985378473",
+      "scientific_name": "Drosophila ananassae"
+    },
+    {
+      "buffalo_diversity": "0.008285",
+      "buffalo_pred_log10_N": "12.959062908693625",
+      "scientific_name": "Drosophila arizonae"
+    },
+    {
+      "buffalo_diversity": "0.020099999999999996",
+      "buffalo_pred_log10_N": "13.70693403448566",
+      "scientific_name": "Drosophila bipectinata"
+    },
+    {
+      "buffalo_diversity": "0.01936",
+      "buffalo_pred_log10_N": "13.288993006409903",
+      "scientific_name": "Drosophila buzzatii"
+    },
+    {
+      "buffalo_diversity": "0.0323",
+      "buffalo_pred_log10_N": "14.09703082347629",
+      "scientific_name": "Drosophila kikkawai"
+    },
+    {
+      "buffalo_diversity": "0.0168",
+      "buffalo_pred_log10_N": "13.792108411307558",
+      "scientific_name": "Drosophila malerkotliana"
+    },
+    {
+      "buffalo_diversity": "0.014459007734934385",
+      "buffalo_pred_log10_N": "14.5564099961026",
+      "scientific_name": "Drosophila melanogaster"
+    },
+    {
+      "buffalo_diversity": "0.004423333333333333",
+      "buffalo_pred_log10_N": "10.676881705443611",
+      "scientific_name": "Drosophila miranda"
+    },
+    {
+      "buffalo_diversity": "0.00781",
+      "buffalo_pred_log10_N": "12.524510596514938",
+      "scientific_name": "Drosophila mojavensis"
+    },
+    {
+      "buffalo_diversity": "0.00202",
+      "buffalo_pred_log10_N": "11.884862464544456",
+      "scientific_name": "Drosophila novamexicana"
+    },
+    {
+      "buffalo_diversity": "0.013300000000000001",
+      "buffalo_pred_log10_N": "13.586334999263318",
+      "scientific_name": "Drosophila parabipectinata"
+    },
+    {
+      "buffalo_diversity": "0.00777",
+      "buffalo_pred_log10_N": "12.566192082989264",
+      "scientific_name": "Drosophila persimilis"
+    },
+    {
+      "buffalo_diversity": "0.01196838439110709",
+      "buffalo_pred_log10_N": "13.52958715843377",
+      "scientific_name": "Drosophila pseudoobscura"
+    },
+    {
+      "buffalo_diversity": "9.6e-4",
+      "buffalo_pred_log10_N": "9.221168220556981",
+      "scientific_name": "Drosophila sechellia"
+    },
+    {
+      "buffalo_diversity": "0.0256",
+      "buffalo_pred_log10_N": "14.742836473618894",
+      "scientific_name": "Drosophila simulans"
+    },
+    {
+      "buffalo_diversity": "0.00988",
+      "buffalo_pred_log10_N": "13.841739777146707",
+      "scientific_name": "Drosophila subobscura"
+    },
+    {
+      "buffalo_diversity": "0.0523593",
+      "buffalo_pred_log10_N": "11.536411222939995",
+      "scientific_name": "Echinocardium cordatum"
+    },
+    {
+      "buffalo_diversity": "0.0210419",
+      "buffalo_pred_log10_N": "9.32720829370331",
+      "scientific_name": "Echinocardium mediterraneum"
+    },
+    {
+      "buffalo_diversity": "0.00411023",
+      "buffalo_pred_log10_N": "8.844230766704396",
+      "scientific_name": "Emys orbicularis"
+    },
+    {
+      "buffalo_diversity": "0.0036260777468777403",
+      "buffalo_pred_log10_N": "2.763482155872702",
+      "scientific_name": "Equus ferus przewalskii"
+    },
+    {
+      "buffalo_diversity": "0.00117",
+      "buffalo_pred_log10_N": "5.470658213332275",
+      "scientific_name": "Eschrichtius robustus"
+    },
+    {
+      "buffalo_diversity": "0.00424895",
+      "buffalo_pred_log10_N": "5.776484077709684",
+      "scientific_name": "Eudyptes filholi"
+    },
+    {
+      "buffalo_diversity": "0.00296217",
+      "buffalo_pred_log10_N": "4.989113325812405",
+      "scientific_name": "Eudyptes moseleyi"
+    },
+    {
+      "buffalo_diversity": "0.0028100000000000004",
+      "buffalo_pred_log10_N": "6.679301719261819",
+      "scientific_name": "Eulemur coronatus"
+    },
+    {
+      "buffalo_diversity": "0.00244",
+      "buffalo_pred_log10_N": "5.886624319585655",
+      "scientific_name": "Eulemur mongoz"
+    },
+    {
+      "buffalo_diversity": "0.0146539",
+      "buffalo_pred_log10_N": "8.017594666601413",
+      "scientific_name": "Eunicella verrucosa"
+    },
+    {
+      "buffalo_diversity": "0.0038004984449583404",
+      "buffalo_pred_log10_N": "9.155508402880779",
+      "scientific_name": "Ficedula albicollis"
+    },
+    {
+      "buffalo_diversity": "0.0031",
+      "buffalo_pred_log10_N": "9.601136429060926",
+      "scientific_name": "Ficedula hypoleuca"
+    },
+    {
+      "buffalo_diversity": "0.0020399999999999997",
+      "buffalo_pred_log10_N": "8.217116122793543",
+      "scientific_name": "Galago moholi"
+    },
+    {
+      "buffalo_diversity": "0.00588359552053694",
+      "buffalo_pred_log10_N": "8.233529026664666",
+      "scientific_name": "Gallus gallus"
+    },
+    {
+      "buffalo_diversity": "0.003368690919356535",
+      "buffalo_pred_log10_N": "10.628375666705843",
+      "scientific_name": "Gasterosteus aculeatus"
+    },
+    {
+      "buffalo_diversity": "0.0011915",
+      "buffalo_pred_log10_N": "5.906591227911658",
+      "scientific_name": "Gorilla beringei/gorilla"
+    },
+    {
+      "buffalo_diversity": "0.00889",
+      "buffalo_pred_log10_N": "11.135407987149312",
+      "scientific_name": "Gryllus firmus"
+    },
+    {
+      "buffalo_diversity": "0.00928",
+      "buffalo_pred_log10_N": "11.406016541154138",
+      "scientific_name": "Gryllus pennsylvanicus"
+    },
+    {
+      "buffalo_diversity": "2.9e-4",
+      "buffalo_pred_log10_N": "7.820939303156593",
+      "scientific_name": "Gulo gulo"
+    },
+    {
+      "buffalo_diversity": "0.00211062",
+      "buffalo_pred_log10_N": "11.343548337843632",
+      "scientific_name": "Halictus scabiosae"
+    },
+    {
+      "buffalo_diversity": "0.024249999999999997",
+      "buffalo_pred_log10_N": "9.864954034964969",
+      "scientific_name": "Heliconius cydno"
+    },
+    {
+      "buffalo_diversity": "0.02106",
+      "buffalo_pred_log10_N": "11.520206484820056",
+      "scientific_name": "Heliconius hecale"
+    },
+    {
+      "buffalo_diversity": "0.0192370556967706",
+      "buffalo_pred_log10_N": "11.010099951074464",
+      "scientific_name": "Heliconius melpomene"
+    },
+    {
+      "buffalo_diversity": "0.01881",
+      "buffalo_pred_log10_N": "8.467954718641634",
+      "scientific_name": "Heliconius pachinus"
+    },
+    {
+      "buffalo_diversity": "0.00162526",
+      "buffalo_pred_log10_N": "9.365425783644794",
+      "scientific_name": "Hippocampus guttulatus"
+    },
+    {
+      "buffalo_diversity": "0.00402748",
+      "buffalo_pred_log10_N": "9.627836864673654",
+      "scientific_name": "Hippocampus hippocampus"
+    },
+    {
+      "buffalo_diversity": "0.00118422",
+      "buffalo_pred_log10_N": "9.595356371043968",
+      "scientific_name": "Hippocampus kuda"
+    },
+    {
+      "buffalo_diversity": "0.0010828955215590216",
+      "buffalo_pred_log10_N": "8.427052851166657",
+      "scientific_name": "Homo sapiens"
+    },
+    {
+      "buffalo_diversity": "0.0025525",
+      "buffalo_pred_log10_N": "7.018656438574463",
+      "scientific_name": "Hylobates agilis/lar/moloch/pileatus"
+    },
+    {
+      "buffalo_diversity": "0.0087",
+      "buffalo_pred_log10_N": "11.990147213488353",
+      "scientific_name": "Ixodes ricinus"
+    },
+    {
+      "buffalo_diversity": "0.00618401913705004",
+      "buffalo_pred_log10_N": "7.680494559555451",
+      "scientific_name": "Lepisosteus oculatus"
+    },
+    {
+      "buffalo_diversity": "0.0207234",
+      "buffalo_pred_log10_N": "7.60725052332014",
+      "scientific_name": "Leptogorgia sarmentosa"
+    },
+    {
+      "buffalo_diversity": "0.00397721",
+      "buffalo_pred_log10_N": "7.114264979362208",
+      "scientific_name": "Lepus granatensis"
+    },
+    {
+      "buffalo_diversity": "0.014280000000000001",
+      "buffalo_pred_log10_N": "10.374870863940117",
+      "scientific_name": "Limenitis arthemis"
+    },
+    {
+      "buffalo_diversity": "0.0177877",
+      "buffalo_pred_log10_N": "12.013689614326",
+      "scientific_name": "Lineus longissimus"
+    },
+    {
+      "buffalo_diversity": "0.00963977",
+      "buffalo_pred_log10_N": "11.329914260340798",
+      "scientific_name": "Lineus ruber"
+    },
+    {
+      "buffalo_diversity": "0.0148552",
+      "buffalo_pred_log10_N": "10.315072069032821",
+      "scientific_name": "Liocarcinus depurator"
+    },
+    {
+      "buffalo_diversity": "0.01592",
+      "buffalo_pred_log10_N": "-Inf",
+      "scientific_name": "Lutzomyia whitmani"
+    },
+    {
+      "buffalo_diversity": "1.03e-4",
+      "buffalo_pred_log10_N": "7.47238548693168",
+      "scientific_name": "Lynx lynx"
+    },
+    {
+      "buffalo_diversity": "0.002873532006609425",
+      "buffalo_pred_log10_N": "7.943447726124509",
+      "scientific_name": "Macaca mulatta"
+    },
+    {
+      "buffalo_diversity": "0.012",
+      "buffalo_pred_log10_N": "9.261777194049227",
+      "scientific_name": "Malurus melanocephalus"
+    },
+    {
+      "buffalo_diversity": "0.00935",
+      "buffalo_pred_log10_N": "10.055923703867151",
+      "scientific_name": "Melanoplus oregonensis"
+    },
+    {
+      "buffalo_diversity": "0.0023715410864986303",
+      "buffalo_pred_log10_N": "7.239552956574844",
+      "scientific_name": "Meleagris gallopavo"
+    },
+    {
+      "buffalo_diversity": "0.0342226",
+      "buffalo_pred_log10_N": "10.768744027154183",
+      "scientific_name": "Melitaea cinxia"
+    },
+    {
+      "buffalo_diversity": "0.0307243",
+      "buffalo_pred_log10_N": "10.756415637762036",
+      "scientific_name": "Melitaea didyma"
+    },
+    {
+      "buffalo_diversity": "0.0268667",
+      "buffalo_pred_log10_N": "10.720300597236575",
+      "scientific_name": "Mellicta athalia"
+    },
+    {
+      "buffalo_diversity": "0.0164728",
+      "buffalo_pred_log10_N": "9.915426011494977",
+      "scientific_name": "Mellicta parthenoides"
+    },
+    {
+      "buffalo_diversity": "0.0125172",
+      "buffalo_pred_log10_N": "8.475049192196446",
+      "scientific_name": "Mesobuthus cyprius/gibbosus"
+    },
+    {
+      "buffalo_diversity": "0.00580966",
+      "buffalo_pred_log10_N": "11.266671377558302",
+      "scientific_name": "Messor barbarus"
+    },
+    {
+      "buffalo_diversity": "0.00849582",
+      "buffalo_pred_log10_N": "9.977108605194955",
+      "scientific_name": "Microtus arvalis"
+    },
+    {
+      "buffalo_diversity": "0.00164",
+      "buffalo_pred_log10_N": "8.98022032770472",
+      "scientific_name": "Monodelphis domestica"
+    },
+    {
+      "buffalo_diversity": "0.0041555555555555556",
+      "buffalo_pred_log10_N": "10.699162779734069",
+      "scientific_name": "Mus musculus"
+    },
+    {
+      "buffalo_diversity": "0.00809064978269882",
+      "buffalo_pred_log10_N": "9.03494528739715",
+      "scientific_name": "Mus musculus castaneus"
+    },
+    {
+      "buffalo_diversity": "0.0197862",
+      "buffalo_pred_log10_N": "8.851386900197145",
+      "scientific_name": "Mytilus californianus"
+    },
+    {
+      "buffalo_diversity": "0.0339066",
+      "buffalo_pred_log10_N": "10.022654207991362",
+      "scientific_name": "Mytilus edulis"
+    },
+    {
+      "buffalo_diversity": "0.0334238",
+      "buffalo_pred_log10_N": "10.180843431334827",
+      "scientific_name": "Mytilus galloprovincialis"
+    },
+    {
+      "buffalo_diversity": "0.0692141",
+      "buffalo_pred_log10_N": "9.464384528922201",
+      "scientific_name": "Mytilus trossulus"
+    },
+    {
+      "buffalo_diversity": "0.0016",
+      "buffalo_pred_log10_N": "13.941847239429789",
+      "scientific_name": "Nasonia vitripennis"
+    },
+    {
+      "buffalo_diversity": "0.00591197",
+      "buffalo_pred_log10_N": "9.768235241401195",
+      "scientific_name": "Necora puber"
+    },
+    {
+      "buffalo_diversity": "0.002385",
+      "buffalo_pred_log10_N": "6.0966015687348385",
+      "scientific_name": "Nomascus gabriellae/leucogenys"
+    },
+    {
+      "buffalo_diversity": "0.00214",
+      "buffalo_pred_log10_N": "8.29354887357077",
+      "scientific_name": "Nycticebus coucang"
+    },
+    {
+      "buffalo_diversity": "0.0026075",
+      "buffalo_pred_log10_N": "7.672699499520375",
+      "scientific_name": "Oncorhynchus tshawytscha"
+    },
+    {
+      "buffalo_diversity": "0.012253584999999999",
+      "buffalo_pred_log10_N": "11.627877136388515",
+      "scientific_name": "Ophioderma longicauda"
+    },
+    {
+      "buffalo_diversity": "0.00843",
+      "buffalo_pred_log10_N": "8.654371179051394",
+      "scientific_name": "Oryctolagus cuniculus"
+    },
+    {
+      "buffalo_diversity": "0.00304076176792202",
+      "buffalo_pred_log10_N": "9.818033502890327",
+      "scientific_name": "Oryzias latipes"
+    },
+    {
+      "buffalo_diversity": "0.00652548",
+      "buffalo_pred_log10_N": "8.298305915166921",
+      "scientific_name": "Ostrea chilensis"
+    },
+    {
+      "buffalo_diversity": "0.00529649",
+      "buffalo_pred_log10_N": "9.791077071192625",
+      "scientific_name": "Ostrea edulis"
+    },
+    {
+      "buffalo_diversity": "0.0206275",
+      "buffalo_pred_log10_N": "7.813443643499966",
+      "scientific_name": "Ostreola stentina"
+    },
+    {
+      "buffalo_diversity": "0.0022177120351231402",
+      "buffalo_pred_log10_N": "6.718396911267792",
+      "scientific_name": "Ovis canadensis"
+    },
+    {
+      "buffalo_diversity": "0.001",
+      "buffalo_pred_log10_N": "6.259587900227891",
+      "scientific_name": "Pan paniscus"
+    },
+    {
+      "buffalo_diversity": "0.0017633333333333333",
+      "buffalo_pred_log10_N": "7.479862944539208",
+      "scientific_name": "Pan troglodytes"
+    },
+    {
+      "buffalo_diversity": "0.017",
+      "buffalo_pred_log10_N": "10.194005075296175",
+      "scientific_name": "Papilio dardanus"
+    },
+    {
+      "buffalo_diversity": "0.0018918139038842999",
+      "buffalo_pred_log10_N": "7.230147040645549",
+      "scientific_name": "Papio anubis"
+    },
+    {
+      "buffalo_diversity": "0.00534488",
+      "buffalo_pred_log10_N": "9.635232430913547",
+      "scientific_name": "Parus caeruleus"
+    },
+    {
+      "buffalo_diversity": "0.0285616",
+      "buffalo_pred_log10_N": "11.080901340169113",
+      "scientific_name": "Pectinaria koreni"
+    },
+    {
+      "buffalo_diversity": "0.01313",
+      "buffalo_pred_log10_N": "9.789093079217167",
+      "scientific_name": "Peromyscus maniculatus"
+    },
+    {
+      "buffalo_diversity": "0.00309237",
+      "buffalo_pred_log10_N": "12.137865739145518",
+      "scientific_name": "Pheidole pallidula"
+    },
+    {
+      "buffalo_diversity": "0.0317507",
+      "buffalo_pred_log10_N": "12.638945739275542",
+      "scientific_name": "Physa acuta"
+    },
+    {
+      "buffalo_diversity": "0.0203538",
+      "buffalo_pred_log10_N": "11.915567591778666",
+      "scientific_name": "Physa gyrina"
+    },
+    {
+      "buffalo_diversity": "0.020954999999999998",
+      "buffalo_pred_log10_N": "11.069291961529037",
+      "scientific_name": "Pieris rapae"
+    },
+    {
+      "buffalo_diversity": "0.0031",
+      "buffalo_pred_log10_N": "5.496433972226291",
+      "scientific_name": "Pongo abelii/pygmaeus"
+    },
+    {
+      "buffalo_diversity": "0.00681",
+      "buffalo_pred_log10_N": "6.116784297166485",
+      "scientific_name": "Propithecus coquereli"
+    },
+    {
+      "buffalo_diversity": "0.00255644",
+      "buffalo_pred_log10_N": "12.386799863023016",
+      "scientific_name": "Reticulitermes flavipes"
+    },
+    {
+      "buffalo_diversity": "0.00112279",
+      "buffalo_pred_log10_N": "11.352216185198865",
+      "scientific_name": "Reticulitermes grassei"
+    },
+    {
+      "buffalo_diversity": "0.00121422",
+      "buffalo_pred_log10_N": "8.608097692611237",
+      "scientific_name": "Reticulitermes lucifugus"
+    },
+    {
+      "buffalo_diversity": "0.00212886",
+      "buffalo_pred_log10_N": "8.946246871049755",
+      "scientific_name": "Sepia officinalis"
+    },
+    {
+      "buffalo_diversity": "3.115e-4",
+      "buffalo_pred_log10_N": "7.574342636509202",
+      "scientific_name": "Sistrurus catenatus"
+    },
+    {
+      "buffalo_diversity": "0.0025900000000000003",
+      "buffalo_pred_log10_N": "8.072088857764534",
+      "scientific_name": "Spermophilus parryii"
+    },
+    {
+      "buffalo_diversity": "0.014499999999999999",
+      "buffalo_pred_log10_N": "11.115556689874413",
+      "scientific_name": "Strongylocentrotus droebachiensis"
+    },
+    {
+      "buffalo_diversity": "0.02492",
+      "buffalo_pred_log10_N": "10.348287553933526",
+      "scientific_name": "Strongylocentrotus pallidus"
+    },
+    {
+      "buffalo_diversity": "0.0169",
+      "buffalo_pred_log10_N": "9.866872334924242",
+      "scientific_name": "Strongylocentrotus purpuratus"
+    },
+    {
+      "buffalo_diversity": "0.00440820881243972",
+      "buffalo_pred_log10_N": "7.635919398501166",
+      "scientific_name": "Sus scrofa"
+    },
+    {
+      "buffalo_diversity": "0.00168",
+      "buffalo_pred_log10_N": "6.774262107869873",
+      "scientific_name": "Symphalangus syndactylus"
+    },
+    {
+      "buffalo_diversity": "0.0060750000000000005",
+      "buffalo_pred_log10_N": "8.400281024388732",
+      "scientific_name": "Taeniopygia guttata"
+    },
+    {
+      "buffalo_diversity": "0.004",
+      "buffalo_pred_log10_N": "7.838544858313497",
+      "scientific_name": "Takifugu rubripes"
+    },
+    {
+      "buffalo_diversity": "0.0316444",
+      "buffalo_pred_log10_N": "12.136399844245132",
+      "scientific_name": "Thymelicus lineola"
+    },
+    {
+      "buffalo_diversity": "0.0227798",
+      "buffalo_pred_log10_N": "11.79897980720081",
+      "scientific_name": "Thymelicus sylvestris"
+    },
+    {
+      "buffalo_diversity": "0.00909918",
+      "buffalo_pred_log10_N": "9.584508649704098",
+      "scientific_name": "Trachemys scripta"
+    },
+    {
+      "buffalo_diversity": "0.0087074",
+      "buffalo_pred_log10_N": "10.762394065300311",
+      "scientific_name": "Tripylus abatoides"
+    },
+    {
+      "buffalo_diversity": "0.00532",
+      "buffalo_pred_log10_N": "8.764757627575733",
+      "scientific_name": "Tupaia belangeri"
+    },
+    {
+      "buffalo_diversity": "0.00375",
+      "buffalo_pred_log10_N": "6.455614160851201",
+      "scientific_name": "Varecia variegata variegata"
+    },
+    {
+      "buffalo_diversity": "0.0066",
+      "buffalo_pred_log10_N": "9.300714002387359",
+      "scientific_name": "Zonotrichia albicollis"
+    }
+  ]
+}

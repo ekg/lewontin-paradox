@@ -1,0 +1,12 @@
+##gff-version 3
+##sequence-region chr1 1 35
+chr1	truth	gene	1	7	.	+	.	ID=gene_plus
+chr1	truth	mRNA	1	7	.	+	.	ID=tx_plus;Parent=gene_plus;tag=canonical
+chr1	truth	CDS	1	3	.	+	0	Parent=tx_plus
+chr1	truth	CDS	4	7	.	+	1	Parent=tx_plus
+chr1	truth	mRNA	1	6	.	+	.	ID=tx_other;Parent=gene_plus
+chr1	truth	CDS	1	6	.	+	0	Parent=tx_other
+chr1	truth	gene	20	26	.	-	.	ID=gene_minus
+chr1	truth	mRNA	20	26	.	-	.	ID=tx_minus;Parent=gene_minus;tag=canonical
+chr1	truth	CDS	23	26	.	-	1	Parent=tx_minus
+chr1	truth	CDS	20	22	.	-	0	Parent=tx_minus

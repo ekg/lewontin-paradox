@@ -1,0 +1,208 @@
+{
+  "schema_version": "1.0.0",
+  "decision_version": "tier3-decisions-v1",
+  "generated_at": "2026-07-13T00:00:00Z",
+  "policy": {
+    "environment_manager": "gnu-guix",
+    "native_annotation_required": true,
+    "congener_primary_allowed": false,
+    "variant_only_invariant_assumption_allowed": false,
+    "population_target_units": 20,
+    "reference_conditioned_statistic": "pi_S_over_pi_W",
+    "polarized_sfs_B": "deferred",
+    "minimum_4d_class_sites": 10000,
+    "primary_modality": "deposited_exact_reference_variants_plus_mask",
+    "assembly_fallback": "direct_wfmash_extended_cigar",
+    "impg_role": "optional_orthogonal_concordance",
+    "bootstrap": {
+      "block_size_bp": 1000000,
+      "replicates": 10000,
+      "interval": "percentile_2.5_97.5",
+      "minimum_blocks": 20,
+      "seed_rule": "first_64_bits_big_endian_sha256(tier3-decisions-v1\\0dataset_id\\0statistic_name)"
+    },
+    "concordance_tolerances": {
+      "minimum_common_callable_bases": 10000000,
+      "minimum_common_fraction_each": 0.8,
+      "minimum_snv_precision": 0.99,
+      "minimum_snv_recall": 0.99,
+      "minimum_genotype_concordance": 0.99,
+      "diversity_absolute_floor": 0.00005,
+      "diversity_relative_fraction": 0.05,
+      "ratio_absolute_floor": 0.05,
+      "ratio_relative_fraction": 0.1,
+      "synthetic_truth_exact": true
+    },
+    "impg_query_policy": {
+      "core_size_bp": 1000000,
+      "padding_bp": 10000,
+      "merge_distance_bp": 0,
+      "lace_min_threads": 2,
+      "ownership_rule": "normalized_pos_minus_1_in_disjoint_core",
+      "phase_sensitive_use": false
+    }
+  },
+  "guix": {
+    "manager": "gnu-guix",
+    "channel": {
+      "name": "guix",
+      "url": "https://git.savannah.gnu.org/git/guix.git",
+      "commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+      "introduction_commit": "9edb3f66fd807b096b48283debdcddccfea34bad",
+      "introduction_fingerprint": "BBB02DDF2E5F5EAAC74C3F7F27D586A4552F384F"
+    },
+    "wfmash": {
+      "url": "https://github.com/waveygang/wfmash.git",
+      "commit": "e040aa10e87cab44ed5a4db005e784be62b0bd21",
+      "recursive_nar_sha256_base32": "0xvrgb7aimsdyq7kn3lzf7rrxxljs54dv81kv3apsfpcyp6nxnwj",
+      "recursive_nar_sha256_hex": "92db6ecdf5ec3a7dd5d833a0dd48d192f69ef3719f0e3b0ff64dd7a8ce7a7977",
+      "submodules": [
+        {"path": "deps/WFA2-lib", "commit": "49c255df126ee536fe92caff7a9f7c183ec3ff29"}
+      ]
+    },
+    "impg": {
+      "role": "optional_orthogonal_concordance",
+      "source": {
+        "url": "https://github.com/pangenome/impg.git",
+        "commit": "101df81eb28a809c8fac97d297acd9fcfbbfa048",
+        "recursive_nar_sha256_base32": "1g7z0xwaryz6cbkc2mhsrysi9cvg8599k50n3qh6ny4i0rx1z4di",
+        "recursive_nar_sha256_hex": "b1911f7a0691786b201e16949952416fb314b5cf1a56c1e662e6fbac7807ffbc",
+        "submodules": [
+          {"path": "vendor/gfaffix", "commit": "460e0dd798a9da7d12aef4f9181419d71489da95"},
+          {"path": "vendor/syng", "commit": "68ac19745201a7d2a17d9bb190671ef7d3ac8c29"}
+        ]
+      },
+      "execution_approved": false,
+      "phase_sensitive_approved": false,
+      "cargo_lock_sources_fully_hashed": false
+    },
+    "realization_mode": "headnode_realize_shared_store_execute",
+    "container_policy": "none",
+    "forbidden_managers": ["conda", "micromamba", "pip-user", "hand-built-container"]
+  },
+  "compute_preflight": {
+    "cluster": "linux",
+    "scheduler": "slurm",
+    "partition": "workers",
+    "realization_host": "octopus01.uthsc.edu",
+    "store_smoke": {
+      "job_id": "1753216",
+      "node": "octopus07.uthsc.edu",
+      "run_at": "2026-07-13T00:00:00Z",
+      "shared_store_readable": true,
+      "shared_store_executable": true,
+      "compute_daemon_access": "unavailable_connection_refused",
+      "tested_store_path": "/gnu/store/00000000000000000000000000000000-bcftools-1.14"
+    },
+    "egress": {
+      "mode": "direct_compute_https",
+      "compute_test_passed": true,
+      "job_id": "1753211",
+      "test_uri": "https://www.ncbi.nlm.nih.gov/",
+      "staging_required": true
+    },
+    "scratch": {
+      "data_root": "/moosefs/erikg/tier3data",
+      "scratch_root": "/moosefs/erikg/tier3scratch",
+      "output_root": "/moosefs/erikg/tier3out",
+      "effective_budget_bytes": 536870912000,
+      "minimum_free_bytes_before_submit": 536870912000,
+      "observed_free_bytes": 101887888916480,
+      "formal_user_quota": "not_queryable_use_project_budget",
+      "post_job_sentinel_passed": true,
+      "retention_policy": "retain_through_result_acceptance_plus_30_days"
+    }
+  },
+  "datasets": [
+    {
+      "dataset_id": "truth.deposited",
+      "species": {
+        "scientific_name": "Testus exactus",
+        "taxon_id": 1,
+        "is_congener_substitution": false
+      },
+      "tier": "3a",
+      "observables": {
+        "whole_genome_gc": "eligible",
+        "gc3": "eligible",
+        "population_pi": "unavailable",
+        "individual_snv_heterozygosity": "eligible",
+        "pi_S_over_pi_W": "eligible",
+        "polarized_sfs_B": "deferred"
+      },
+      "composition_eligibility": "eligible",
+      "diversity_eligibility": "eligible",
+      "reference": {
+        "assembly_accession": "GCA_000001.1",
+        "provider": "truth-provider",
+        "release": "1",
+        "fasta": {"logical_name": "truth.fa", "uri": "https://example.invalid/GCA_000001.1/truth.fa", "sha256": "0000000000000000000000000000000000000000000000000000000000000000", "size_bytes": 1},
+        "fai": {"logical_name": "truth.fa.fai", "uri": "https://example.invalid/GCA_000001.1/truth.fa.fai", "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size_bytes": 1},
+        "contig_dictionary": {"logical_name": "truth.dict.tsv", "uri": "https://example.invalid/GCA_000001.1/truth.dict.tsv", "sha256": "2222222222222222222222222222222222222222222222222222222222222222", "size_bytes": 1},
+        "nuclear_contigs_only": true
+      },
+      "annotation": {
+        "provider": "truth-provider",
+        "release": "1",
+        "assembly_accession": "GCA_000001.1",
+        "status": "native",
+        "format": "gff3",
+        "file": {"logical_name": "truth.gff3", "uri": "https://example.invalid/GCA_000001.1/truth.gff3", "sha256": "3333333333333333333333333333333333333333333333333333333333333333", "size_bytes": 1},
+        "sequence_regions": {"logical_name": "truth.sequence-regions.tsv", "uri": "https://example.invalid/GCA_000001.1/truth.sequence-regions.tsv", "sha256": "4444444444444444444444444444444444444444444444444444444444444444", "size_bytes": 1},
+        "contig_mapping": {"logical_name": "truth.contig-map.tsv", "uri": "https://example.invalid/GCA_000001.1/truth.contig-map.tsv", "sha256": "5555555555555555555555555555555555555555555555555555555555555555", "size_bytes": 1},
+        "genetic_code": 1,
+        "exact_reference_assertion": true,
+        "canonical_transcript_policy": "provider_canonical_else_longest_valid_cds_then_lexicographic_id",
+        "cds_phase_policy": "biological_5prime_gff_phase_strand_aware",
+        "audit": {
+          "contig_dictionary_passed": true,
+          "sample_rule": "first_100_by_sha256_dataset_id_plus_transcript_id_or_all_if_fewer",
+          "sampled_cds_count": 2,
+          "sampled_cds_mismatches": 0,
+          "all_retained_cds_phase_translation_passed": true
+        }
+      },
+      "variation": {
+        "kind": "deposited_exact_reference_variants",
+        "format": "vcf",
+        "original": {"logical_name": "truth.vcf", "uri": "https://example.invalid/GCA_000001.1/truth.vcf", "sha256": "6666666666666666666666666666666666666666666666666666666666666666", "size_bytes": 1},
+        "normalized_bcf": {"logical_name": "truth.normalized.bcf", "uri": "https://example.invalid/GCA_000001.1/truth.normalized.bcf", "sha256": "7777777777777777777777777777777777777777777777777777777777777777", "size_bytes": 1},
+        "index": {"logical_name": "truth.normalized.bcf.csi", "uri": "https://example.invalid/GCA_000001.1/truth.normalized.bcf.csi", "sha256": "8888888888888888888888888888888888888888888888888888888888888888", "size_bytes": 1},
+        "exact_reference_assertion": true,
+        "contig_dictionary_passed": true,
+        "ref_allele_audit_passed": true
+      },
+      "denominator": {
+        "kind": "cohort_callable_mask",
+        "mask": {"logical_name": "truth.callable.bed", "uri": "https://example.invalid/GCA_000001.1/truth.callable.bed", "sha256": "9999999999999999999999999999999999999999999999999999999999999999", "size_bytes": 1},
+        "coordinate_reference": "reference_fasta",
+        "sample_list_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "construction_policy_id": "truth-exact-cohort-v1",
+        "generator_store_path": "/gnu/store/00000000000000000000000000000000-tier3-foundations-1",
+        "exact_reference_assertion": true,
+        "invariant_sites_explicit": true
+      },
+      "samples": {
+        "design": "single_diploid_individual",
+        "population_id": null,
+        "sample_list": {"logical_name": "truth.samples.sha256", "uri": "https://example.invalid/GCA_000001.1/truth.samples.sha256", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size_bytes": 1},
+        "sampling_units": 1,
+        "ploidy": 2,
+        "nominal_chromosomes": 2,
+        "minimum_called_chromosomes": 2,
+        "downsampling_rule": "not_applicable_single_individual",
+        "relatedness_qc_passed": true,
+        "sex_chromosomes_excluded": true,
+        "family_or_trio_origin": null,
+        "phase_identity_audit_passed": true
+      },
+      "access": {
+        "class": "public",
+        "credentials_required": false,
+        "redistribution_checked": true,
+        "accession_page": "https://example.invalid/GCA_000001.1"
+      },
+      "notes": "Synthetic exact-reference deposited truth tuple."
+    }
+  ]
+}

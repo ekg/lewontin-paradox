@@ -17,3 +17,19 @@
 # manuscript.pdf
 .wg
 analysis/data/
+
+# Tier 3 payloads, transient products, credentials, and local Guix profiles.
+# Only checksum/provenance manifests and compact truth fixtures are committed.
+tier3data/
+tier3scratch/
+tier3out/
+analysis/tier3data/
+analysis/tier3scratch/
+analysis/tier3out/
+analysis/.tier3-profile*
+analysis/guix-profile*
+*.credentials
+*.token
+*.pem
+.env
+__pycache__/

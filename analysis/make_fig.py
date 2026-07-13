@@ -6,7 +6,8 @@ Left: scatter of log10 pi vs log10 Nc (n=172) with M0 power law (dashed) and
 Right: residuals from M0 vs recombination (map_length), showing the negative
        (gBGC) direction controlling for Nc.
 """
-import csv, math
+import csv, math, os
+from pathlib import Path
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -14,8 +15,9 @@ import matplotlib.pyplot as plt
 from scipy import stats
 from scipy.optimize import curve_fit
 
-DATA="/tmp/paradox_variation/data/combined_data.tsv"
-OUT="/home/erik/lewontin_paradox/analysis/fig_extend_buffalo.pdf"
+ANALYSIS_DIR = Path(__file__).resolve().parent
+DATA = Path(os.environ.get("BUFFALO_DATA", ANALYSIS_DIR / "data" / "buffalo" / "combined_data.tsv"))
+OUT = Path(os.environ.get("BUFFALO_FIGURE", ANALYSIS_DIR / "fig_extend_buffalo.pdf"))
 
 rows=[]
 for r in csv.DictReader(open(DATA),delimiter="\t"):
@@ -67,5 +69,5 @@ axR.set_ylabel("$\\pi$ residual (from power law)")
 axR.set_title(f"Recombination sign test (n={len(ml)}): gBGC predicts $-$, BGS predicts $+$\npartial r = {pr:+.2f} (p={pp:.2f})")
 plt.tight_layout()
 plt.savefig(OUT)
-plt.savefig(OUT.replace(".pdf",".png"),dpi=150)
+plt.savefig(OUT.with_suffix(".png"),dpi=150)
 print("wrote",OUT,"and png")

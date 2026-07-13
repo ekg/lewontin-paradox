@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lewontin-paradox.invalid/schemas/tier3_buffalo.schema.json",
+  "title": "Pinned Buffalo Tier 3 source cohort",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source", "core_rule", "core_count", "species"],
+  "properties": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "path", "url", "sha256", "size_bytes"],
+      "properties": {
+        "repository": {"const": "https://github.com/vsbuffalo/paradox_variation.git"},
+        "commit": {"const": "b8f91d5c34675733db8cae8dcab625dcbb55c30a"},
+        "path": {"const": "data/combined_data.tsv"},
+        "url": {"const": "https://raw.githubusercontent.com/vsbuffalo/paradox_variation/b8f91d5c34675733db8cae8dcab625dcbb55c30a/data/combined_data.tsv"},
+        "sha256": {"const": "df559451dad94b53ba8675e09811708107a57eeb6ffe8f72b944bcbbf3a1f2eb"},
+        "size_bytes": {"const": 171863}
+      }
+    },
+    "core_rule": {"const": "diversity_not_NA_and_pred_log10_N_not_NA"},
+    "core_count": {"const": 173},
+    "species": {
+      "type": "array",
+      "minItems": 173,
+      "maxItems": 173,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scientific_name", "buffalo_diversity", "buffalo_pred_log10_N"],
+        "properties": {
+          "scientific_name": {"type": "string", "minLength": 3},
+          "buffalo_diversity": {"type": "string", "minLength": 1},
+          "buffalo_pred_log10_N": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

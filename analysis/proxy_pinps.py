@@ -8,14 +8,18 @@ Nc (nearly-neutral) and -- if gBGC saturates at high Ne -- the decline should
 flatten. CAVEAT: purifying-selection saturation predicts the same flattening,
 so this is supportive but NOT discriminating.
 """
+import os
+from pathlib import Path
 import pandas as pd, numpy as np
 from scipy import stats
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-CD="/tmp/paradox_variation/data/combined_data.tsv"
-ROM="/tmp/paradox_variation/data/romiguier_et_al_2014_updated.tsv"
+ANALYSIS_DIR = Path(__file__).resolve().parent
+BUFFALO_DIR = Path(os.environ.get("BUFFALO_DATA_DIR", ANALYSIS_DIR / "data" / "buffalo"))
+CD = Path(os.environ.get("BUFFALO_DATA", BUFFALO_DIR / "combined_data.tsv"))
+ROM = Path(os.environ.get("ROMIGUIER_DATA", BUFFALO_DIR / "romiguier_et_al_2014_updated.tsv"))
 cd=pd.read_csv(CD,sep="\t"); rom=pd.read_csv(ROM,sep="\t")
 cd["sp"]=cd.species.str.strip().str.lower()
 rom["sp"]=rom.species.str.strip().str.lower()
@@ -50,5 +54,5 @@ ax.set_ylabel("log$_{10}$ (π$_N$/π$_S$)  [Romiguier 2014]")
 ax.set_title(f"π$_N$/π$_S$ vs N$_c$ (n={n}): r={r:.2f}, p={p:.3g}\nflattens at high N$_c$ — consistent with, but not specific to, gBGC saturation")
 ax.legend(frameon=False,fontsize=9)
 fig.tight_layout()
-fig.savefig("analysis/fig_proxy_pinps.pdf"); fig.savefig("analysis/fig_proxy_pinps.png",dpi=150)
+fig.savefig(ANALYSIS_DIR / "fig_proxy_pinps.pdf"); fig.savefig(ANALYSIS_DIR / "fig_proxy_pinps.png",dpi=150)
 print("wrote analysis/fig_proxy_pinps.{pdf,png}")
