@@ -1,0 +1,2046 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lewontin-paradox.invalid/schemas/tier3_manifest.schema.json",
+  "title": "Tier 3 frozen manifest",
+  "description": "Fail-closed manifest contract for tier3-decisions-v1. Payloads and credentials are not embedded; only provenance, checksums, policy, audits, and eligibility are recorded.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_version",
+    "generated_at",
+    "policy",
+    "guix",
+    "compute_preflight",
+    "datasets"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "decision_version": {
+      "const": "tier3-decisions-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "policy": {
+      "$ref": "#/$defs/frozenPolicy"
+    },
+    "guix": {
+      "$ref": "#/$defs/guixEnvironment"
+    },
+    "compute_preflight": {
+      "$ref": "#/$defs/computePreflight"
+    },
+    "datasets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/dataset"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "guix": {
+            "properties": {
+              "impg": {
+                "properties": {
+                  "execution_approved": {
+                    "const": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "guix"
+        ]
+      },
+      "then": {
+        "properties": {
+          "datasets": {
+            "items": {
+              "properties": {
+                "impg_qc": {
+                  "properties": {
+                    "enabled": {
+                      "const": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "assemblyAccession": {
+      "description": "Assembly accession must include an explicit version.",
+      "type": "string",
+      "pattern": "^(GC[AF]_[0-9]+|[A-Za-z][A-Za-z0-9_-]*)\\.[0-9]+$"
+    },
+    "storePath": {
+      "type": "string",
+      "pattern": "^/gnu/store/[0-9a-z]{32}-[^/]+$"
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logical_name",
+        "uri",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "logical_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uri": {
+          "description": "Immutable public source URI or absolute staged file URI; must not contain credentials or a signed query string.",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https|ftp|file)://[^?#]+$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "upstream_md5": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "compression": {
+          "enum": [
+            "none",
+            "bgzip",
+            "gzip",
+            "bzip2",
+            "xz",
+            "zstd"
+          ],
+          "default": "none"
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accession": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "frozenPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_manager",
+        "native_annotation_required",
+        "congener_primary_allowed",
+        "variant_only_invariant_assumption_allowed",
+        "population_target_units",
+        "reference_conditioned_statistic",
+        "polarized_sfs_B",
+        "bootstrap",
+        "minimum_4d_class_sites",
+        "concordance_tolerances",
+        "impg_query_policy",
+        "primary_modality",
+        "assembly_fallback",
+        "impg_role"
+      ],
+      "properties": {
+        "environment_manager": {
+          "const": "gnu-guix"
+        },
+        "native_annotation_required": {
+          "const": true
+        },
+        "congener_primary_allowed": {
+          "const": false
+        },
+        "variant_only_invariant_assumption_allowed": {
+          "const": false
+        },
+        "population_target_units": {
+          "const": 20
+        },
+        "reference_conditioned_statistic": {
+          "const": "pi_S_over_pi_W"
+        },
+        "polarized_sfs_B": {
+          "const": "deferred"
+        },
+        "minimum_4d_class_sites": {
+          "const": 10000
+        },
+        "primary_modality": {
+          "const": "deposited_exact_reference_variants_plus_mask"
+        },
+        "assembly_fallback": {
+          "const": "direct_wfmash_extended_cigar"
+        },
+        "impg_role": {
+          "const": "optional_orthogonal_concordance"
+        },
+        "bootstrap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "block_size_bp",
+            "replicates",
+            "interval",
+            "minimum_blocks",
+            "seed_rule"
+          ],
+          "properties": {
+            "block_size_bp": {
+              "const": 1000000
+            },
+            "replicates": {
+              "const": 10000
+            },
+            "interval": {
+              "const": "percentile_2.5_97.5"
+            },
+            "minimum_blocks": {
+              "const": 20
+            },
+            "seed_rule": {
+              "const": "first_64_bits_big_endian_sha256(tier3-decisions-v1\\0dataset_id\\0statistic_name)"
+            }
+          }
+        },
+        "concordance_tolerances": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minimum_common_callable_bases",
+            "minimum_common_fraction_each",
+            "minimum_snv_precision",
+            "minimum_snv_recall",
+            "minimum_genotype_concordance",
+            "diversity_absolute_floor",
+            "diversity_relative_fraction",
+            "ratio_absolute_floor",
+            "ratio_relative_fraction",
+            "synthetic_truth_exact"
+          ],
+          "properties": {
+            "minimum_common_callable_bases": {
+              "const": 10000000
+            },
+            "minimum_common_fraction_each": {
+              "const": 0.8
+            },
+            "minimum_snv_precision": {
+              "const": 0.99
+            },
+            "minimum_snv_recall": {
+              "const": 0.99
+            },
+            "minimum_genotype_concordance": {
+              "const": 0.99
+            },
+            "diversity_absolute_floor": {
+              "const": 0.00005
+            },
+            "diversity_relative_fraction": {
+              "const": 0.05
+            },
+            "ratio_absolute_floor": {
+              "const": 0.05
+            },
+            "ratio_relative_fraction": {
+              "const": 0.1
+            },
+            "synthetic_truth_exact": {
+              "const": true
+            }
+          }
+        },
+        "impg_query_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "core_size_bp",
+            "padding_bp",
+            "merge_distance_bp",
+            "lace_min_threads",
+            "ownership_rule",
+            "phase_sensitive_use"
+          ],
+          "properties": {
+            "core_size_bp": {
+              "const": 1000000
+            },
+            "padding_bp": {
+              "const": 10000
+            },
+            "merge_distance_bp": {
+              "const": 0
+            },
+            "lace_min_threads": {
+              "type": "integer",
+              "minimum": 2
+            },
+            "ownership_rule": {
+              "const": "normalized_pos_minus_1_in_disjoint_core"
+            },
+            "phase_sensitive_use": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "sourcePin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "commit",
+        "recursive_nar_sha256_base32",
+        "recursive_nar_sha256_hex"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "commit": {
+          "$ref": "#/$defs/gitCommit"
+        },
+        "recursive_nar_sha256_base32": {
+          "type": "string",
+          "pattern": "^[0-9a-df-np-sv-z]{52}$"
+        },
+        "recursive_nar_sha256_hex": {
+          "$ref": "#/$defs/sha256"
+        },
+        "submodules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "commit"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "commit": {
+                "$ref": "#/$defs/gitCommit"
+              }
+            }
+          }
+        }
+      }
+    },
+    "guixEnvironment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manager",
+        "channel",
+        "wfmash",
+        "impg",
+        "realization_mode",
+        "container_policy",
+        "forbidden_managers"
+      ],
+      "properties": {
+        "manager": {
+          "const": "gnu-guix"
+        },
+        "channel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "url",
+            "commit",
+            "introduction_commit",
+            "introduction_fingerprint"
+          ],
+          "properties": {
+            "name": {
+              "const": "guix"
+            },
+            "url": {
+              "const": "https://git.savannah.gnu.org/git/guix.git"
+            },
+            "commit": {
+              "const": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36"
+            },
+            "introduction_commit": {
+              "const": "9edb3f66fd807b096b48283debdcddccfea34bad"
+            },
+            "introduction_fingerprint": {
+              "const": "BBB02DDF2E5F5EAAC74C3F7F27D586A4552F384F"
+            }
+          }
+        },
+        "wfmash": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/sourcePin"
+            },
+            {
+              "properties": {
+                "url": {
+                  "const": "https://github.com/waveygang/wfmash.git"
+                },
+                "commit": {
+                  "const": "e040aa10e87cab44ed5a4db005e784be62b0bd21"
+                },
+                "recursive_nar_sha256_base32": {
+                  "const": "0xvrgb7aimsdyq7kn3lzf7rrxxljs54dv81kv3apsfpcyp6nxnwj"
+                },
+                "recursive_nar_sha256_hex": {
+                  "const": "92db6ecdf5ec3a7dd5d833a0dd48d192f69ef3719f0e3b0ff64dd7a8ce7a7977"
+                },
+                "submodules": {
+                  "prefixItems": [
+                    {
+                      "const": {
+                        "path": "deps/WFA2-lib",
+                        "commit": "49c255df126ee536fe92caff7a9f7c183ec3ff29"
+                      }
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              }
+            }
+          ]
+        },
+        "impg": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role",
+            "source",
+            "execution_approved",
+            "phase_sensitive_approved",
+            "cargo_lock_sources_fully_hashed"
+          ],
+          "properties": {
+            "role": {
+              "const": "optional_orthogonal_concordance"
+            },
+            "source": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/sourcePin"
+                },
+                {
+                  "properties": {
+                    "url": {
+                      "const": "https://github.com/pangenome/impg.git"
+                    },
+                    "commit": {
+                      "const": "101df81eb28a809c8fac97d297acd9fcfbbfa048"
+                    },
+                    "recursive_nar_sha256_base32": {
+                      "const": "1g7z0xwaryz6cbkc2mhsrysi9cvg8599k50n3qh6ny4i0rx1z4di"
+                    },
+                    "recursive_nar_sha256_hex": {
+                      "const": "b1911f7a0691786b201e16949952416fb314b5cf1a56c1e662e6fbac7807ffbc"
+                    },
+                    "submodules": {
+                      "prefixItems": [
+                        {
+                          "const": {
+                            "path": "vendor/gfaffix",
+                            "commit": "460e0dd798a9da7d12aef4f9181419d71489da95"
+                          }
+                        },
+                        {
+                          "const": {
+                            "path": "vendor/syng",
+                            "commit": "68ac19745201a7d2a17d9bb190671ef7d3ac8c29"
+                          }
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  }
+                }
+              ]
+            },
+            "execution_approved": {
+              "type": "boolean"
+            },
+            "phase_sensitive_approved": {
+              "const": false
+            },
+            "cargo_lock_sources_fully_hashed": {
+              "type": "boolean"
+            },
+            "package_derivation": {
+              "type": "string",
+              "pattern": "^/gnu/store/[0-9a-z]{32}-[^/]+\\.drv$"
+            },
+            "store_path": {
+              "$ref": "#/$defs/storePath"
+            },
+            "truth_fixture_passed": {
+              "type": "boolean"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "execution_approved": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "execution_approved"
+                ]
+              },
+              "then": {
+                "required": [
+                  "package_derivation",
+                  "store_path",
+                  "truth_fixture_passed"
+                ],
+                "properties": {
+                  "cargo_lock_sources_fully_hashed": {
+                    "const": true
+                  },
+                  "truth_fixture_passed": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "realization_mode": {
+          "const": "headnode_realize_shared_store_execute"
+        },
+        "container_policy": {
+          "enum": [
+            "none",
+            "guix_pack_squashfs_compatibility_only"
+          ]
+        },
+        "forbidden_managers": {
+          "const": [
+            "conda",
+            "micromamba",
+            "pip-user",
+            "hand-built-container"
+          ]
+        },
+        "gc_root": {
+          "type": "string",
+          "pattern": "^/moosefs/erikg/[^ ]+$"
+        },
+        "gc_root_target": {
+          "$ref": "#/$defs/storePath"
+        }
+      }
+    },
+    "computePreflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cluster",
+        "scheduler",
+        "partition",
+        "realization_host",
+        "store_smoke",
+        "egress",
+        "scratch"
+      ],
+      "properties": {
+        "cluster": {
+          "const": "linux"
+        },
+        "scheduler": {
+          "const": "slurm"
+        },
+        "partition": {
+          "const": "workers"
+        },
+        "realization_host": {
+          "const": "octopus01.uthsc.edu"
+        },
+        "store_smoke": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "job_id",
+            "node",
+            "run_at",
+            "shared_store_readable",
+            "shared_store_executable",
+            "compute_daemon_access",
+            "tested_store_path"
+          ],
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            "node": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9.-]+$"
+            },
+            "run_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "shared_store_readable": {
+              "const": true
+            },
+            "shared_store_executable": {
+              "const": true
+            },
+            "compute_daemon_access": {
+              "const": "unavailable_connection_refused"
+            },
+            "tested_store_path": {
+              "$ref": "#/$defs/storePath"
+            }
+          }
+        },
+        "egress": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "compute_test_passed",
+            "job_id",
+            "test_uri",
+            "staging_required"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "direct_compute_https",
+                "headnode_prestage"
+              ]
+            },
+            "compute_test_passed": {
+              "type": "boolean"
+            },
+            "job_id": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            "test_uri": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://[^?#]+$"
+            },
+            "staging_required": {
+              "const": true
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "const": "direct_compute_https"
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "compute_test_passed": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "scratch": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "data_root",
+            "scratch_root",
+            "output_root",
+            "effective_budget_bytes",
+            "minimum_free_bytes_before_submit",
+            "observed_free_bytes",
+            "formal_user_quota",
+            "post_job_sentinel_passed",
+            "retention_policy"
+          ],
+          "properties": {
+            "data_root": {
+              "const": "/moosefs/erikg/tier3data"
+            },
+            "scratch_root": {
+              "const": "/moosefs/erikg/tier3scratch"
+            },
+            "output_root": {
+              "const": "/moosefs/erikg/tier3out"
+            },
+            "effective_budget_bytes": {
+              "const": 536870912000
+            },
+            "minimum_free_bytes_before_submit": {
+              "const": 536870912000
+            },
+            "observed_free_bytes": {
+              "type": "integer",
+              "minimum": 536870912000
+            },
+            "formal_user_quota": {
+              "const": "not_queryable_use_project_budget"
+            },
+            "post_job_sentinel_passed": {
+              "const": true
+            },
+            "retention_policy": {
+              "const": "retain_through_result_acceptance_plus_30_days"
+            }
+          }
+        }
+      }
+    },
+    "observableStatuses": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "whole_genome_gc",
+        "gc3",
+        "population_pi",
+        "individual_snv_heterozygosity",
+        "pi_S_over_pi_W",
+        "polarized_sfs_B"
+      ],
+      "properties": {
+        "whole_genome_gc": {
+          "enum": [
+            "eligible",
+            "unavailable",
+            "sensitivity_only"
+          ]
+        },
+        "gc3": {
+          "enum": [
+            "eligible",
+            "unavailable",
+            "sensitivity_only"
+          ]
+        },
+        "population_pi": {
+          "enum": [
+            "eligible",
+            "unavailable",
+            "sensitivity_only"
+          ]
+        },
+        "individual_snv_heterozygosity": {
+          "enum": [
+            "eligible",
+            "unavailable",
+            "sensitivity_only"
+          ]
+        },
+        "pi_S_over_pi_W": {
+          "enum": [
+            "eligible",
+            "unavailable",
+            "sensitivity_only"
+          ]
+        },
+        "polarized_sfs_B": {
+          "const": "deferred"
+        }
+      },
+      "not": {
+        "properties": {
+          "population_pi": {
+            "const": "eligible"
+          },
+          "individual_snv_heterozygosity": {
+            "const": "eligible"
+          }
+        },
+        "required": [
+          "population_pi",
+          "individual_snv_heterozygosity"
+        ]
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assembly_accession",
+        "provider",
+        "release",
+        "fasta",
+        "fai",
+        "contig_dictionary",
+        "nuclear_contigs_only"
+      ],
+      "properties": {
+        "assembly_accession": {
+          "$ref": "#/$defs/assemblyAccession"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fasta": {
+          "$ref": "#/$defs/artifact"
+        },
+        "fai": {
+          "$ref": "#/$defs/artifact"
+        },
+        "contig_dictionary": {
+          "$ref": "#/$defs/artifact"
+        },
+        "nuclear_contigs_only": {
+          "const": true
+        }
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "release",
+        "assembly_accession",
+        "status",
+        "format",
+        "file",
+        "sequence_regions",
+        "contig_mapping",
+        "genetic_code",
+        "exact_reference_assertion",
+        "canonical_transcript_policy",
+        "cds_phase_policy",
+        "audit"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assembly_accession": {
+          "$ref": "#/$defs/assemblyAccession"
+        },
+        "status": {
+          "enum": [
+            "native",
+            "projected",
+            "predicted"
+          ]
+        },
+        "format": {
+          "enum": [
+            "gff3",
+            "gtf"
+          ]
+        },
+        "file": {
+          "$ref": "#/$defs/artifact"
+        },
+        "sequence_regions": {
+          "$ref": "#/$defs/artifact"
+        },
+        "contig_mapping": {
+          "$ref": "#/$defs/artifact"
+        },
+        "genetic_code": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33
+        },
+        "exact_reference_assertion": {
+          "const": true
+        },
+        "canonical_transcript_policy": {
+          "const": "provider_canonical_else_longest_valid_cds_then_lexicographic_id"
+        },
+        "cds_phase_policy": {
+          "const": "biological_5prime_gff_phase_strand_aware"
+        },
+        "audit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "contig_dictionary_passed",
+            "sample_rule",
+            "sampled_cds_count",
+            "sampled_cds_mismatches",
+            "all_retained_cds_phase_translation_passed"
+          ],
+          "properties": {
+            "contig_dictionary_passed": {
+              "const": true
+            },
+            "sample_rule": {
+              "const": "first_100_by_sha256_dataset_id_plus_transcript_id_or_all_if_fewer"
+            },
+            "sampled_cds_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "sampled_cds_mismatches": {
+              "const": 0
+            },
+            "all_retained_cds_phase_translation_passed": {
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    "sampleDesign": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "design",
+        "population_id",
+        "sample_list",
+        "sampling_units",
+        "ploidy",
+        "nominal_chromosomes",
+        "minimum_called_chromosomes",
+        "downsampling_rule",
+        "relatedness_qc_passed",
+        "sex_chromosomes_excluded"
+      ],
+      "properties": {
+        "design": {
+          "enum": [
+            "wild_diploid",
+            "inbred_lines_haploidized",
+            "single_diploid_individual"
+          ]
+        },
+        "population_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "sample_list": {
+          "$ref": "#/$defs/artifact"
+        },
+        "sampling_units": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ploidy": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2
+        },
+        "nominal_chromosomes": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "minimum_called_chromosomes": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "downsampling_rule": {
+          "enum": [
+            "sha256_dataset_population_sample_take_20",
+            "not_applicable_single_individual"
+          ]
+        },
+        "relatedness_qc_passed": {
+          "const": true
+        },
+        "sex_chromosomes_excluded": {
+          "const": true
+        },
+        "family_or_trio_origin": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phase_identity_audit_passed": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "design": {
+                "const": "wild_diploid"
+              }
+            },
+            "required": [
+              "design"
+            ]
+          },
+          "then": {
+            "properties": {
+              "population_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sampling_units": {
+                "const": 20
+              },
+              "ploidy": {
+                "const": 2
+              },
+              "nominal_chromosomes": {
+                "const": 40
+              },
+              "minimum_called_chromosomes": {
+                "const": 36
+              },
+              "downsampling_rule": {
+                "const": "sha256_dataset_population_sample_take_20"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "design": {
+                "const": "inbred_lines_haploidized"
+              }
+            },
+            "required": [
+              "design"
+            ]
+          },
+          "then": {
+            "properties": {
+              "population_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sampling_units": {
+                "const": 20
+              },
+              "ploidy": {
+                "const": 1
+              },
+              "nominal_chromosomes": {
+                "const": 20
+              },
+              "minimum_called_chromosomes": {
+                "const": 18
+              },
+              "downsampling_rule": {
+                "const": "sha256_dataset_population_sample_take_20"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "design": {
+                "const": "single_diploid_individual"
+              }
+            },
+            "required": [
+              "design"
+            ]
+          },
+          "then": {
+            "required": [
+              "phase_identity_audit_passed"
+            ],
+            "properties": {
+              "population_id": {
+                "type": "null"
+              },
+              "sampling_units": {
+                "const": 1
+              },
+              "ploidy": {
+                "const": 2
+              },
+              "nominal_chromosomes": {
+                "const": 2
+              },
+              "minimum_called_chromosomes": {
+                "const": 2
+              },
+              "downsampling_rule": {
+                "const": "not_applicable_single_individual"
+              },
+              "phase_identity_audit_passed": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "variation": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/depositedVariation"
+        },
+        {
+          "$ref": "#/$defs/wfmashVariation"
+        }
+      ]
+    },
+    "depositedVariation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "format",
+        "original",
+        "normalized_bcf",
+        "index",
+        "exact_reference_assertion",
+        "contig_dictionary_passed",
+        "ref_allele_audit_passed"
+      ],
+      "properties": {
+        "kind": {
+          "const": "deposited_exact_reference_variants"
+        },
+        "format": {
+          "enum": [
+            "vcf",
+            "bcf"
+          ]
+        },
+        "original": {
+          "$ref": "#/$defs/artifact"
+        },
+        "normalized_bcf": {
+          "$ref": "#/$defs/artifact"
+        },
+        "index": {
+          "$ref": "#/$defs/artifact"
+        },
+        "exact_reference_assertion": {
+          "const": true
+        },
+        "contig_dictionary_passed": {
+          "const": true
+        },
+        "ref_allele_audit_passed": {
+          "const": true
+        }
+      }
+    },
+    "wfmashVariation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "h2_assembly_accession",
+        "h2_fasta",
+        "h2_fai",
+        "raw_paf",
+        "h1_role",
+        "h2_role",
+        "wfmash_store_path",
+        "command",
+        "cigar_policy",
+        "approximate_mapping",
+        "one_to_one_filter",
+        "alignment_edge_exclusion_bp",
+        "indel_flank_exclusion_bp",
+        "phase_identity_audit_passed"
+      ],
+      "properties": {
+        "kind": {
+          "const": "direct_wfmash_h2_to_h1"
+        },
+        "h2_assembly_accession": {
+          "$ref": "#/$defs/assemblyAccession"
+        },
+        "h2_fasta": {
+          "$ref": "#/$defs/artifact"
+        },
+        "h2_fai": {
+          "$ref": "#/$defs/artifact"
+        },
+        "raw_paf": {
+          "$ref": "#/$defs/artifact"
+        },
+        "h1_role": {
+          "const": "target_reference"
+        },
+        "h2_role": {
+          "const": "query"
+        },
+        "wfmash_store_path": {
+          "$ref": "#/$defs/storePath"
+        },
+        "command": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "contains": {
+            "const": "-4"
+          }
+        },
+        "cigar_policy": {
+          "const": "required_extended_eqxid_reject_M"
+        },
+        "approximate_mapping": {
+          "const": false
+        },
+        "one_to_one_filter": {
+          "const": true
+        },
+        "alignment_edge_exclusion_bp": {
+          "const": 100
+        },
+        "indel_flank_exclusion_bp": {
+          "const": 10
+        },
+        "phase_identity_audit_passed": {
+          "const": true
+        }
+      }
+    },
+    "denominator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "mask",
+        "coordinate_reference",
+        "sample_list_sha256",
+        "construction_policy_id",
+        "exact_reference_assertion",
+        "invariant_sites_explicit"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "all_sites_vcf",
+            "gvcf",
+            "cohort_callable_mask",
+            "h1_reference_alignable_mask"
+          ]
+        },
+        "mask": {
+          "$ref": "#/$defs/artifact"
+        },
+        "coordinate_reference": {
+          "const": "reference_fasta"
+        },
+        "sample_list_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "construction_policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generator_store_path": {
+          "$ref": "#/$defs/storePath"
+        },
+        "exact_reference_assertion": {
+          "const": true
+        },
+        "invariant_sites_explicit": {
+          "const": true
+        }
+      }
+    },
+    "impgQc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "core_size_bp",
+        "padding_bp",
+        "merge_distance_bp",
+        "lace_min_threads",
+        "ownership_rule",
+        "callable_source",
+        "phase_sensitive_use"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "core_size_bp": {
+          "const": 1000000
+        },
+        "padding_bp": {
+          "const": 10000
+        },
+        "merge_distance_bp": {
+          "const": 0
+        },
+        "lace_min_threads": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "ownership_rule": {
+          "const": "normalized_pos_minus_1_in_disjoint_core"
+        },
+        "callable_source": {
+          "const": "direct_paf_callable_bed"
+        },
+        "phase_sensitive_use": {
+          "const": false
+        },
+        "normalized_bcf": {
+          "$ref": "#/$defs/artifact"
+        },
+        "index": {
+          "$ref": "#/$defs/artifact"
+        },
+        "phase_audit_result": {
+          "enum": [
+            "not_run",
+            "orientation_matches",
+            "orientation_inverted",
+            "failed"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "enabled": {
+                "const": true
+              }
+            },
+            "required": [
+              "enabled"
+            ]
+          },
+          "then": {
+            "required": [
+              "normalized_bcf",
+              "index",
+              "phase_audit_result"
+            ]
+          }
+        }
+      ]
+    },
+    "concordance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "common_callable_bases",
+        "common_fraction_modality_a",
+        "common_fraction_modality_b",
+        "snv_precision",
+        "snv_recall",
+        "genotype_concordance",
+        "total_difference_passed",
+        "pi_S_difference_passed",
+        "pi_W_difference_passed",
+        "ratio_difference_passed",
+        "boundary_truth_retention",
+        "duplicate_normalized_alleles",
+        "overall_passed"
+      ],
+      "properties": {
+        "common_callable_bases": {
+          "type": "integer",
+          "minimum": 10000000
+        },
+        "common_fraction_modality_a": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 1
+        },
+        "common_fraction_modality_b": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 1
+        },
+        "snv_precision": {
+          "type": "number",
+          "minimum": 0.99,
+          "maximum": 1
+        },
+        "snv_recall": {
+          "type": "number",
+          "minimum": 0.99,
+          "maximum": 1
+        },
+        "genotype_concordance": {
+          "type": "number",
+          "minimum": 0.99,
+          "maximum": 1
+        },
+        "total_difference_passed": {
+          "const": true
+        },
+        "pi_S_difference_passed": {
+          "const": true
+        },
+        "pi_W_difference_passed": {
+          "const": true
+        },
+        "ratio_difference_passed": {
+          "const": true
+        },
+        "boundary_truth_retention": {
+          "const": 1
+        },
+        "duplicate_normalized_alleles": {
+          "const": 0
+        },
+        "overall_passed": {
+          "const": true
+        }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataset_id",
+        "species",
+        "tier",
+        "observables",
+        "composition_eligibility",
+        "diversity_eligibility",
+        "access",
+        "notes"
+      ],
+      "properties": {
+        "dataset_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "species": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scientific_name",
+            "taxon_id",
+            "is_congener_substitution"
+          ],
+          "properties": {
+            "scientific_name": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z.-]+ [a-z][A-Za-z.-]+(?: [a-z][A-Za-z.-]+)?$"
+            },
+            "taxon_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "is_congener_substitution": {
+              "const": false
+            }
+          }
+        },
+        "tier": {
+          "enum": [
+            "3a",
+            "3b",
+            "3c"
+          ]
+        },
+        "observables": {
+          "$ref": "#/$defs/observableStatuses"
+        },
+        "composition_eligibility": {
+          "enum": [
+            "eligible",
+            "ineligible",
+            "sensitivity_only"
+          ]
+        },
+        "diversity_eligibility": {
+          "enum": [
+            "eligible",
+            "ineligible"
+          ]
+        },
+        "ineligibility_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "missing_exact_reference_tuple",
+              "missing_native_annotation",
+              "missing_invariant_denominator",
+              "variant_only_source",
+              "reference_mismatch",
+              "annotation_audit_failed",
+              "insufficient_sample_units",
+              "population_structure_unresolved",
+              "selfing_design",
+              "haplodiploid_ploidy_unresolved",
+              "clonal_or_cyclical_parthenogen_design",
+              "pooled_or_mixed_ploidy",
+              "raw_reads_not_approved",
+              "single_assembly_no_diversity_source",
+              "phase_identity_audit_failed",
+              "restricted_access_not_approved",
+              "concordance_failed"
+            ]
+          }
+        },
+        "reference": {
+          "$ref": "#/$defs/reference"
+        },
+        "annotation": {
+          "$ref": "#/$defs/annotation"
+        },
+        "variation": {
+          "$ref": "#/$defs/variation"
+        },
+        "denominator": {
+          "$ref": "#/$defs/denominator"
+        },
+        "samples": {
+          "$ref": "#/$defs/sampleDesign"
+        },
+        "impg_qc": {
+          "$ref": "#/$defs/impgQc"
+        },
+        "concordance": {
+          "$ref": "#/$defs/concordance"
+        },
+        "access": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "class",
+            "credentials_required",
+            "redistribution_checked"
+          ],
+          "properties": {
+            "class": {
+              "enum": [
+                "public",
+                "restricted"
+              ]
+            },
+            "credentials_required": {
+              "type": "boolean"
+            },
+            "redistribution_checked": {
+              "const": true
+            },
+            "accession_page": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://[^?#]+$"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "class": {
+                    "const": "public"
+                  }
+                },
+                "required": [
+                  "class"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "credentials_required": {
+                    "const": false
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "anyOf": [
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "population_pi": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "individual_snv_heterozygosity": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "pi_S_over_pi_W": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "required": [
+              "observables"
+            ]
+          },
+          "then": {
+            "properties": {
+              "diversity_eligibility": {
+                "const": "eligible"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "anyOf": [
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "whole_genome_gc": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "gc3": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "required": [
+              "observables"
+            ]
+          },
+          "then": {
+            "properties": {
+              "composition_eligibility": {
+                "const": "eligible"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "diversity_eligibility": {
+                "const": "eligible"
+              }
+            },
+            "required": [
+              "diversity_eligibility"
+            ]
+          },
+          "then": {
+            "required": [
+              "reference",
+              "annotation",
+              "variation",
+              "denominator",
+              "samples"
+            ],
+            "properties": {
+              "annotation": {
+                "properties": {
+                  "status": {
+                    "const": "native"
+                  }
+                }
+              },
+              "access": {
+                "properties": {
+                  "class": {
+                    "const": "public"
+                  },
+                  "credentials_required": {
+                    "const": false
+                  }
+                }
+              }
+            },
+            "anyOf": [
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "population_pi": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "individual_snv_heterozygosity": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "else": {
+            "required": [
+              "ineligibility_codes"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observables": {
+                "properties": {
+                  "population_pi": {
+                    "const": "eligible"
+                  }
+                }
+              }
+            },
+            "required": [
+              "observables"
+            ]
+          },
+          "then": {
+            "properties": {
+              "variation": {
+                "$ref": "#/$defs/depositedVariation"
+              },
+              "samples": {
+                "properties": {
+                  "design": {
+                    "enum": [
+                      "wild_diploid",
+                      "inbred_lines_haploidized"
+                    ]
+                  }
+                }
+              },
+              "denominator": {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "all_sites_vcf",
+                      "gvcf",
+                      "cohort_callable_mask"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observables": {
+                "properties": {
+                  "individual_snv_heterozygosity": {
+                    "const": "eligible"
+                  }
+                }
+              }
+            },
+            "required": [
+              "observables"
+            ]
+          },
+          "then": {
+            "properties": {
+              "samples": {
+                "properties": {
+                  "design": {
+                    "const": "single_diploid_individual"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variation": {
+                "properties": {
+                  "kind": {
+                    "const": "direct_wfmash_h2_to_h1"
+                  }
+                }
+              }
+            },
+            "required": [
+              "variation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "denominator": {
+                "properties": {
+                  "kind": {
+                    "const": "h1_reference_alignable_mask"
+                  }
+                }
+              },
+              "samples": {
+                "properties": {
+                  "design": {
+                    "const": "single_diploid_individual"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "variation": {
+                "properties": {
+                  "kind": {
+                    "const": "deposited_exact_reference_variants"
+                  }
+                }
+              }
+            },
+            "required": [
+              "variation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "denominator": {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "all_sites_vcf",
+                      "gvcf",
+                      "cohort_callable_mask"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "anyOf": [
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "gc3": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "observables": {
+                    "properties": {
+                      "pi_S_over_pi_W": {
+                        "const": "eligible"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "required": [
+              "observables"
+            ]
+          },
+          "then": {
+            "required": [
+              "reference",
+              "annotation"
+            ],
+            "properties": {
+              "annotation": {
+                "properties": {
+                  "status": {
+                    "const": "native"
+                  }
+                }
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "observables": {
+                      "properties": {
+                        "pi_S_over_pi_W": {
+                          "const": "eligible"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "observables"
+                  ]
+                },
+                "then": {
+                  "anyOf": [
+                    {
+                      "properties": {
+                        "observables": {
+                          "properties": {
+                            "population_pi": {
+                              "const": "eligible"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "properties": {
+                        "observables": {
+                          "properties": {
+                            "individual_snv_heterozygosity": {
+                              "const": "eligible"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observables": {
+                "properties": {
+                  "whole_genome_gc": {
+                    "const": "eligible"
+                  }
+                }
+              }
+            },
+            "required": [
+              "observables"
+            ]
+          },
+          "then": {
+            "required": [
+              "reference"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "access": {
+                "properties": {
+                  "class": {
+                    "const": "restricted"
+                  }
+                }
+              }
+            },
+            "required": [
+              "access"
+            ]
+          },
+          "then": {
+            "properties": {
+              "diversity_eligibility": {
+                "const": "ineligible"
+              },
+              "composition_eligibility": {
+                "const": "ineligible"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
