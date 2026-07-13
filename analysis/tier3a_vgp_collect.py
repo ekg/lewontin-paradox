@@ -58,7 +58,10 @@ except ModuleNotFoundError:  # direct ``python analysis/<script>.py`` execution
 
 WFMASH_COMMIT = "e040aa10e87cab44ed5a4db005e784be62b0bd21"
 IMPG_COMMIT = "101df81eb28a809c8fac97d297acd9fcfbbfa048"
-WFMASH_POLICY_ARGUMENTS = ("-p", "90", "-s", "5k", "-l", "25k", "-4")
+# At the pinned e040aa revision, ``-w`` controls the mapping window while
+# ``-s`` is an integer-only sketch size.  One-to-one filtering and extended
+# CIGAR also have distinct flags (``-o`` and the Guix-restored ``-4``).
+WFMASH_POLICY_ARGUMENTS = ("-p", "90", "-w", "5k", "-l", "25k", "-o", "-4")
 DEFAULT_EDGE_EXCLUSION_BP = 100
 DEFAULT_INDEL_FLANK_BP = 10
 DEFAULT_IMPG_CORE_BP = 1_000_000

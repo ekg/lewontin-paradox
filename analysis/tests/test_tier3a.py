@@ -1,16 +1,23 @@
 import json
+import random
 import shutil
 from pathlib import Path
 
+import pysam
 import pytest
 
-from analysis.tier3_common import Tier3ValidationError, sha256_file
+from analysis.tier3_common import (
+    Tier3ValidationError,
+    parse_extended_cigar,
+    sha256_file,
+)
 from analysis.tier3a_vgp_collect import (
     audit_phase_orientation,
     collect_deposited_variants,
     collect_direct_alignment,
     impg_core_windows,
     own_normalized_records,
+    run_pinned_wfmash,
 )
 from analysis.tier3a_vgp_compute import common_callable_concordance, compute_tier3a
 
@@ -25,6 +32,13 @@ def _store_root(program):
     root = executable.parent.parent
     if not str(root).startswith("/gnu/store/"):
         pytest.skip(f"{program} did not resolve to a Guix store path")
+    return str(root)
+
+
+def _pinned_wfmash_store_root():
+    root = Path(_store_root("wfmash"))
+    if "wfmash-tier3-0.24.2-12.e040aa1" not in root.name:
+        pytest.skip("wfmash is not the pinned e040aa Tier 3 Guix build")
     return str(root)
 
 
@@ -45,6 +59,49 @@ def _annotation_provenance(fasta, gff, **updates):
     }
     value.update(updates)
     return value
+
+
+def test_pinned_wfmash_cli_emits_nonempty_extended_cigar(tmp_path):
+    h1 = tmp_path / "h1.fa"
+    h2 = tmp_path / "h2.fa"
+    rng = random.Random(20260713)
+    target = "".join(rng.choice("ACGT") for _ in range(30_000))
+    query = list(target)
+    query[8_000] = {"A": "C", "C": "G", "G": "T", "T": "A"}[query[8_000]]
+    query[12_000:12_000] = list("GATTACA")
+    del query[20_000:20_009]
+    _write_fasta(h1, "h1", target)
+    _write_fasta(h2, "h2", "".join(query))
+    pysam.faidx(str(h1))
+    pysam.faidx(str(h2))
+
+    paf = tmp_path / "pinned.paf"
+    command = run_pinned_wfmash(
+        h1,
+        h2,
+        paf,
+        _pinned_wfmash_store_root(),
+        threads=1,
+    )
+
+    assert command[0].startswith("/gnu/store/")
+    assert command[3:] == [
+        "-p", "90", "-w", "5k", "-l", "25k", "-o", "-4", "-t", "1",
+    ]
+    assert paf.stat().st_size > 0
+    cigars = [
+        field.removeprefix("cg:Z:")
+        for line in paf.read_text(encoding="utf-8").splitlines()
+        for field in line.split("\t")[12:]
+        if field.startswith("cg:Z:")
+    ]
+    assert cigars
+    operations = {
+        operation
+        for cigar in cigars
+        for _length, operation in parse_extended_cigar(cigar)
+    }
+    assert operations == {"=", "X", "I", "D"}
 
 
 def test_deposited_truth_uses_explicit_invariant_denominator_and_reference_conditioned_4d():
