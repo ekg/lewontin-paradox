@@ -38,3 +38,12 @@ Raw data is **not committed** (gitignored). Buffalo's `combined_data.tsv` lives
 at `/tmp/paradox_variation/data/` on this machine (not in repo). Cluster-staged
 assemblies/VCFs live in a scratch dir with an accession `manifest.tsv`
 (reproducible, re-fetchable). Only small result TSVs and figures are committed.
+
+## Current Tier 3b execution
+
+The population-VCF execution audit is recorded in `TIER3B_RUN.md`.  No surveyed
+population tuple currently passes the frozen exact-reference, native-annotation,
+sample, and invariant-denominator gates, so `tier3b_data.tsv` is intentionally
+header-only.  Treat it as structured missingness and consult
+`tier3b_failure_ledger.tsv` and `tier3b_qc_provenance.json`; do not interpret
+the absence of rows as zero diversity.
