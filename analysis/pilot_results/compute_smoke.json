@@ -1,0 +1,48 @@
+{
+  "bcf_csi_passed": true,
+  "callable_denominator_truth": {
+    "callable_bases": 100,
+    "heterozygous_snvs": 1,
+    "individual_snv_heterozygosity": 0.01,
+    "passed": true
+  },
+  "compute_host": "octopus08.uthsc.edu",
+  "compute_profile_store_path": "/gnu/store/z9v2f6faha9cwjz0sm5iphhlzisgi077-profile",
+  "decision_version": "tier3-decisions-v1",
+  "fasta_index": {
+    "passed": true,
+    "path": "/moosefs/erikg/tier3scratch/tier3-integrate-cluster/compute-smoke-scratch/tier3-compute-smoke-d3oxwlmh/h1.fa.fai"
+  },
+  "login_profile_store_path": "/gnu/store/z9v2f6faha9cwjz0sm5iphhlzisgi077-profile",
+  "normalized_bcf": {
+    "contig_dictionary_passed": true,
+    "records": 1,
+    "ref_allele_audit_passed": true
+  },
+  "python_imports": {
+    "biopython": "1.80",
+    "jsonschema": "4.5.1",
+    "numpy": "1.23.2",
+    "pandas": "1.4.4",
+    "pyfaidx": "0.7.2.1",
+    "pysam": "0.20.0",
+    "scipy": "1.10.1"
+  },
+  "run_at": "2026-07-13T17:09:50Z",
+  "slurm_job_id": "1754307",
+  "status": "passed",
+  "store_path_identity_passed": true,
+  "wfmash_extended_cigar": {
+    "callable_bases_before_policy_edges": 30000,
+    "exclusion_counts": {},
+    "extended_cigar_passed": true,
+    "mapping_records": 1,
+    "operation_counts": {
+      "=": 29999,
+      "D": 0,
+      "I": 0,
+      "X": 1
+    },
+    "unique_mapping_passed": true
+  }
+}

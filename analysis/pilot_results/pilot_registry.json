@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "decision_version": "tier3-decisions-v1",
+  "purpose": "Predeclared scheduler pilots; pending means fail closed until the exact checksum-locked tuple is supplied.",
+  "pilots": [
+    {
+      "pilot_id": "composition_drosophila_melanogaster",
+      "tier": "3c",
+      "scientific_name": "Drosophila melanogaster",
+      "taxon_id": 7227,
+      "assembly_accession_version": "GCF_000001215.4",
+      "eligibility": "pending_checksum_locked_fasta_and_native_annotation",
+      "required_stages": [
+        "annotation_4d",
+        "qc"
+      ],
+      "required_annotation_gate": "native_exact_assembly",
+      "pilot_range_gate": "analysis.tier3c_ncbi_gc.PILOT_RANGES"
+    },
+    {
+      "pilot_id": "composition_homo_sapiens",
+      "tier": "3c",
+      "scientific_name": "Homo sapiens",
+      "taxon_id": 9606,
+      "assembly_accession_version": "GCF_000001405.40",
+      "eligibility": "pending_checksum_locked_fasta_and_native_annotation",
+      "required_stages": [
+        "annotation_4d",
+        "qc"
+      ],
+      "required_annotation_gate": "native_exact_assembly",
+      "pilot_range_gate": "analysis.tier3c_ncbi_gc.PILOT_RANGES"
+    },
+    {
+      "pilot_id": "population_dgrp_freeze2",
+      "tier": "3b",
+      "scientific_name": "Drosophila melanogaster",
+      "taxon_id": 7227,
+      "source_release": "DGRP Freeze 2.0",
+      "eligibility": "ineligible_pending_exact_reference_and_selected_line_callable_denominator",
+      "sample_design": "20_hash_selected_inbred_lines_haploidized",
+      "required_stages": [
+        "mapping",
+        "normalized_bcf",
+        "annotation_4d",
+        "qc"
+      ],
+      "variant_only_absence_is_callable": false
+    },
+    {
+      "pilot_id": "population_ag1000g_phase3",
+      "tier": "3b",
+      "scientific_name": "Anopheles gambiae",
+      "taxon_id": 7165,
+      "source_release": "Ag1000G phase 3",
+      "eligibility": "ineligible_pending_deposited_release_exact_reference_population_mask_tuple",
+      "sample_design": "20_deterministically_selected_unrelated_diploids_from_one_population",
+      "required_stages": [
+        "mapping",
+        "normalized_bcf",
+        "annotation_4d",
+        "qc"
+      ],
+      "mutable_latest_or_streamed_implicit_release_allowed": false
+    },
+    {
+      "pilot_id": "vgp_dual_modality_individual",
+      "tier": "3a",
+      "scientific_name": null,
+      "taxon_id": null,
+      "eligibility": "ineligible_pending_one_checksum_locked_vgp_individual_h1_h2_deposited_calls_mask_and_native_h1_gff",
+      "individual_selection_rule": "first_eligible_vgp_individual_by_utf8_dataset_id_after_all_tuple_gates",
+      "required_modalities": [
+        "deposited_exact_reference_variants_plus_mask",
+        "direct_wfmash_extended_cigar"
+      ],
+      "reference_role": "H1_target",
+      "query_role": "H2_query",
+      "annotation_role": "native_H1_only",
+      "required_stages": [
+        "alignment",
+        "mapping",
+        "normalized_bcf",
+        "annotation_4d",
+        "qc"
+      ],
+      "promotion_gate": "common_callable_concordance_all_frozen_tolerances_pass",
+      "optional_impg": {
+        "execution_approved": false,
+        "role": "orthogonal_concordance_only",
+        "padding_bp": 10000,
+        "core_size_bp": 1000000,
+        "ownership": "normalized_POS_minus_1_in_exactly_one_disjoint_core",
+        "query_output": "vcf:poa",
+        "merge_distance_bp": 0,
+        "lace_min_threads": 2,
+        "normalization": "global_fasta_based_before_core_ownership",
+        "deduplication": "exact_contig_pos_ref_alts",
+        "output": "BCF_plus_CSI",
+        "phase_audit_required": true,
+        "phase_sensitive_eligible": false
+      }
+    }
+  ]
+}
