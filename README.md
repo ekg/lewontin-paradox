@@ -79,24 +79,24 @@ metazoan dataset (`analysis/extend_buffalo.py`). Findings:
 - **Tier 2 (n=18–39):** recombination-residual sign test — BGS predicts +,
   gBGC predicts −. Map-length partial r=−0.22 (ctrl Nc), genome-size
   r=−0.23: the *gBGC direction*, not BGS (underpowered).
-- **Tier 3 (the discriminating test, literature):** gBGC's two cross-species
-  signatures. *Within clade*, both hold — composition: GC3 rises with Ne
-  (mammals, Romiguier 2010: ρ=−0.44 vs body mass; birds, Weber 2014);
-  strength: B=4Neb ∝ Ne (passerines, Barton & Zeng 2021, ~2× with 2× Ne).
-  *Across clades*, the strength signature vanishes (Galtier 2018, 30 metazoans:
-  B ⊥ Ne, because r·l·b0 varies). The §4 homology-maintenance mechanism
-  *predicts exactly this* — within-clade machinery conserved → B∝Ne →
-  saturation at high Ne; across-clade drift of the recombination landscape →
-  attenuation, with selection re-maintaining δ>0 and high u (contra Galtier's
-  "inverse b0"). Testable prediction: the cross-species B–Ne correlation
-  should reappear within recombination-machinery classes.
+- **Tier 3 (new exact-species run):** 135 checksum-validated assemblies have
+  whole-genome GC and 90 have GC3 from annotation native to the exact
+  accession. The class-fixed GC3 effect is +0.00892 per log census-size unit
+  (95% species-bootstrap interval −0.00123 to +0.02149; n=90; BH q=0.217).
+  Results conflict across groups: positive in birds, uncertain in insects,
+  negative in mammals, and null within *Drosophila*. The quadratic shape is
+  convex rather than the predicted saturation concavity. No population π,
+  deposited-individual heterozygosity, alignment-conditioned individual
+  heterozygosity, or modality-specific πS/πW tuple passed the frozen gates;
+  SFS-B is deferred. See `analysis/TIER3_RESULTS.md` and
+  `analysis/tier3_results.tsv`.
 
-**Bottom line:** gBGC saturation is a real, Ne-scaled, within-clade force that
-flattens diversity at high Ne — a big and overlooked part of Lewontin's
-Paradox, not the whole story. The low-Nc shallow rise is Ne/Nc reduction
-(Buffalo's territory); the across-clade attenuation of the strength
-signature is the drift of the recombination machinery that selection
-repeatedly corrects.
+**Current bottom line:** the mathematical saturation mechanism remains a
+testable candidate, but the completed Tier-3 run does not establish its
+predicted composition shape or a causal contribution to Lewontin's paradox.
+Measurement precision, cross-species identification, and causal uncertainty
+are reported separately; missing diversity tuples are not converted to zero
+or borrowed from another modality.
 
 Open empirical questions: the effective per-site conversion rate `u_eff`
 (the "silent-conversion" measurement problem), the W/S fraction under strong

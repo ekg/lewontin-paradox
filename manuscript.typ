@@ -33,7 +33,7 @@
   (#link("https://doi.org/10.7554/eLife.67509")[Buffalo 2021]); across 172
   metazoan taxa the $pi$–$N_c$ slope is only $~0.11$ (vs. 1 under
   neutrality). We argue that the standard mutation–selection–drift balance at W/S sites
-  under GC-biased gene conversion (gBGC) supplies the missing flattening:
+  under GC-biased gene conversion (gBGC) is a candidate contribution to the flattening:
   in large populations it saturates to an $N_e$-independent floor
   $2 mu \/ (u delta)$, where $u$ is the per-site conversion-coverage rate
   and $delta$ the per-conversion GC bias. The bias is always present
@@ -44,7 +44,11 @@
   correct mutation–selection–drift route. The argument — including the
   marginal-coalescent refutation of the unbiased case and the
   self-limiting saturation — is formalized and machine-checked in a Lean 4
-  library.
+  library. A new exact-species Tier-3 composition analysis does not establish
+  the predicted saturation or a causal gBGC effect: the across-class GC3
+  interval includes zero, class-specific directions conflict, and no
+  population or individual diversity tuple passed the frozen provenance and
+  denominator gates.
 ]
 
 = Introduction
@@ -242,15 +246,15 @@ selection (BGS).
   $pi approx 0.026$ above $N_c approx 10^(12)$, $R^2 = 0.272$ — but
   $Delta "AIC" approx 0$, statistically *tied* with the flat power law.
 
-*The structure.* The curve is a rising-then-plateau (@fig_buffalo). The
-high-$N_c$ plateau (slope $approx 0$) is the qualitative signature of gBGC
-saturation: $B = 4 N_e b$ grows with $N_e$, so gBGC saturates and diversity
-is suppressed exactly where the curve goes flat. The low-$N_c$ rise is
-shallow (slope $0.12$, not the neutral $1.0$), and this is *not* gBGC (gBGC
-is weak at low $N_e$); it is $N_e/N_c$ reduction (sweepstakes reproduction,
-demography) — Buffalo's own territory. So the two mechanisms split along
-$N_c$: gBGC is the overlooked high-$N_c$ part; Buffalo explains the
-low-$N_c$ part. Neither alone is the whole story.
+*The structure.* A descriptive split suggests a rising-then-flat pattern
+(@fig_buffalo), but the saturating model is statistically tied with a power
+law. A high-$N_c$ plateau would be compatible with gBGC saturation if $B =
+4 N_e b$ grows with $N_e$; it is not specific evidence for that mechanism.
+Likewise the shallow low-$N_c$ rise is compatible with $N_e/N_c$ reduction
+(sweepstakes reproduction and demography), but this regression does not
+assign causal shares to those processes. The potential division of mechanisms
+along $N_c$ is therefore a hypothesis for discriminating observables, not a
+result of the Tier-1 fit.
 
 *Under-identification.* The between-species scatter is large ($R^2 = 0.27$),
 so the curvature does not beat a straight power law ($Delta "AIC" approx 0$),
@@ -278,99 +282,83 @@ under-identified: the essential, discriminating test is *W/S-stratified*
 $pi$ (the saturation should be sharp at W/S sites and absent at non-W/S
 sites, a qualitative prediction not defeated by scatter) together with
 *GC-content saturation* (gBGC's hallmark: equilibrium GC plateaus with
-$N_e$). No published dataset has compiled these across species; building
-it is the next step. (Code and fits: `analysis/extend_buffalo.py`; data
+$N_e$). The exact-assembly composition compilation and its gated diversity
+missingness are reported below. (Code and fits: `analysis/extend_buffalo.py`; data
 from #link("https://github.com/vsbuffalo/paradox_variation")[`vsbuffalo/paradox_variation`].)
 
-= The discriminating test: composition and gBGC strength across species
+= Tier 3: exact-species composition and gated diversity
 
-Total $pi$ is under-identified for gBGC (above), but gBGC saturation has
-two cross-species signatures that the $pi$-cloud cannot obscure, because
-they are different observables: _composition_ (the equilibrium GC content
-at W/S-accessible sites, $"GC"^*$, rises with $N_e$ and then saturates) and
-_scaling_ (the gBGC strength $B = 4 N_e b$ is linear in $N_e$, Lean:
-#link("https://github.com/ekg/lewontin-paradox/blob/main/lean/src/LewontinParadox/GBGC.lean")[`GBGC.lean`]).
-Background selection predicts neither. These have been measured across
-species — and the result is the essential, nuanced finding of this
-investigation: gBGC scales with $N_e$ _within_ clades but not _across_
-clades, exactly as the homology-maintenance mechanism of @sec-recomb
-predicts.
+The discriminating plan asks whether GC3 rises and becomes concave with
+population size, and whether reference-conditioned $pi_S/pi_W$ or polarized
+SFS strength changes in parallel. We joined 135 checksum-validated,
+exact-species assemblies to the Buffalo covariate and taxonomy. All 135 have
+whole-genome GC; 90 have GC3 from annotation native to the exact accession.
+The remaining 45 GC3 cells stay unavailable. A congener, projected annotation,
+or whole-genome GC value never fills them.
 
-*Within clade: composition and strength both track $N_e$.*
-#link("https://doi.org/10.1101/gr.104372.109")[Romiguier et al. 2010], in
-33 mammal genomes, found third-codon-position GC content _increases_ with
-$N_e$: a significant negative correlation of $"GC"_3$ with body mass
-($rho = -0.44$, $p = 0.013$) and of GC3 divergence with body mass
-($rho = -0.69$, $p < 10^-4$), robust to phylogenetic control, with the
-same trend within orders (tenrec $>$ elephant, monkeys $>$ apes, microbats
-$>$ megabats, shrews $>$ hedgehogs). Since body mass is inverse to $N_e$,
-this is GC3 content rises with $N_e$ — the composition signature of gBGC,
-within mammals. #link("https://doi.org/10.1186/s13059-014-0549-1")[Weber et
-al. 2014] found the same in birds ("base composition evolution is
-substantially modulated by species life history", consistent with more
-effective gBGC in large populations). On the strength axis,
-#link("https://doi.org/10.1101/2021.04.20.440602")[Barton & Zeng 2021]
-measured $B = 4 N_e b$ in two passerines and found it roughly _double_ in
-the zebra finch, matching its twofold greater $N_e$ — a direct, clean
-test of $B prop N_e$ within a clade. So within a clade the
-machinery is conserved and gBGC scales with $N_e$: both the composition
-and the strength signatures hold, and saturation therefore bites at high
-$N_e$ within clades. This is the overlooked part.
+#figure(
+  image("analysis/fig_tier3.png", width: 100%),
+  caption: [Tier-3 exact-species composition. Points are exact assemblies,
+  colored by Buffalo taxonomic class; lines show the reported class-fixed
+  slope through the point centroid. _Left:_ native exact-assembly GC3
+  ($n=90$; 45 of 135 composition rows lack eligible native annotation).
+  _Right:_ whole-genome GC for all exact FASTAs ($n=135$), retained as a
+  weaker sensitivity and never substituted for GC3. Population $pi$, the two
+  individual-heterozygosity modalities, and reference-conditioned
+  $pi_S/pi_W$ have zero eligible tuples; polarized SFS-$B$ is deferred.],
+) <fig_tier3>
 
-*Across clades: the strength signature vanishes.*
-#link("https://doi.org/10.1093/molbev/msy015")[Galtier et al. 2018], in
-30 metazoan species spanning the full $N_e$ range, estimated $B = 4 N_e b$
-from the site-frequency spectrum and found _no_ relationship between $B$
-and $N_e$ (propagule size, $p_N/p_S$, longevity). Their diagnosis: $B =
-4 N_e (r l b_0)$, so $B prop N_e$ only if the per-base conversion
-bias $b = r l b_0$ (recombination rate $times$ tract length $times$ repair
-bias) is constant; across distantly related taxa $r$, $l$, and $b_0$ vary
-substantially and may be _inversely_ related to $N_e$, canceling the
-$N_e$ effect. They note, consistently, that genomic GC content tracks
-$N_e$-related traits _within_ mammals and birds but the relationship
-attenuates across the full metazoan range — "B would only respond to
-$N_e$ at a relatively small time scale." This is the central challenge to
-the saturation model: taken at face value, $B$ not scaling with $N_e$
-across species means gBGC does not necessarily saturate at high $N_e$ in a
-_cross-species_ comparison.
+*Across classes.* In an OLS model with taxonomic-class fixed intercepts, the
+GC3 effect per unit of Buffalo `pred_log10_N` was $+0.00892$ ($n=90$;
+10,000-species-bootstrap 95% interval $[-0.00123, 0.02149]$; $p=0.163$,
+BH $q=0.217$). The interval includes zero. Class intercepts are a coarse
+control for deep taxonomy, not phylogenetic generalized least squares: no
+frozen branch-length tree or covariance model was supplied. The predictor is
+a census-size proxy, not measured $N_e$. The whole-genome GC sensitivity was
+positive ($+0.00537$; $n=135$; interval $[0.00194, 0.00976]$; sensitivity
+$q=0.0156$), but noncoding composition has many explanations and is not a
+gBGC-specific endpoint.
 
-*Reconciliation: the homology-maintenance mechanism predicts exactly this.*
-The mechanism of @sec-recomb resolves the within-clade / across-clade
-tension mechanistically. Within a clade the recombination machinery —
-recombination rate $r$, conversion tract length $l$, and the GC-biased
-repair $b_0 = delta$ — is conserved, so $b$ is approximately constant and
-$B = 4 N_e b prop N_e$; $"GC"^*$ rises and saturates with $N_e$;
-the high-$N_e$ plateau of @fig_buffalo is gBGC saturation. Across deep
-divergence the machinery drifts (PRDM9 turnover, karyotype and
-recombination-landscape shifts), so $b$ varies and the cross-species
-$B$--$N_e$ correlation is scrambled — which is precisely why the
-Tier-1 total-$pi$ fit is degenerate. The decisive point is that our
-mechanism predicts the _sign_ of this drift: because meiotic
-recombination (DSB repair) is essential (#link("https://doi.org/10.1016/j.molcel.2021.08.003")[Ahuja et al. 2021]),
-selection maintains the recombino-genic state — the homology that
-conversion requires, the GC-biased repair ($delta > 0$), and high
-conversion rates ($u$). So $b$ should _not_ systematically invert with
-$N_e$, contra the "inverse $b_0$" hypothesis of Galtier et al.; the
-across-clade scatter is the transient drift of the recombination
-landscape that selection repeatedly corrects, not a stable inverse
-coupling. This yields a testable prediction: the cross-species
-$B$--$N_e$ correlation, null across all metazoans (Galtier et al.),
-should be _restored_ when one controls for conservation of the
-recombination machinery (PRDM9 status, karyotype, recombination-rate
-class) — i.e. the within-clade $B prop N_e$ should reappear as a
-_within-recombination-class_ effect across clades.
+*Within classes and genus.* The GC3 association was positive in Aves
+($+0.01459$; $n=11/12$; interval $[0.00781, 0.02447]$; BH $q=0.00217$),
+uncertain in Insecta ($+0.02232$; $n=27/48$; interval
+$[-0.00301, 0.05728]$; $q=0.217$), negative in Mammalia ($-0.00479$;
+$n=25/32$; interval $[-0.01179, 0.00010]$; $q=0.217$), and null within
+_Drosophila_ ($+0.00088$; $n=13/17$; interval
+$[-0.00634, 0.01317]$; $q=0.839$). Thus these data do not support a uniform
+positive within-clade pattern. Leave-one-species and leave-one-class ranges
+are retained in the result table; they do not hide the negative mammal or null
+_Drosophila_ results.
 
-*Synthesis.* gBGC saturation is a real, $N_e$-scaled, within-clade force
-that flattens diversity at high $N_e$ (the composition and strength
-evidence agree, and it is what the model predicts) — a big and
-overlooked part of Lewontin's Paradox. It is _not_ the whole story: the
-low-$N_c$ shallow rise is $N_e/N_c$ reduction (Buffalo's territory), and
-the cross-species attenuation of the strength signature (Galtier et al.)
-shows the recombination machinery varies enough across deep clades to
-scramble the simple $B prop N_e$ law in total-$pi$ data. The model
-therefore predicts the within-clade plateau and explains the
-across-clade under-identification, rather than claiming a single
-saturation law for all metazoans.
+*Saturation shape.* A centered quadratic class-fixed diagnostic gave a
+positive, not negative, quadratic coefficient ($+0.00226$; $n=90$;
+bootstrap interval $[0.000005, 0.00510]$; sensitivity $q=0.0602$).
+Saturation predicts concavity. A quadratic is not a mechanistic saturation
+curve, but its observed convex direction does not support the predicted GC3
+saturation shape.
+
+*Distinct diversity observables.* The finalized Tier 3a and Tier 3b estimate
+tables are header-only because no tuple passed the exact-reference,
+native-annotation, sample, and invariant-denominator gates. Consequently
+population $pi$ ($n=0$), deposited-VGP individual SNV heterozygosity ($n=0$),
+alignment-conditioned H1/H2 individual heterozygosity ($n=0$), and every
+modality-specific $pi_S/pi_W$ ($n=0$) have no effect or interval to estimate.
+Absence is not zero. These observables are neither pooled nor renamed as one
+another. Polarized SFS-$B$ is deferred because the frozen plan has no outgroup,
+ancestral-error model, demographic model, or power threshold; the descriptive
+reference-conditioned ratio is never relabelled $B$.
+
+*Claim boundary.* Measurement denominators identify the precision target
+within an assembly; species-bootstrap intervals describe a different,
+conditional source of uncertainty. Neither identifies causality. Sparse
+Buffalo recombination fields do not define predeclared machinery classes, so
+no post-hoc recombination-class fit was invented. Composition alone cannot
+separate gBGC from mutation bias, selection, life history, phylogeny, or
+assembly/annotation structure. Taken together, the mixed class-specific
+directions, convex shape, unavailable diversity contrasts, and deferred SFS
+mean that this run *does not establish gBGC saturation or a causal gBGC
+explanation of the high-population diversity plateau*. It leaves the formal
+mechanism as a testable hypothesis rather than an empirical conclusion.
 
 = Limits and open questions
 
