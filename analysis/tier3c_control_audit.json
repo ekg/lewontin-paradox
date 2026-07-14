@@ -1,0 +1,281 @@
+{
+  "audited_control_gate": {
+    "criteria_passed": {
+      "exact_native_annotation_and_dictionary_hard_gates": true,
+      "independent_exact_numerator_denominator_gene_count_and_value": true,
+      "published_comparable_gene_level_context_supports_observed_scale": true
+    },
+    "criterion": "promote only when an implementation sharing no production estimator code exactly reproduces GC numerator, callable-third denominator, retained-gene count, and value from the checksum-frozen exact native inputs; provenance/dictionary/CDS hard gates must pass; published sources must support the observed biological scale",
+    "disclosure": "post-hoc replacement criterion adopted 2026-07-14 after the legacy bands failed; this is not a widening or rewrite of either frozen band",
+    "passed": true
+  },
+  "controls": {
+    "Drosophila melanogaster": {
+      "dataset_id": "drosophila.melanogaster.tier3c",
+      "method": {
+        "canonical_transcript_rule": "unique provider canonical tag, otherwise longest valid translated CDS with bytewise ID tie-break",
+        "genetic_code": 1,
+        "implementation": "analysis/tier3c_control_audit.py",
+        "imports_production_estimator": false,
+        "phase_rule": "biological 5-prime-to-3-prime order; trim phase only from the first CDS; validate each later phase against cumulative frame",
+        "pseudogene_and_exception_rule": "exclude transcript/CDS with pseudo=true, exception, or transl_except before canonical selection",
+        "strand_rule": "reverse-complement each minus-strand CDS segment before concatenation",
+        "terminal_stop_rule": "exclude one terminal table-1 stop; reject internal stops"
+      },
+      "metrics": {
+        "gene_weighted_gc3": {
+          "definition": "arithmetic mean/quantiles of per-gene canonical-CDS GC3; each gene has equal weight",
+          "genes": 13872,
+          "maximum": 0.9562289562289562,
+          "mean": 0.6404801588873662,
+          "median": 0.6514671924228488,
+          "minimum": 0.21130493743450657,
+          "q1": 0.578735969174066,
+          "q3": 0.7150999629268333
+        },
+        "pooled_cds_base_gc3": {
+          "callable_third_positions": 7394289,
+          "definition": "sum(G_or_C_third_bases)/sum(callable_third_bases)",
+          "gc_bases": 4667727,
+          "value": 0.6312610989373014
+        }
+      },
+      "production_comparison": {
+        "all_exact": true,
+        "field_exact": {
+          "callable_third_positions": true,
+          "gc_bases": true,
+          "genes": true,
+          "value": true
+        },
+        "independent": {
+          "callable_third_positions": 7394289,
+          "gc_bases": 4667727,
+          "genes": 13872,
+          "value": 0.6312610989373014
+        },
+        "production": {
+          "callable_third_positions": 7394289,
+          "gc_bases": 4667727,
+          "genes": 13872,
+          "value": 0.6312610989373014
+        }
+      },
+      "provenance": {
+        "annotation_status": "native",
+        "assembly_accession_version": "GCF_000001215.4",
+        "contig_mapping_sha256": "4152ecde715fbb58c6b7a30bcbc83aa17f7b2091f9de4896fff7490ecee2c1e4",
+        "dictionary_validation": {
+          "cds_contigs": 11,
+          "fasta_contigs": 1869,
+          "gff_sequence_regions": 1869,
+          "mapped_sequence_regions": 1869,
+          "passed": true
+        },
+        "exact_reference_assertion": true,
+        "fasta_sha256": "bee09429e48a8e2ce18a30c4f28641693d9a137d5d18f70cab4efb28204d513a",
+        "fasta_size_bytes": 145637909,
+        "gff_sha256": "662dc13c8c1b1559e50096ae5196cb542b98f00c4ad23079d4245294e9c1b909",
+        "gff_size_bytes": 164953485,
+        "provider": "NCBI RefSeq",
+        "release": "2014/08/08 00:00"
+      },
+      "schema_version": "tier3c-control-audit-v1",
+      "scientific_name": "Drosophila melanogaster",
+      "selection": {
+        "all_retained_cds_reconstructed": true,
+        "exclusions": {
+          "annotated_translation_exception": 819,
+          "gene_without_valid_cds": 101
+        },
+        "gff_features": 414750,
+        "retained_genes": 13872,
+        "retained_transcripts": 13872,
+        "selected_gene_transcript_sha256": "900f7044855f69c4971f2f3b34197d257200af7c6326656bd4e4f090401853d4",
+        "transcripts_with_cds": 30789
+      }
+    },
+    "Homo sapiens": {
+      "dataset_id": "homo.sapiens.tier3c",
+      "method": {
+        "canonical_transcript_rule": "unique provider canonical tag, otherwise longest valid translated CDS with bytewise ID tie-break",
+        "genetic_code": 1,
+        "implementation": "analysis/tier3c_control_audit.py",
+        "imports_production_estimator": false,
+        "phase_rule": "biological 5-prime-to-3-prime order; trim phase only from the first CDS; validate each later phase against cumulative frame",
+        "pseudogene_and_exception_rule": "exclude transcript/CDS with pseudo=true, exception, or transl_except before canonical selection",
+        "strand_rule": "reverse-complement each minus-strand CDS segment before concatenation",
+        "terminal_stop_rule": "exclude one terminal table-1 stop; reject internal stops"
+      },
+      "metrics": {
+        "gene_weighted_gc3": {
+          "definition": "arithmetic mean/quantiles of per-gene canonical-CDS GC3; each gene has equal weight",
+          "genes": 22162,
+          "maximum": 1.0,
+          "mean": 0.6060410199246469,
+          "median": 0.616357918810749,
+          "minimum": 0.17578125,
+          "q1": 0.4721669613910993,
+          "q3": 0.7375203362255965
+        },
+        "pooled_cds_base_gc3": {
+          "callable_third_positions": 12489141,
+          "definition": "sum(G_or_C_third_bases)/sum(callable_third_bases)",
+          "gc_bases": 7300598,
+          "value": 0.5845556551887756
+        }
+      },
+      "production_comparison": {
+        "all_exact": true,
+        "field_exact": {
+          "callable_third_positions": true,
+          "gc_bases": true,
+          "genes": true,
+          "value": true
+        },
+        "independent": {
+          "callable_third_positions": 12489141,
+          "gc_bases": 7300598,
+          "genes": 22162,
+          "value": 0.5845556551887756
+        },
+        "production": {
+          "callable_third_positions": 12489141,
+          "gc_bases": 7300598,
+          "genes": 22162,
+          "value": 0.5845556551887756
+        }
+      },
+      "provenance": {
+        "annotation_status": "native",
+        "assembly_accession_version": "GCF_000001405.40",
+        "contig_mapping_sha256": "94ec334d3a9dcf3120b2372c1a12300eba204866b2d3d84822b7f4046f7eccbd",
+        "dictionary_validation": {
+          "cds_contigs": 421,
+          "fasta_contigs": 704,
+          "gff_sequence_regions": 704,
+          "mapped_sequence_regions": 704,
+          "passed": true
+        },
+        "exact_reference_assertion": true,
+        "fasta_sha256": "4b16731cc54ebd43f5ea278d01833fc072f0b3c4d8c4bbf2af9d05e06df05fa3",
+        "fasta_size_bytes": 3339722275,
+        "gff_sha256": "f80e5495c58831d23328b2fe593c32d91ba7d569166cd7bd96ce555ed089901b",
+        "gff_size_bytes": 1596775361,
+        "provider": "NCBI RefSeq",
+        "release": "2022/02/03 00:00"
+      },
+      "schema_version": "tier3c-control-audit-v1",
+      "scientific_name": "Homo sapiens",
+      "selection": {
+        "all_retained_cds_reconstructed": true,
+        "exclusions": {
+          "annotated_translation_exception": 6061,
+          "gene_without_valid_cds": 2022,
+          "invalid_candidate_transcript": 2
+        },
+        "gff_features": 4932444,
+        "retained_genes": 22162,
+        "retained_transcripts": 22162,
+        "selected_gene_transcript_sha256": "a74a845c3e9e707c70a075b3cafa5e4b6f33e8a856ebb74c0710c04e7702c7bb",
+        "transcripts_with_cds": 146324
+      }
+    }
+  },
+  "diagnosis": {
+    "estimator_wrong": false,
+    "evidence": {
+      "Drosophila melanogaster": {
+        "gene_weighted_gc3": {
+          "definition": "arithmetic mean/quantiles of per-gene canonical-CDS GC3; each gene has equal weight",
+          "genes": 13872,
+          "maximum": 0.9562289562289562,
+          "mean": 0.6404801588873662,
+          "median": 0.6514671924228488,
+          "minimum": 0.21130493743450657,
+          "q1": 0.578735969174066,
+          "q3": 0.7150999629268333
+        },
+        "literature": [
+          {
+            "comparability": "gene-weighted, so comparable to the audit's explicitly separate equal-gene metric; gene set and annotation release differ",
+            "definition": "mean per-gene GC content of third codon positions",
+            "reported": "X=0.688 (95% CI 0.683-0.692); autosomes=0.641 (0.639-0.643)",
+            "title": "Codon Usage Bias and Effective Population Sizes on the X Chromosome versus the Autosomes in Drosophila melanogaster",
+            "url": "https://academic.oup.com/mbe/article/30/4/811/1066476"
+          },
+          {
+            "comparability": "gene-weighted; transcript policy and annotation release differ",
+            "definition": "mean and median per-gene GC3 across 13,088 nuclear protein-coding genes",
+            "reported": "all-gene mean=0.65; median=0.66",
+            "title": "Codon Usage Differences among Genes Expressed in Different Tissues of Drosophila melanogaster",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6456009/"
+          }
+        ],
+        "pooled_cds_base_gc3": 0.6312610989373014
+      },
+      "Homo sapiens": {
+        "gene_weighted_gc3": {
+          "definition": "arithmetic mean/quantiles of per-gene canonical-CDS GC3; each gene has equal weight",
+          "genes": 22162,
+          "maximum": 1.0,
+          "mean": 0.6060410199246469,
+          "median": 0.616357918810749,
+          "minimum": 0.17578125,
+          "q1": 0.4721669613910993,
+          "q3": 0.7375203362255965
+        },
+        "literature": [
+          {
+            "comparability": "gene-weighted; provider and canonical-transcript policy differ",
+            "definition": "per-gene GC3 across approximately 20,000 Ensembl protein-coding genes",
+            "reported": "mean=0.59; median=0.59; IQR=0.44-0.73",
+            "title": "Mapping the inter- and intra-genic codon-usage landscape in Homo sapiens",
+            "url": "https://academic.oup.com/nargab/article/8/1/lqag024/8503857"
+          },
+          {
+            "comparability": "coding-sequence reference context; gene set and release differ",
+            "definition": "distribution of per-CDS third-position GC in mammalian coding sequences",
+            "reported": "mammalian CDS mean=0.59; human mean described as above 0.55",
+            "title": "GC Content of Early Metazoan Genes and Its Impact on Gene Expression Levels in Mammalian Cell Lines",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5952964/"
+          }
+        ],
+        "pooled_cds_base_gc3": 0.5845556551887756
+      }
+    },
+    "original_bands_too_narrow_or_misanchored": true,
+    "statistic_weighting_explains_mismatch": false
+  },
+  "original_control_gate": {
+    "bands": {
+      "Drosophila melanogaster": {
+        "band": [
+          0.5,
+          0.6
+        ],
+        "observed_pooled_gc3": 0.6312610989373014,
+        "status": "failed_and_preserved"
+      },
+      "Homo sapiens": {
+        "band": [
+          0.47,
+          0.57
+        ],
+        "observed_pooled_gc3": 0.5845556551887756,
+        "status": "failed_and_preserved"
+      }
+    },
+    "bands_rewritten": false,
+    "comparability_finding": "not comparable: the asserted 0.55/0.52 point values have no recoverable statistic definition, and both pooled and equal-gene exact-reference estimates exceed them",
+    "passed": false,
+    "trace": "git blame traces both anchors to analysis/TIER3_EXECUTION.md commit 0846f05; the file says only 'published values' and supplies no citation, gene/transcript set, terminal-stop policy, or pooled-versus-gene weighting definition"
+  },
+  "promotion_decision": {
+    "basis": "estimator validity, exact independent reproduction, native-annotation gates, and definition-aware literature comparison; scheduler headroom is explicitly excluded",
+    "decision": "promote_tier3c_composition",
+    "full_species_recomputation_required": false,
+    "reason_no_full_recomputation": "no estimator, input, transcript-selection, or exclusion method changed; only the unsupported external validation anchor was replaced after explicit review"
+  },
+  "schema_version": "tier3c-control-audit-v1"
+}

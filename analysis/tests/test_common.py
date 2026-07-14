@@ -27,9 +27,8 @@ def test_gff_strand_phase_and_transcript_selection():
     fasta = read_fasta(FIXTURES / "truth.fa")
     annotation = parse_gff(FIXTURES / "truth.gff3")
 
-    # tx_plus has two biological segments; the second phase removes the
-    # deliberately prefixed base.  tx_minus tests descending segment order,
-    # reverse-complementing, and phase at the biological start.
+    # tx_plus has two in-frame biological segments. tx_minus tests descending
+    # segment order, reverse-complementing, and phase at the biological start.
     assert reconstruct_cds(fasta, annotation.transcripts["tx_plus"]) == "GCTGCC"
     assert reconstruct_cds(fasta, annotation.transcripts["tx_minus"]) == "GGTGGA"
     sites, excluded = collect_fourfold_sites(fasta, annotation)
@@ -39,6 +38,20 @@ def test_gff_strand_phase_and_transcript_selection():
     # The provider-designated canonical transcript, not merely the longest,
     # is retained for gene_plus.
     assert annotation.canonical_transcripts["gene_plus"] == "tx_plus"
+
+
+def test_provider_canonical_tags_normalize_ncbi_spelling(tmp_path):
+    gff = tmp_path / "native.gff3"
+    gff.write_text(
+        "##gff-version 3\n##sequence-region chr1 1 9\n"
+        "chr1\tRefSeq\tmRNA\t1\t9\t.\t+\t.\tID=chosen;Parent=gene1;tag=MANE Select\n"
+        "chr1\tRefSeq\tCDS\t1\t6\t.\t+\t0\tParent=chosen\n"
+        "chr1\tRefSeq\tmRNA\t1\t9\t.\t+\t.\tID=longer;Parent=gene1\n"
+        "chr1\tRefSeq\tCDS\t1\t9\t.\t+\t0\tParent=longer\n",
+        encoding="utf-8",
+    )
+    annotation = parse_gff(gff)
+    assert annotation.canonical_transcripts == {"gene1": "chosen"}
 
 
 def test_gff_overlapping_discordant_frames_are_excluded(tmp_path):

@@ -52,23 +52,24 @@ ACCESSION_RE = re.compile(r"^GC[AF]_[0-9]+\.[1-9][0-9]*$")
 STORE_PATH_RE = re.compile(r"^(/gnu/store/[0-9a-z]{32}-[^/]+)")
 STOP_CODONS_1 = frozenset({"TAA", "TAG", "TGA"})
 
-# Declared before pilot execution.  These deliberately broad validation bands
-# catch strand/frame failures without pretending that annotation releases have
-# identical transcript sets.  GC3 anchors are the independently summarized
-# dm6/hg38 values in the project execution protocol; assembly GC bands are
-# cross-checked against the corresponding NCBI reference-assembly statistics.
+# Declared before pilot execution and preserved as historical checks.  The
+# 2026-07-14 independent audit showed that the uncited dm6/hg38 GC3 anchors do
+# not define a comparable statistic and that both upper bounds exclude valid
+# published gene-level values.  Do not widen or use these bands for promotion;
+# analysis/tier3c_control_audit.py applies the disclosed post-hoc exact
+# cross-implementation gate.  Assembly-GC bands remain useful separate checks.
 PILOT_RANGES: Mapping[str, Mapping[str, Any]] = {
     "Drosophila melanogaster": {
         "assembly_accession": "GCF_000001215.4",
         "gc3": (0.50, 0.60),
         "whole_genome_gc": (0.40, 0.44),
-        "source": "NCBI RefSeq Release 6 plus the predeclared dm6 GC3 anchor (about 0.55)",
+        "source": "historical uncited dm6 GC3 assertion (about 0.55); failed and superseded for promotion by the 2026-07-14 audited-control gate",
     },
     "Homo sapiens": {
         "assembly_accession": "GCF_000001405.40",
         "gc3": (0.47, 0.57),
         "whole_genome_gc": (0.39, 0.43),
-        "source": "NCBI GRCh38.p14 plus the predeclared hg38 GC3 anchor (about 0.52)",
+        "source": "historical uncited hg38 GC3 assertion (about 0.52); failed and superseded for promotion by the 2026-07-14 audited-control gate",
     },
 }
 
@@ -98,6 +99,11 @@ class AssemblyCandidate:
 
 def _release_ordinal(text: str) -> int:
     if not text:
+        return 0
+    # NCBI uses this sentinel for legacy assemblies with no usable release
+    # date.  It must rank behind dated records, not make the entire species
+    # undiscoverable.
+    if text.startswith("1/01/01"):
         return 0
     normalized = text[:10].replace("/", "-")
     try:
@@ -228,21 +234,44 @@ def discover_assemblies(
 
     if not scientific_name.strip():
         raise Tier3ValidationError("scientific name is empty")
-    term = f"txid{taxon_id}[Organism:exp]" if taxon_id else f'"{scientific_name}"[Organism]'
-    search_url = f"{NCBI_EUTILS}/esearch.fcgi?" + urllib.parse.urlencode(
-        {"db": "assembly", "term": term, "retmode": "json", "retmax": "500"}
-    )
-    try:
+    organism_term = f"txid{taxon_id}[Organism:exp]" if taxon_id else f'"{scientific_name}"[Organism]'
+
+    def search(term: str) -> List[Any]:
+        search_url = f"{NCBI_EUTILS}/esearch.fcgi?" + urllib.parse.urlencode(
+            {"db": "assembly", "term": term, "retmode": "json", "retmax": "500"}
+        )
         request = urllib.request.Request(search_url, headers={"User-Agent": USER_AGENT})
         with opener(request, timeout=120) as response:
-            search = _read_json_response(response)
-        ids = search.get("esearchresult", {}).get("idlist", [])
-        if not isinstance(ids, list) or not ids:
-            return []
-        summary_url = f"{NCBI_EUTILS}/esummary.fcgi?" + urllib.parse.urlencode(
-            {"db": "assembly", "id": ",".join(str(item) for item in ids), "retmode": "json"}
+            search_payload = _read_json_response(response)
+        values = search_payload.get("esearchresult", {}).get("idlist", [])
+        if not isinstance(values, list):
+            raise Tier3ValidationError("NCBI ESearch result.idlist is not a list")
+        return values
+
+    try:
+        # Ask first for the small, policy-preferred RefSeq category set.  A
+        # broad model-organism query can exceed 3,000 assemblies, causing the
+        # reference assembly to fall outside ESearch's 500-row retrieval cap.
+        preferred_term = (
+            f"{organism_term} AND "
+            '("reference genome"[RCAT] OR "representative genome"[RCAT])'
         )
-        request = urllib.request.Request(summary_url, headers={"User-Agent": USER_AGENT})
+        ids = search(preferred_term)
+        if not ids:
+            ids = search(organism_term)
+        if not ids:
+            return []
+        summary_url = f"{NCBI_EUTILS}/esummary.fcgi"
+        # Large model-organism searches can return 500 assembly UIDs.  POST
+        # avoids an HTTP 414 while preserving the complete candidate set.
+        body = urllib.parse.urlencode(
+            {"db": "assembly", "id": ",".join(str(item) for item in ids), "retmode": "json"}
+        ).encode("ascii")
+        request = urllib.request.Request(
+            summary_url,
+            data=body,
+            headers={"User-Agent": USER_AGENT, "Content-Type": "application/x-www-form-urlencoded"},
+        )
         with opener(request, timeout=120) as response:
             return parse_ncbi_esummary(_read_json_response(response))
     except Tier3ValidationError:
@@ -447,6 +476,15 @@ def _validated_canonical(
     selected: Dict[str, Tuple[Any, str, bool]] = {}
     exclusions: Dict[str, int] = {}
     for gene_id, candidates in genes.items():
+        exceptional = [item for item in candidates if item.annotation_exception]
+        if exceptional:
+            exclusions["annotated_translation_exception"] = (
+                exclusions.get("annotated_translation_exception", 0) + len(exceptional)
+            )
+        candidates = [item for item in candidates if not item.annotation_exception]
+        if not candidates:
+            exclusions["gene_without_valid_cds"] = exclusions.get("gene_without_valid_cds", 0) + 1
+            continue
         provider = [item for item in candidates if item.provider_canonical]
         if len(provider) > 1:  # parse_gff normally catches this as well.
             raise Tier3ValidationError(f"gene {gene_id!r} has multiple provider-canonical transcripts")
@@ -624,6 +662,7 @@ def _annotation_provenance_base(annotation: Mapping[str, Any]) -> Dict[str, Any]
         "release": annotation.get("release"),
         "assembly_accession": annotation.get("assembly_accession"),
         "status": annotation.get("status"),
+        "native_vs_projected": annotation.get("native_vs_projected", annotation.get("status")),
         "genetic_code": annotation.get("genetic_code"),
     }
 
@@ -711,7 +750,10 @@ def analyze_dataset(
                 raise Tier3ValidationError("native annotation requires checksum-locked GFF and contig mapping")
             gff_path = _artifact_local_path(gff_artifact, cache)
             mapping_path = _artifact_local_path(mapping_artifact, cache)
-            parsed = parse_gff(gff_path)
+            # Native annotations without any CDS still support exact-reference
+            # whole-genome GC.  Preserve their dictionaries/provenance and
+            # report annotation-derived GC3 as structured unavailability.
+            parsed = parse_gff(gff_path, require_cds=False)
             _reject_duplicate_cds_coordinates(parsed)
             aliases = _read_contig_mapping(mapping_path)
             resolved = resolve_contig_aliases(fasta_dict, parsed.sequence_regions, aliases)
@@ -744,7 +786,19 @@ def analyze_dataset(
                 }
             )
             genetic_code = annotation.get("genetic_code")
-            if genetic_code != 1:
+            has_cds = any(transcript.segments for transcript in parsed.transcripts.values())
+            if not has_cds:
+                gc3 = {
+                    "status": "unavailable",
+                    "reason": "native_annotation_has_no_cds",
+                }
+                annotation_record["cds_audit"] = {
+                    "all_retained_cds_validated": False,
+                    "reason": "native_annotation_has_no_cds",
+                    "retained_genes": 0,
+                    "retained_transcripts": 0,
+                }
+            elif genetic_code != 1:
                 gc3 = {
                     "status": "unavailable",
                     "reason": "unsupported_nuclear_genetic_code",

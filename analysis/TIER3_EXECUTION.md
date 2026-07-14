@@ -151,6 +151,13 @@ downloads**, and to hit the plateau first (where the signal is).
   published values (dm6 GC3 ≈ 0.55; hg38 GC3 ≈ 0.52). Confirms the CDS
   extraction + third-position code before trusting it across 60 species.
 
+  **Post-run audit (2026-07-14):** the two approximate values above had no
+  recoverable citation or pooled-versus-gene-weighted definition and generated
+  invalid upper bounds.  They remain historical failed anchors and MUST NOT be
+  silently widened.  `TIER3C_CONTROL_AUDIT.md` replaces them for promotion
+  with exact reproduction by an independent implementation, unchanged native
+  provenance/CDS hard gates, and definition-aware published context.
+
 ### Phase 2 — Tier 3b population VCFs (the plateau)
 - **2a — DGRP + Ag1000G first** (pipeline validation on the plateau
   extremes): *D. melanogaster* (Nₑ 10¹⁴·⁶, DGRP, the top) and *Anopheles

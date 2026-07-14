@@ -73,6 +73,12 @@ esac
 
 PYTHON_SITE=$(find "$PROFILE/lib" -maxdepth 2 -type d -path '*/python*/site-packages' -print -quit)
 [[ -n "$PYTHON_SITE" ]] || { echo "realized profile has no Python site-packages" >&2; exit 69; }
+CERTIFICATE_DIRECTORY=$PROFILE/etc/ssl/certs
+CERTIFICATE_BUNDLE=$CERTIFICATE_DIRECTORY/ca-certificates.crt
+[[ -d "$CERTIFICATE_DIRECTORY" && -f "$CERTIFICATE_BUNDLE" ]] || {
+    echo "realized profile has no pinned CA certificate bundle" >&2
+    exit 69
+}
 
 JOB_KEY=${SLURM_JOB_ID:-login}-$(id -u)
 BASE_TMP=${TIER3_SCRATCH_ROOT:-${SCRATCH:-/tmp}}
@@ -84,8 +90,11 @@ ENVIRONMENT=(
     -i
     "PATH=$PROFILE/bin"
     "GUIX_PROFILE=$PROFILE"
+    "GUIX_ENVIRONMENT=$PROFILE"
     "GUIX_PYTHONPATH=$PYTHON_SITE"
     "PYTHONPATH=${TIER3_ROOT:-$PWD}"
+    "SSL_CERT_DIR=$CERTIFICATE_DIRECTORY"
+    "SSL_CERT_FILE=$CERTIFICATE_BUNDLE"
     "HOME=$JOB_HOME"
     "TMPDIR=$JOB_TMP"
     "LANG=C"

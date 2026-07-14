@@ -256,11 +256,15 @@ def test_only_declared_scheduler_tier3_and_scratch_variables_survive(monkeypatch
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "secret")
     monkeypatch.setenv("CONDA_PREFIX", "/forbidden")
     monkeypatch.setenv("LEAK_ME", "secret")
+    monkeypatch.setenv("SSL_CERT_DIR", "/gnu/store/nss-certs/etc/ssl/certs")
+    monkeypatch.setenv("SSL_CERT_FILE", "/gnu/store/nss-certs/etc/ssl/certs/ca-certificates.crt")
     result = sanitized_stage_environment(tmp_path)
     assert result["SLURM_JOB_ID"] == "123"
     assert result["TIER3_DATA_ROOT"] == "/data"
     assert result["SCRATCH"] == "/scratch"
     assert result["TMPDIR"] == str(tmp_path)
+    assert result["SSL_CERT_DIR"].startswith("/gnu/store/")
+    assert result["SSL_CERT_FILE"].startswith("/gnu/store/")
     assert "AWS_SECRET_ACCESS_KEY" not in result
     assert "CONDA_PREFIX" not in result
     assert "LEAK_ME" not in result

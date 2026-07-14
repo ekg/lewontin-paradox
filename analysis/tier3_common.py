@@ -161,6 +161,7 @@ class Transcript:
     gene_id: str
     segments: List[CDSSegment] = field(default_factory=list)
     provider_canonical: bool = False
+    annotation_exception: Optional[str] = None
 
 
 @dataclass
@@ -170,7 +171,7 @@ class GFFAnnotation:
     canonical_transcripts: Dict[str, str]
 
 
-def parse_gff(path: Union[str, Path]) -> GFFAnnotation:
+def parse_gff(path: Union[str, Path], *, require_cds: bool = True) -> GFFAnnotation:
     sequence_regions: Dict[str, int] = {}
     transcripts: Dict[str, Transcript] = {}
     transcript_gene: Dict[str, str] = {}
@@ -203,13 +204,34 @@ def parse_gff(path: Union[str, Path]) -> GFFAnnotation:
             if feature.lower() in {"mrna", "transcript"}:
                 transcript_id = attrs.get("ID") or attrs.get("transcript_id")
                 gene_id = attrs.get("Parent") or attrs.get("gene_id")
+                is_pseudogene = attrs.get("pseudo", "").lower() == "true"
+                # RefSeq occasionally emits curated pseudogene mRNAs without a
+                # parent gene feature (for example WBcel235 CELE_F59E12.6).
+                # They still have a stable transcript ID and CDS children, but
+                # cannot be primary protein-coding candidates.  Retain them in
+                # the audit set under a deterministic gene key and mark the
+                # provider-declared pseudogene status as an explicit exception.
+                if transcript_id and not gene_id and is_pseudogene:
+                    gene_id = attrs.get("locus_tag") or attrs.get("gene") or transcript_id
                 if not transcript_id or not gene_id:
                     raise Tier3ValidationError(f"transcript lacks stable ID/parent at line {line_number}")
                 transcript_gene[transcript_id] = gene_id.split(",", 1)[0]
-                tags = {tag.strip().lower() for tag in attrs.get("tag", "").split(",")}
-                if tags.intersection({"canonical", "mane_select", "appris_principal_1"}):
+                tags = {
+                    re.sub(r"[^a-z0-9]+", "_", tag.strip().lower()).strip("_")
+                    for tag in attrs.get("tag", "").split(",")
+                }
+                if tags.intersection(
+                    {"canonical", "mane_select", "refseq_select", "ensembl_canonical", "appris_principal_1"}
+                ):
                     canonical_ids.add(transcript_id)
-                transcripts.setdefault(transcript_id, Transcript(transcript_id, transcript_gene[transcript_id]))
+                transcript = transcripts.setdefault(
+                    transcript_id, Transcript(transcript_id, transcript_gene[transcript_id])
+                )
+                annotation_exception = attrs.get("exception") or attrs.get("transl_except")
+                if is_pseudogene:
+                    annotation_exception = annotation_exception or "provider_declared_pseudogene"
+                if annotation_exception:
+                    transcript.annotation_exception = annotation_exception
                 continue
             if feature != "CDS":
                 continue
@@ -224,6 +246,11 @@ def parse_gff(path: Union[str, Path]) -> GFFAnnotation:
                 transcript_id = transcript_id.strip()
                 gene_id = transcript_gene.get(transcript_id, attrs.get("gene_id", transcript_id))
                 transcript = transcripts.setdefault(transcript_id, Transcript(transcript_id, gene_id))
+                annotation_exception = attrs.get("exception") or attrs.get("transl_except")
+                if attrs.get("pseudo", "").lower() == "true":
+                    annotation_exception = annotation_exception or "provider_declared_pseudogene"
+                if annotation_exception:
+                    transcript.annotation_exception = annotation_exception
                 segment = CDSSegment(contig, start, end, strand, int(phase_text), line_number)
                 if segment in transcript.segments:
                     raise Tier3ValidationError(f"duplicate CDS segment at line {line_number}")
@@ -232,7 +259,9 @@ def parse_gff(path: Union[str, Path]) -> GFFAnnotation:
     if not sequence_regions:
         raise Tier3ValidationError("annotation has no ##sequence-region declarations")
     if not transcripts or not any(transcript.segments for transcript in transcripts.values()):
-        raise Tier3ValidationError("annotation has no transcript-associated CDS")
+        if require_cds:
+            raise Tier3ValidationError("annotation has no transcript-associated CDS")
+        return GFFAnnotation(sequence_regions, transcripts, {})
 
     genes: Dict[str, List[Transcript]] = collections.defaultdict(list)
     for transcript in transcripts.values():
@@ -242,16 +271,33 @@ def parse_gff(path: Union[str, Path]) -> GFFAnnotation:
         genes[transcript.gene_id].append(transcript)
     canonical: Dict[str, str] = {}
     for gene_id, candidates in genes.items():
+        candidates = [candidate for candidate in candidates if not candidate.annotation_exception]
+        if not candidates:
+            continue
         flagged = [candidate for candidate in candidates if candidate.provider_canonical]
         if len(flagged) > 1:
             raise Tier3ValidationError(f"gene {gene_id!r} has multiple provider-canonical transcripts")
         if flagged:
             chosen = flagged[0]
         else:
+            valid_lengths = []
+            for candidate in candidates:
+                try:
+                    length = _phase_trimmed_length(candidate)
+                except Tier3ValidationError:
+                    # Structurally exceptional transcripts (for example
+                    # explicitly annotated trans-splicing across strands) are
+                    # not primary canonical CDS candidates.  They remain in
+                    # the parsed audit set and are counted as exclusions by
+                    # the caller.
+                    continue
+                valid_lengths.append((candidate, length))
+            if not valid_lengths:
+                continue
             chosen = sorted(
-                candidates,
-                key=lambda candidate: (-_phase_trimmed_length(candidate), candidate.transcript_id.encode("utf-8")),
-            )[0]
+                valid_lengths,
+                key=lambda item: (-item[1], item[0].transcript_id.encode("utf-8")),
+            )[0][0]
         canonical[gene_id] = chosen.transcript_id
     return GFFAnnotation(sequence_regions, transcripts, canonical)
 
@@ -272,7 +318,19 @@ def _ordered_segments(transcript: Transcript) -> List[CDSSegment]:
 
 
 def _phase_trimmed_length(transcript: Transcript) -> int:
-    return sum(segment.end - segment.start - segment.phase for segment in _ordered_segments(transcript))
+    segments = _ordered_segments(transcript)
+    length = segments[0].end - segments[0].start - segments[0].phase
+    if length <= 0:
+        raise Tier3ValidationError(f"phase consumes CDS segment at line {segments[0].line_number}")
+    for segment in segments[1:]:
+        expected_phase = (3 - length % 3) % 3
+        if segment.phase != expected_phase:
+            raise Tier3ValidationError(
+                f"inconsistent GFF phase at line {segment.line_number}: "
+                f"expected {expected_phase}, observed {segment.phase}"
+            )
+        length += segment.end - segment.start
+    return length
 
 
 def reconstruct_cds_with_positions(
@@ -280,7 +338,9 @@ def reconstruct_cds_with_positions(
 ) -> Tuple[str, List[Tuple[str, int]]]:
     sequence_parts: List[str] = []
     positions: List[Tuple[str, int]] = []
-    for segment in _ordered_segments(transcript):
+    segments = _ordered_segments(transcript)
+    _phase_trimmed_length(transcript)
+    for index, segment in enumerate(segments):
         if segment.contig not in fasta:
             raise Tier3ValidationError(f"CDS contig {segment.contig!r} is absent from FASTA")
         contig_sequence = fasta[segment.contig]
@@ -291,10 +351,13 @@ def reconstruct_cds_with_positions(
         if segment.strand == "-":
             piece = reverse_complement(piece)
             piece_positions.reverse()
-        if segment.phase >= len(piece):
-            raise Tier3ValidationError(f"phase consumes CDS segment at line {segment.line_number}")
-        sequence_parts.append(piece[segment.phase :])
-        positions.extend(piece_positions[segment.phase :])
+        # Internal phases describe leading bases that finish a codon begun in
+        # the preceding CDS feature.  Retain those bases in a spliced CDS;
+        # only the biological first feature can contain an upstream partial
+        # codon that must be trimmed.
+        trim = segment.phase if index == 0 else 0
+        sequence_parts.append(piece[trim:])
+        positions.extend(piece_positions[trim:])
     sequence = "".join(sequence_parts)
     if len(sequence) % 3:
         raise Tier3ValidationError(

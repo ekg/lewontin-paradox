@@ -16,6 +16,7 @@ from analysis.tier3c_ncbi_gc import (
     select_assembly,
     validate_pilot,
 )
+from analysis.tier3c_ncbi_gc import _release_ordinal
 
 
 def _artifact(path: Path) -> dict:
@@ -56,7 +57,7 @@ def _dataset(tmp_path: Path, *, annotation=True, genetic_code=1, annotation_acce
             "##sequence-region chr1 1 35\n"
             "chr1\ttest\tmRNA\t1\t7\t.\t+\t.\tID=tx_plus;Parent=gene_plus;tag=canonical\n"
             "chr1\ttest\tCDS\t1\t3\t.\t+\t0\tParent=tx_plus\n"
-            "chr1\ttest\tCDS\t4\t7\t.\t+\t1\tParent=tx_plus\n"
+            "chr1\ttest\tCDS\t5\t7\t.\t+\t0\tParent=tx_plus\n"
             "chr1\ttest\tmRNA\t20\t26\t.\t-\t.\tID=tx_minus;Parent=gene_minus\n"
             "chr1\ttest\tCDS\t23\t26\t.\t-\t1\tParent=tx_minus\n"
             "chr1\ttest\tCDS\t20\t22\t.\t-\t0\tParent=tx_minus\n",
@@ -105,6 +106,11 @@ def test_assembly_ranking_is_frozen_and_deterministic():
         "GCA_000003.1",
         "GCF_000001.1",
     ]
+
+
+def test_ncbi_unknown_legacy_release_date_ranks_as_oldest():
+    assert _release_ordinal("1/01/01 00:00") == 0
+    assert _release_ordinal("2026/01/01 00:00") > 0
 
 
 def test_exact_accession_match_includes_prefix_and_version():
@@ -185,6 +191,58 @@ def test_duplicate_gff3_cds_segment_fails_closed(tmp_path):
     assert not output.exists()
 
 
+def test_unflagged_trans_spliced_transcript_is_an_audited_exclusion(tmp_path):
+    dataset = _dataset(tmp_path)
+    gff = Path(dataset["annotation"]["file"]["uri"].removeprefix("file://"))
+    with gff.open("a", encoding="utf-8") as handle:
+        handle.write(
+            "chr1\ttest\tmRNA\t28\t35\t.\t.\t.\tID=tx_exception;Parent=gene_exception;exception=trans-splicing\n"
+            "chr1\ttest\tCDS\t28\t30\t.\t+\t0\tParent=tx_exception\n"
+            "chr1\ttest\tCDS\t31\t33\t.\t-\t0\tParent=tx_exception\n"
+        )
+    dataset["annotation"]["file"] = _artifact(gff)
+    result = analyze_dataset(dataset, tmp_path / "result.json", environment=_environment())
+    assert result["gc3"]["genes"] == 2
+    assert result["annotation_provenance"]["cds_audit"]["exclusions"] == {
+        "annotated_translation_exception": 1,
+        "gene_without_valid_cds": 1,
+    }
+
+
+def test_provider_selected_ribosomal_slippage_is_an_audited_exclusion(tmp_path):
+    dataset = _dataset(tmp_path)
+    gff = Path(dataset["annotation"]["file"]["uri"].removeprefix("file://"))
+    with gff.open("a", encoding="utf-8") as handle:
+        handle.write(
+            "chr1\ttest\tmRNA\t28\t33\t.\t+\t.\tID=tx_slip;Parent=gene_slip;tag=RefSeq Select\n"
+            "chr1\ttest\tCDS\t28\t33\t.\t+\t0\tParent=tx_slip;transl_except=(pos:30..32%2Caa:Sec)\n"
+        )
+    dataset["annotation"]["file"] = _artifact(gff)
+    result = analyze_dataset(dataset, tmp_path / "result.json", environment=_environment())
+    audit = result["annotation_provenance"]["cds_audit"]
+    assert result["gc3"]["genes"] == 2
+    assert audit["exclusions"]["annotated_translation_exception"] == 1
+    assert audit["exclusions"]["gene_without_valid_cds"] == 1
+
+
+def test_parentless_refseq_pseudogene_is_an_audited_exclusion(tmp_path):
+    dataset = _dataset(tmp_path)
+    gff = Path(dataset["annotation"]["file"]["uri"].removeprefix("file://"))
+    with gff.open("a", encoding="utf-8") as handle:
+        handle.write(
+            "chr1\tRefSeq\tmRNA\t28\t33\t.\t+\t.\t"
+            "ID=rna-pseudo;locus_tag=PSEUDO1;pseudo=true\n"
+            "chr1\tRefSeq\tCDS\t28\t33\t.\t+\t0\t"
+            "Parent=rna-pseudo;locus_tag=PSEUDO1;pseudo=true\n"
+        )
+    dataset["annotation"]["file"] = _artifact(gff)
+    result = analyze_dataset(dataset, tmp_path / "result.json", environment=_environment())
+    audit = result["annotation_provenance"]["cds_audit"]
+    assert result["gc3"]["genes"] == 2
+    assert audit["exclusions"]["annotated_translation_exception"] == 1
+    assert audit["exclusions"]["gene_without_valid_cds"] == 1
+
+
 def test_unsupported_genetic_code_is_structured_missingness(tmp_path):
     result = analyze_dataset(_dataset(tmp_path, genetic_code=2), tmp_path / "result.json", environment=_environment())
     assert result["gc3"] == {
@@ -200,6 +258,28 @@ def test_missing_annotation_preserves_exact_fasta_gc_only(tmp_path):
     assert result["annotation_provenance"] is None
     assert result["gc3"] == {"status": "unavailable", "reason": "native_annotation_absent"}
     assert result["whole_genome_gc"]["status"] == "available"
+
+
+def test_native_annotation_without_cds_preserves_whole_genome_gc(tmp_path):
+    dataset = _dataset(tmp_path)
+    gff = Path(dataset["annotation"]["file"]["uri"].removeprefix("file://"))
+    gff.write_text(
+        "##gff-version 3\n"
+        "##sequence-region chr1 1 35\n"
+        "chr1\tRefSeq\tgene\t1\t35\t.\t+\t.\tID=gene1\n",
+        encoding="utf-8",
+    )
+    dataset["annotation"]["file"] = _artifact(gff)
+    result = analyze_dataset(dataset, tmp_path / "result.json", environment=_environment())
+    assert result["whole_genome_gc"]["status"] == "available"
+    assert result["gc3"] == {
+        "status": "unavailable",
+        "reason": "native_annotation_has_no_cds",
+    }
+    provenance = result["annotation_provenance"]
+    assert provenance["native_vs_projected"] == "native"
+    assert provenance["contig_dictionary_validated"] is True
+    assert provenance["cds_audit"]["reason"] == "native_annotation_has_no_cds"
 
 
 def test_projected_annotation_never_fills_primary_gc3(tmp_path):

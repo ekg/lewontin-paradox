@@ -1,0 +1,28 @@
+{
+  "controls": {
+    "drosophila.melanogaster.tier3c": {
+      "after_sha256": "3d361b5ccceb4124785db46ca4a9a74d7794e84a66830edf16f596e4bb78deb0",
+      "before_sha256": "3d361b5ccceb4124785db46ca4a9a74d7794e84a66830edf16f596e4bb78deb0",
+      "byte_identical": true,
+      "slurm_array_task_id": "45",
+      "slurm_job_id": "1755843"
+    },
+    "homo.sapiens.tier3c": {
+      "after_sha256": "6255e08ff903f8d27f76f75b5e7a761579d995e1516c5aab7d3e43d71562a5a0",
+      "before_sha256": "6255e08ff903f8d27f76f75b5e7a761579d995e1516c5aab7d3e43d71562a5a0",
+      "byte_identical": true,
+      "slurm_array_task_id": "77",
+      "slurm_job_id": "1755841"
+    }
+  },
+  "production_code_or_input_changed": false,
+  "rerun_profile": {
+    "array_concurrency": 2,
+    "cpus_per_task": 2,
+    "memory_gib": 32,
+    "node_constraint": null,
+    "time_limit_seconds": 7200
+  },
+  "schema_version": "tier3c-rerun-identity-v1",
+  "verified_at_utc": "2026-07-14T08:34:27Z"
+}

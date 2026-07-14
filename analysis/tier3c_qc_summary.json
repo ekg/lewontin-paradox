@@ -1,0 +1,344 @@
+{
+  "annotation_exclusion_totals": {
+    "annotated_translation_exception": 119506,
+    "gene_without_valid_cds": 91784,
+    "invalid_candidate_transcript": 32783
+  },
+  "annotation_quality_distribution_review": {
+    "gc3_unavailable_reasons": {
+      "native_annotation_absent": 45
+    },
+    "highest_exclusion_species": [
+      {
+        "exclusions": {
+          "annotated_translation_exception": 28054,
+          "gene_without_valid_cds": 7966,
+          "invalid_candidate_transcript": 2009
+        },
+        "scientific_name": "Daubentonia madagascariensis",
+        "total_exclusions": 38029
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 566,
+          "gene_without_valid_cds": 13376,
+          "invalid_candidate_transcript": 22943
+        },
+        "scientific_name": "Malurus melanocephalus",
+        "total_exclusions": 36885
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 9759,
+          "gene_without_valid_cds": 4626,
+          "invalid_candidate_transcript": 12
+        },
+        "scientific_name": "Danio rerio",
+        "total_exclusions": 14397
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 4965,
+          "gene_without_valid_cds": 4793,
+          "invalid_candidate_transcript": 642
+        },
+        "scientific_name": "Tupaia belangeri",
+        "total_exclusions": 10400
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 7038,
+          "gene_without_valid_cds": 3190,
+          "invalid_candidate_transcript": 8
+        },
+        "scientific_name": "Bos taurus",
+        "total_exclusions": 10236
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 6061,
+          "gene_without_valid_cds": 2022,
+          "invalid_candidate_transcript": 2
+        },
+        "scientific_name": "Homo sapiens",
+        "total_exclusions": 8085
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 5679,
+          "gene_without_valid_cds": 2235
+        },
+        "scientific_name": "Macaca mulatta",
+        "total_exclusions": 7914
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 4468,
+          "gene_without_valid_cds": 1831
+        },
+        "scientific_name": "Sus scrofa",
+        "total_exclusions": 6299
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 149,
+          "gene_without_valid_cds": 1565,
+          "invalid_candidate_transcript": 2826
+        },
+        "scientific_name": "Drosophila arizonae",
+        "total_exclusions": 4540
+      },
+      {
+        "exclusions": {
+          "annotated_translation_exception": 2209,
+          "gene_without_valid_cds": 2129,
+          "invalid_candidate_transcript": 102
+        },
+        "scientific_name": "Oncorhynchus tshawytscha",
+        "total_exclusions": 4440
+      }
+    ],
+    "review_disposition": "retain exact-native results; carry exclusion counts and missing-native status into synthesis sensitivity/weighting, with no projected annotation substituted"
+  },
+  "audited_control_gate_passed": true,
+  "audited_controls": {
+    "Drosophila melanogaster": {
+      "gene_weighted_gc3_mean": 0.6404801588873662,
+      "passed": true,
+      "pooled_cds_base_gc3": 0.6312610989373014
+    },
+    "Homo sapiens": {
+      "gene_weighted_gc3_mean": 0.6060410199246469,
+      "passed": true,
+      "pooled_cds_base_gc3": 0.5845556551887756
+    }
+  },
+  "batch_manifest_sha256": "b4d1a4a1a70ad01f9f7036499c8173fac1635b3a6c7165ddd170800e55e60ee0",
+  "callable_base_outliers_reviewed": [],
+  "callable_gene_outlier_review": [
+    {
+      "callable_genes": 2417,
+      "exclusions": {
+        "annotated_translation_exception": 566,
+        "gene_without_valid_cds": 13376,
+        "invalid_candidate_transcript": 22943
+      },
+      "gc3_callable_third_positions": 636622,
+      "review_disposition": "retain with annotation-quality sensitivity flag: low callable-gene count co-occurs with extensive invalid/pseudogene CDS exclusions",
+      "scientific_name": "Malurus melanocephalus",
+      "total_annotation_exclusions": 36885
+    },
+    {
+      "callable_genes": 37406,
+      "exclusions": {
+        "annotated_translation_exception": 2209,
+        "gene_without_valid_cds": 2129,
+        "invalid_candidate_transcript": 102
+      },
+      "gc3_callable_third_positions": 21738125,
+      "review_disposition": "retain flagged native result: high callable-gene count is biologically consistent with salmonid whole-genome duplication",
+      "scientific_name": "Oncorhynchus tshawytscha",
+      "total_annotation_exclusions": 4440
+    }
+  ],
+  "callable_gene_outliers_reviewed": [
+    "Malurus melanocephalus",
+    "Oncorhynchus tshawytscha"
+  ],
+  "callable_gene_range": [
+    2417,
+    37406
+  ],
+  "completed": 135,
+  "control_anchor_review": {
+    "audited_control_gate": {
+      "criteria_passed": {
+        "exact_native_annotation_and_dictionary_hard_gates": true,
+        "independent_exact_numerator_denominator_gene_count_and_value": true,
+        "published_comparable_gene_level_context_supports_observed_scale": true
+      },
+      "criterion": "promote only when an implementation sharing no production estimator code exactly reproduces GC numerator, callable-third denominator, retained-gene count, and value from the checksum-frozen exact native inputs; provenance/dictionary/CDS hard gates must pass; published sources must support the observed biological scale",
+      "disclosure": "post-hoc replacement criterion adopted 2026-07-14 after the legacy bands failed; this is not a widening or rewrite of either frozen band",
+      "passed": true
+    },
+    "diagnosis": {
+      "estimator_wrong": false,
+      "evidence": {
+        "Drosophila melanogaster": {
+          "gene_weighted_gc3": {
+            "definition": "arithmetic mean/quantiles of per-gene canonical-CDS GC3; each gene has equal weight",
+            "genes": 13872,
+            "maximum": 0.9562289562289562,
+            "mean": 0.6404801588873662,
+            "median": 0.6514671924228488,
+            "minimum": 0.21130493743450657,
+            "q1": 0.578735969174066,
+            "q3": 0.7150999629268333
+          },
+          "literature": [
+            {
+              "comparability": "gene-weighted, so comparable to the audit's explicitly separate equal-gene metric; gene set and annotation release differ",
+              "definition": "mean per-gene GC content of third codon positions",
+              "reported": "X=0.688 (95% CI 0.683-0.692); autosomes=0.641 (0.639-0.643)",
+              "title": "Codon Usage Bias and Effective Population Sizes on the X Chromosome versus the Autosomes in Drosophila melanogaster",
+              "url": "https://academic.oup.com/mbe/article/30/4/811/1066476"
+            },
+            {
+              "comparability": "gene-weighted; transcript policy and annotation release differ",
+              "definition": "mean and median per-gene GC3 across 13,088 nuclear protein-coding genes",
+              "reported": "all-gene mean=0.65; median=0.66",
+              "title": "Codon Usage Differences among Genes Expressed in Different Tissues of Drosophila melanogaster",
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6456009/"
+            }
+          ],
+          "pooled_cds_base_gc3": 0.6312610989373014
+        },
+        "Homo sapiens": {
+          "gene_weighted_gc3": {
+            "definition": "arithmetic mean/quantiles of per-gene canonical-CDS GC3; each gene has equal weight",
+            "genes": 22162,
+            "maximum": 1.0,
+            "mean": 0.6060410199246469,
+            "median": 0.616357918810749,
+            "minimum": 0.17578125,
+            "q1": 0.4721669613910993,
+            "q3": 0.7375203362255965
+          },
+          "literature": [
+            {
+              "comparability": "gene-weighted; provider and canonical-transcript policy differ",
+              "definition": "per-gene GC3 across approximately 20,000 Ensembl protein-coding genes",
+              "reported": "mean=0.59; median=0.59; IQR=0.44-0.73",
+              "title": "Mapping the inter- and intra-genic codon-usage landscape in Homo sapiens",
+              "url": "https://academic.oup.com/nargab/article/8/1/lqag024/8503857"
+            },
+            {
+              "comparability": "coding-sequence reference context; gene set and release differ",
+              "definition": "distribution of per-CDS third-position GC in mammalian coding sequences",
+              "reported": "mammalian CDS mean=0.59; human mean described as above 0.55",
+              "title": "GC Content of Early Metazoan Genes and Its Impact on Gene Expression Levels in Mammalian Cell Lines",
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5952964/"
+            }
+          ],
+          "pooled_cds_base_gc3": 0.5845556551887756
+        }
+      },
+      "original_bands_too_narrow_or_misanchored": true,
+      "statistic_weighting_explains_mismatch": false
+    },
+    "original_control_gate": {
+      "bands": {
+        "Drosophila melanogaster": {
+          "band": [
+            0.5,
+            0.6
+          ],
+          "observed_pooled_gc3": 0.6312610989373014,
+          "status": "failed_and_preserved"
+        },
+        "Homo sapiens": {
+          "band": [
+            0.47,
+            0.57
+          ],
+          "observed_pooled_gc3": 0.5845556551887756,
+          "status": "failed_and_preserved"
+        }
+      },
+      "bands_rewritten": false,
+      "comparability_finding": "not comparable: the asserted 0.55/0.52 point values have no recoverable statistic definition, and both pooled and equal-gene exact-reference estimates exceed them",
+      "passed": false,
+      "trace": "git blame traces both anchors to analysis/TIER3_EXECUTION.md commit 0846f05; the file says only 'published values' and supplies no citation, gene/transcript set, terminal-stop policy, or pooled-versus-gene weighting definition"
+    }
+  },
+  "control_gate_passed": true,
+  "eligible_staged": 135,
+  "failures": 38,
+  "gc3_range": [
+    0.3077547495951619,
+    0.6921764637032078
+  ],
+  "native_gc3_available": 90,
+  "native_gc3_unavailable": 45,
+  "original_control_gate_passed": false,
+  "original_pilot_controls": {
+    "Drosophila melanogaster": {
+      "failures": [
+        "gc3=0.6312610989373014 outside predeclared [0.5, 0.6]"
+      ],
+      "passed": false
+    },
+    "Homo sapiens": {
+      "failures": [
+        "gc3=0.5845556551887756 outside predeclared [0.47, 0.57]"
+      ],
+      "passed": false
+    }
+  },
+  "outlier_review_rule": "flag Tukey 1.5-IQR on log10 callable bases and callable genes during synthesis",
+  "pilot_controls": {
+    "Drosophila melanogaster": {
+      "failures": [
+        "gc3=0.6312610989373014 outside predeclared [0.5, 0.6]"
+      ],
+      "passed": false
+    },
+    "Homo sapiens": {
+      "failures": [
+        "gc3=0.5845556551887756 outside predeclared [0.47, 0.57]"
+      ],
+      "passed": false
+    }
+  },
+  "promotion_decision": {
+    "basis": "estimator validity, exact independent reproduction, native-annotation gates, and definition-aware literature comparison; scheduler headroom is explicitly excluded",
+    "decision": "promote_tier3c_composition",
+    "full_species_recomputation_required": false,
+    "reason_no_full_recomputation": "no estimator, input, transcript-selection, or exclusion method changed; only the unsupported external validation anchor was replaced after explicit review"
+  },
+  "rerun_identity": {
+    "all_control_results_byte_identical": true,
+    "path": "analysis/tier3c_rerun_identity.json",
+    "production_code_or_input_changed": false
+  },
+  "resource_telemetry": {
+    "historical_analysis_profile": {
+      "requested_cpus_per_task": 2,
+      "requested_memory_gib": 12,
+      "scope": "completed 2026-07-13 frozen batch; retained as historical telemetry",
+      "time_limit_seconds": 3600
+    },
+    "input_bytes_total": 58996713175,
+    "jobs_recorded": 135,
+    "max_rss_dataset": "sepia.officinalis.tier3c",
+    "max_rss_kib_maximum": 16390212,
+    "max_rss_kib_median": 2652248,
+    "resource_profile_scientific_role": "scheduler headroom only; memory/time capacity is not evidence for estimator or control validity",
+    "retry_outlier_profile": {
+      "maximum_array_concurrency_per_node": 1,
+      "requested_cpus_per_task": 2,
+      "requested_memory_gib": 64,
+      "time_limit_seconds": 14400
+    },
+    "retry_standard_profile": {
+      "maximum_array_concurrency_per_node": 8,
+      "requested_cpus_per_task": 2,
+      "requested_memory_gib": 32,
+      "time_limit_seconds": 7200
+    },
+    "wall_seconds_maximum": 956.388339,
+    "wall_seconds_median": 175.88688,
+    "walltime_dataset": "sepia.officinalis.tier3c"
+  },
+  "scheduler_telemetry": {
+    "all_clean": true,
+    "maxrss_note": "sacct MaxRSS is blank because JobAcctGatherType=(null); process getrusage MaxRSS is reported for every row",
+    "path": "analysis/tier3c_scheduler_telemetry.tsv",
+    "records": 139,
+    "sha256": "a1b8b7bcdc059ca542dd8bffaffc8fd40dd17192c3afe95f0eba2fe8afa71cf3",
+    "states": {
+      "COMPLETED": 139
+    }
+  },
+  "schema_version": "tier3c-qc-summary-v1"
+}

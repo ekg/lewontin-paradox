@@ -201,7 +201,12 @@ def sanitized_stage_environment(stage_tmp: Path) -> Dict[str, str]:
     }
     # These are derived from the already-audited profile by guix_job.sh.  They
     # are runtime mechanics, not preserved login/user environment state.
-    for name in ("GUIX_PROFILE", "GUIX_PYTHONPATH"):
+    for name in ("GUIX_PROFILE", "GUIX_ENVIRONMENT", "GUIX_PYTHONPATH"):
+        if name in os.environ:
+            result[name] = os.environ[name]
+    # Acquisition stages must use the trust roots shipped by the audited
+    # profile, not whatever happens to be installed on a compute-node image.
+    for name in ("SSL_CERT_DIR", "SSL_CERT_FILE"):
         if name in os.environ:
             result[name] = os.environ[name]
     for name, value in os.environ.items():
