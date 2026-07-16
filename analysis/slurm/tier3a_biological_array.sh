@@ -20,8 +20,8 @@ CHANNELS="$ROOT/analysis/guix/channels.scm"
 GUIX_MANIFEST="$ROOT/analysis/guix/manifest.scm"
 ENVIRONMENT_RECORD="$ROOT/analysis/pilot_results/guix_environment.json"
 SUPPLEMENTAL_PROFILE=/gnu/store/8x4hx7d9hnv187yprjrzqyg0kxj2z32k-profile
-ACQUISITION="$ROOT/results/tier3a/acquisition_manifest.tsv"
-WORK_ROOT=${TIER3A_WORK_ROOT:-/moosefs/erikg/tier3data/tier3a-biological-20260716}
+ACQUISITION="$ROOT/results/tier3a/acquisition_corrected_manifest.tsv"
+WORK_ROOT=${TIER3A_WORK_ROOT:-/moosefs/erikg/tier3data/tier3a-origin-biological-20260716}
 PANEL_BASES=${TIER3A_PANEL_BASES:-2000000}
 
 if [[ ${1:-} != --inside-guix ]]; then
@@ -32,6 +32,11 @@ fi
 
 [[ -d $SUPPLEMENTAL_PROFILE ]] || { echo "Pinned supplemental Guix profile is unavailable" >&2; exit 69; }
 export PATH="$SUPPLEMENTAL_PROFILE/bin:$PATH"
+
+# Hard selector gate: the Tier 3A rerun cannot consume the superseded
+# acquisition manifest or a mapping made by the earlier binary.
+python3 "$ROOT/analysis/tier3a_origin_remap.py" validate-manifest \
+    --manifest "$ACQUISITION"
 
 INDEX=${SLURM_ARRAY_TASK_ID:-0}
 mapfile -t META < <(python3 - "$ACQUISITION" "$INDEX" <<'PY'

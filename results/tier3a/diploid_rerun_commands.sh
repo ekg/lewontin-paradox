@@ -21,7 +21,7 @@ sacct -j "$JOB_ID" --allocations -P -n \
 guix time-machine -C analysis/guix/channels.scm -- \
     shell -m analysis/guix/manifest.scm --pure -- \
     python3 analysis/tier3a_biological.py finalize \
-        --manifest results/tier3a/acquisition_manifest.tsv \
-        --work-root /moosefs/erikg/tier3data/tier3a-biological-20260716 \
+        --manifest results/tier3a/acquisition_corrected_manifest.tsv \
+        --work-root /moosefs/erikg/tier3data/tier3a-origin-biological-20260716 \
         --telemetry results/tier3a/logs/telemetry.tsv \
         --output-dir results/tier3a

@@ -235,6 +235,17 @@ def prepare(args: argparse.Namespace) -> None:
             int(gene["start_0based"]), int(gene["end_0based_exclusive"]),
         )
     }
+    cap_sensitivity = {}
+    for cap in ("1", "5", "10"):
+        query_value = row.get(f"sweepga_cap{cap}_query_coverage", "").strip()
+        target_value = row.get(f"sweepga_cap{cap}_target_coverage", "").strip()
+        if query_value and target_value:
+            cap_sensitivity[cap] = {
+                "query_coverage": float(query_value),
+                "target_coverage": float(target_value),
+            }
+    if "1" not in cap_sensitivity:
+        raise ValueError("production SweepGA 1:1 coverage is absent from the manifest")
     qc = {
         "dataset_id": args.dataset_id,
         "scientific_name": row["scientific_name"],
@@ -259,12 +270,15 @@ def prepare(args: argparse.Namespace) -> None:
         "acquisition_queryable_gene_count": int(row["queryable_gene_count"]),
         "acquisition_excluded_gene_count": int(row["excluded_gene_count"]),
         "acquisition_excluded_gene_union_bases": int(row["excluded_gene_union_bases"]),
-        "cap_sensitivity": {
-            cap: {"query_coverage": float(row[f"sweepga_cap{cap}_query_coverage"]), "target_coverage": float(row[f"sweepga_cap{cap}_target_coverage"])}
-            for cap in ("1", "5", "10")
-        },
-        "cap5_minus_cap1_query_coverage": float(row["sweepga_cap5_query_coverage"]) - float(row["sweepga_cap1_query_coverage"]),
-        "cap10_minus_cap1_query_coverage": float(row["sweepga_cap10_query_coverage"]) - float(row["sweepga_cap1_query_coverage"]),
+        "cap_sensitivity": cap_sensitivity,
+        "cap5_minus_cap1_query_coverage": (
+            cap_sensitivity["5"]["query_coverage"] - cap_sensitivity["1"]["query_coverage"]
+            if "5" in cap_sensitivity else None
+        ),
+        "cap10_minus_cap1_query_coverage": (
+            cap_sensitivity["10"]["query_coverage"] - cap_sensitivity["1"]["query_coverage"]
+            if "10" in cap_sensitivity else None
+        ),
         "additional_context_bases": 0,
     }
     (out / "prepare_qc.json").write_text(json.dumps(qc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -677,13 +691,22 @@ def finalize(args: argparse.Namespace) -> None:
     ]
     for summary in summaries:
         prep, callable_qc, direct = summary["prepare_qc"], summary["callable_audit"], summary["direct_sequence_validation"]
+        sensitivity = prep["cap_sensitivity"]
+        sensitivity_text = ", ".join(
+            f"{cap}:{cap}=({values['query_coverage']:.4f},{values['target_coverage']:.4f})"
+            for cap, values in sorted(sensitivity.items(), key=lambda item: int(item[0]))
+        )
+        if set(sensitivity) == {"1"}:
+            sensitivity_note = "No higher-cap sensitivity was run for this production correction."
+        else:
+            sensitivity_note = "Higher caps are sensitivity only and were not passed to IMPG as graph policy."
         lines.extend([
             f"### {summary['scientific_name']} (`{summary['dataset_id']}`)", "",
             f"Targeted genes/bases: {prep['targeted_gene_count']:,}/{prep['targeted_gene_union_bases']:,}; deterministic panel: {prep['panel_selected_gene_count']:,}/{prep['panel_selected_union_bases']:,}; SweepGA-1:1 mapped panel genes/bases: {prep['sweepga_1to1_mapped_gene_count']:,}/{prep['sweepga_1to1_callable_panel_bases']:,}.",
             f"Across all native targets, SweepGA 1:1 fully covered {prep['sweepga_1to1_fully_covered_target_gene_count']:,} genes and excluded or only partially covered {prep['sweepga_1to1_excluded_or_partial_target_gene_count']:,}; its target-gene intersection retained {prep['sweepga_1to1_target_gene_callable_bases']:,} bases and lost {prep['sweepga_1to1_target_gene_lost_bases']:,}.",
             f"IMPG-audited callable coding/CDS bases: {callable_qc['coding_gene_acgt_callable_bases']:,}/{callable_qc['cds_acgt_callable_bases']:,}. Representative SNV: H1 {direct['h1_contig']}:{direct['h1_position_1based']} {direct['h1_base']} versus H2 {direct['h2_contig']}:{direct['h2_position_1based']} {direct['h2_base']} (strand {direct['paf_strand']}); both allele checks passed.",
             f"IMPG selected {sum(1 for line in (args.work_root / summary['dataset_id'] / 'focus.bed').read_text(encoding='utf-8').splitlines() if line):,} native partitions and emitted {sum(1 for line in (args.work_root / summary['dataset_id'] / 'vcf.list').read_text(encoding='utf-8').splitlines() if line):,} regional VCFs. Normalization yielded {summary['impg_variant_records_untrimmed_after_normalization']:,} records before exact panel trim/dedup and {summary['impg_variant_records_after_panel_trim_and_exact_dedup']:,} after; {summary['impg_variant_records_in_coding_panel']:,} overlap callable coding genes.",
-            f"Cap coverage sensitivity (query,target): 1:1=({prep['cap_sensitivity']['1']['query_coverage']:.4f},{prep['cap_sensitivity']['1']['target_coverage']:.4f}), 5:5=({prep['cap_sensitivity']['5']['query_coverage']:.4f},{prep['cap_sensitivity']['5']['target_coverage']:.4f}), 10:10=({prep['cap_sensitivity']['10']['query_coverage']:.4f},{prep['cap_sensitivity']['10']['target_coverage']:.4f}). Caps 5/10 are coverage sensitivity only and were not passed to IMPG as graph policy.", "",
+            f"Native cap coverage (query,target): {sensitivity_text}. {sensitivity_note}", "",
         ])
     lines.extend([
         "## Boundary, annotation, and uncertainty policy", "",

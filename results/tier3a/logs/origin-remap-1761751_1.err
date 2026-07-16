@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-103/analysis/tier3a_origin_remap.py", line 520, in <module>
+    raise SystemExit(main())
+  File "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-103/analysis/tier3a_origin_remap.py", line 515, in main
+    args.function(args)
+  File "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-103/analysis/tier3a_origin_remap.py", line 200, in audit_mapping
+    raise ValueError("native 1:1 output retains >0.95-overlap multiplicity on an axis")
+ValueError: native 1:1 output retains >0.95-overlap multiplicity on an axis
