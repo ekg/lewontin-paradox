@@ -1,0 +1,333 @@
+{
+  "biological": {
+    "annotation": {
+      "annotation_release": "GCA_048126635.1-GB_2025_08_04",
+      "annotation_status": "native",
+      "candidate_gene_bp_in_excerpt": 17951,
+      "candidate_protein_coding_genes": 5,
+      "cds_feature_ids": [
+        "cds-KAM8898984.1",
+        "cds-KAM8898985.1",
+        "cds-KAM8898986.1",
+        "cds-KAM8899855.1",
+        "cds-KAM8900411.1",
+        "cds-KAM8900412.1",
+        "cds-KAM8900413.1",
+        "cds-KAM8900414.1",
+        "cds-KAM8900415.1"
+      ],
+      "cds_feature_rows": 50,
+      "cds_phases_observed": [
+        0,
+        1,
+        2
+      ],
+      "contig": "CM106590.1",
+      "contig_dictionary_audit_passed": true,
+      "excerpt_source_coordinates_1based_closed": [
+        50001,
+        70000
+      ],
+      "excluded_gene_bp_in_excerpt": 3444,
+      "excluded_gene_count": 2,
+      "excluded_genes": [
+        {
+          "end": 52099,
+          "id": "gene-AB9W97_009801",
+          "locus_tag": "AB9W97_009801",
+          "name": "AB9W97_009801",
+          "reason": "partial_excerpt_boundary",
+          "start": 36854,
+          "strand": "+"
+        },
+        {
+          "end": 76381,
+          "id": "gene-AB9W97_010352",
+          "locus_tag": "AB9W97_010352",
+          "name": "atp1b2a",
+          "reason": "partial_excerpt_boundary",
+          "start": 68656,
+          "strand": "+"
+        }
+      ],
+      "fasta_contig": "CM106590.1",
+      "fasta_contig_length": 27159969,
+      "native_vs_projected": "native_exact_assembly_submitted_annotation",
+      "source_gff": "/moosefs/erikg/tier3data/tier3a-acquisition-20260716/spinachia_spinachia_SK-2024b/h1.native.gff",
+      "source_gff_sha256": "a984f6e6db964936996d1a0829e3808b4c508c933e21152eea9502dc8ff93c9b",
+      "targeted_gene_bp": 14507,
+      "targeted_gene_count": 3,
+      "targeted_genes": [
+        {
+          "end": 58671,
+          "id": "gene-AB9W97_009664",
+          "locus_tag": "AB9W97_009664",
+          "name": "tsc22d4",
+          "start": 52959,
+          "strand": "-"
+        },
+        {
+          "end": 63667,
+          "id": "gene-AB9W97_010084",
+          "locus_tag": "AB9W97_010084",
+          "name": "mogat3a",
+          "start": 58914,
+          "strand": "-"
+        },
+        {
+          "end": 68489,
+          "id": "gene-AB9W97_010351",
+          "locus_tag": "AB9W97_010351",
+          "name": "AB9W97_010351",
+          "start": 64450,
+          "strand": "-"
+        }
+      ]
+    },
+    "annotation_query_qc": {
+      "additional_preprocessing_padding_bp": 0,
+      "native_focus_bp": 18002,
+      "native_partition_context_bp_beyond_targets": 3495,
+      "native_partitions_selected": 9,
+      "one_to_one_excluded_gene_bp": 0,
+      "one_to_one_excluded_gene_count": 0,
+      "one_to_one_excluded_gene_ids": [],
+      "queryable_gene_bp": 14507,
+      "queryable_gene_count": 3,
+      "records_removed_by_target_trim_or_exact_dedup": 0,
+      "selection_rule": "native IMPG partitions intersecting exact queryable gene intervals",
+      "trimmed_deduplicated_record_count": 4,
+      "untrimmed_record_count": 4
+    },
+    "callable_denominator_bp": 14507,
+    "callable_scope": "queryable H1-native protein-coding gene spans; not genome-wide",
+    "direct_sequence_validation": {
+      "aligned_h1_local_half_open": [
+        0,
+        19653
+      ],
+      "aligned_h2_local_half_open": [
+        349,
+        20000
+      ],
+      "all_ref_alleles_match_h1": true,
+      "alleles": [
+        {
+          "alt": "TAC",
+          "chrom": "BIOH1#1#CM106590.1",
+          "h1_ref_matches": true,
+          "kind": "insertion",
+          "pos": 3429,
+          "ref": "T",
+          "target_gene_ids": [
+            "gene-AB9W97_009664"
+          ]
+        },
+        {
+          "alt": "T",
+          "chrom": "BIOH1#1#CM106590.1",
+          "h1_ref_matches": true,
+          "kind": "deletion",
+          "pos": 7967,
+          "ref": "TGC",
+          "target_gene_ids": [
+            "gene-AB9W97_009664"
+          ]
+        },
+        {
+          "alt": "A",
+          "chrom": "BIOH1#1#CM106590.1",
+          "h1_ref_matches": true,
+          "kind": "SNP",
+          "pos": 14700,
+          "ref": "G",
+          "target_gene_ids": [
+            "gene-AB9W97_010351"
+          ]
+        },
+        {
+          "alt": "T",
+          "chrom": "BIOH1#1#CM106590.1",
+          "h1_ref_matches": true,
+          "kind": "deletion",
+          "pos": 15504,
+          "ref": "TTA",
+          "target_gene_ids": [
+            "gene-AB9W97_010351"
+          ]
+        }
+      ],
+      "h1_with_observed_alts_equals_aligned_h2": true
+    },
+    "native_partition_count": 9,
+    "native_partition_focus_bp": 18002,
+    "nonzero_callable_denominator": true,
+    "nonzero_mapping": true,
+    "normalized_bcf_indexed": true,
+    "normalized_vcf_indexed": true,
+    "observed_record_count": 4,
+    "observed_records": [
+      [
+        "BIOH1#1#CM106590.1",
+        "3429",
+        "T",
+        "TAC"
+      ],
+      [
+        "BIOH1#1#CM106590.1",
+        "7967",
+        "TGC",
+        "T"
+      ],
+      [
+        "BIOH1#1#CM106590.1",
+        "14700",
+        "G",
+        "A"
+      ],
+      [
+        "BIOH1#1#CM106590.1",
+        "15504",
+        "TTA",
+        "T"
+      ]
+    ],
+    "pair": "Spinachia spinachia SK-2024b H1/H2",
+    "source_h1": "/moosefs/erikg/tier3data/tier3a-acquisition-20260716/spinachia_spinachia_SK-2024b/h1.fna:CM106590.1:50001-70000",
+    "source_h2": "/moosefs/erikg/tier3data/tier3a-acquisition-20260716/spinachia_spinachia_SK-2024b/h2.fna:CM106672.1:45001-65000",
+    "sweepga_mapping": {
+      "max_query_overlap_depth": 1,
+      "max_target_overlap_depth": 1,
+      "records": 1
+    }
+  },
+  "controlled": {
+    "completion_gate": false,
+    "exact_match": true,
+    "executed": true,
+    "expected_records": [
+      [
+        "H1#1#chrS",
+        "5301",
+        "G",
+        "T"
+      ],
+      [
+        "H1#1#chrS",
+        "5500",
+        "G",
+        "GTTA"
+      ],
+      [
+        "H1#1#chrS",
+        "5700",
+        "GAT",
+        "G"
+      ]
+    ],
+    "focused_callable_bp": 999,
+    "native_partition_count": 20,
+    "normalized_bcf_indexed": true,
+    "normalized_vcf_indexed": true,
+    "observed_records": [
+      [
+        "H1#1#chrS",
+        "5301",
+        "G",
+        "T"
+      ],
+      [
+        "H1#1#chrS",
+        "5500",
+        "G",
+        "GTTA"
+      ],
+      [
+        "H1#1#chrS",
+        "5700",
+        "GAT",
+        "G"
+      ]
+    ],
+    "sweepga_mapping": {
+      "max_query_overlap_depth": 1,
+      "max_target_overlap_depth": 1,
+      "records": 1
+    }
+  },
+  "environment": {
+    "bcftools_version": "bcftools 1.14",
+    "cargo_version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+    "channels_file": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-80/analysis/guix/channels.scm",
+    "gfaffix_sha256": "4bc1c5e236a8fe6aa1dbcff6e6cf515e8a70c808549990a515c3c5212776a627",
+    "guix_channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "guix_profile": "/gnu/store/8x4hx7d9hnv187yprjrzqyg0kxj2z32k-profile",
+    "impg_commit": "101df81eb28a809c8fac97d297acd9fcfbbfa048",
+    "impg_gfaffix_submodule_commit": "460e0dd798a9da7d12aef4f9181419d71489da95",
+    "impg_sha256": "c587dc2326cd24f887b1fcb3938404229ad0f0a27ef0773e90c287b1ade160d4",
+    "impg_syng_submodule_commit": "dd00f52b688c0fb78cb7f25336ef9ac9f6a3e109",
+    "impg_version": "impg 0.4.1",
+    "manifest_file": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-80/analysis/guix/sweepga_impg_smoke_manifest.scm",
+    "patchelf_source_sha256": "1952b2a782ba576279c211ee942e341748fdb44997f704dd53def46cd055470b",
+    "rust_toolchain_source_sha256": "294b3d81fa72e62581276290c60c81eb8b58498d333d422ca1dfc432877d0c40",
+    "rustc_version": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "samtools_version": "samtools 1.14",
+    "sweepga_commit": "018e4ce49d2c125820e0ac50dc5feaa02d423683",
+    "sweepga_companion_sha256": {
+      "ALNtoPAF": "dc5446ff411723862219f378892c94d57abeea882d66a47e96d62b3b27e80b57",
+      "FAtoGDB": "8b602f0aab9871a2b666dc6a0a2540cb81eac4d1b9f7461acc01a5c998ea558a",
+      "FastGA": "88fcc7f0eb076a36727677c863557325c2a8ab41a71419c2e50bdcd9a4d3bb4e",
+      "GIXmake": "17bed139553e965aa7a1ccb18ff419e936c098c88257a1eabfd4e648d30cf9c0",
+      "GIXrm": "410ea649af9d018358dda5ca038f3a2e6cd7ca0530f971376d17ea0d4f693400",
+      "ONEview": "77d7dd475859c1fae7de095a0a9e67d819c9e2209dc120dc790d1938967c3278",
+      "PAFtoALN": "f2d181ef7bbb9acf7b113c174b584761424dc6c227020e525dca045d65c3ca6d",
+      "wfmash": "0d8a3a72cfda75a30c38e81b90320c5d212d24b8c312ad22fe97d67e553fc0f6"
+    },
+    "sweepga_sha256": "1a5440529f5eff91cb7d82876a83a5282df66fb5e2c4b1a9c6caa0bdb83de7b1",
+    "sweepga_version": "sweepga 0.1.1"
+  },
+  "multiplicity_probe": {
+    "1": {
+      "accepted_form": "1:1",
+      "labels": [
+        "tie_first"
+      ],
+      "records": 1
+    },
+    "10": {
+      "accepted_form": "10:10",
+      "labels": [
+        "tie_first",
+        "tie_second",
+        "rank_3",
+        "rank_4",
+        "rank_5",
+        "rank_6",
+        "rank_7",
+        "rank_8",
+        "rank_9",
+        "rank_10"
+      ],
+      "records": 10
+    },
+    "5": {
+      "accepted_form": "5:5",
+      "labels": [
+        "tie_first",
+        "tie_second",
+        "rank_3",
+        "rank_4",
+        "rank_5"
+      ],
+      "records": 5
+    }
+  },
+  "pass": true,
+  "schema_version": "sweepga-impg-handoff-v1",
+  "short_n_probe": {
+    "accepted": false,
+    "command": "sweepga -n 1:1 --version",
+    "exit_status": 2,
+    "supported_option": "--num-mappings 1:1"
+  }
+}

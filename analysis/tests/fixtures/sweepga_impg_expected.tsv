@@ -1,0 +1,4 @@
+proof	chrom	pos	ref	alt	kind
+controlled	H1#1#chrS	5301	G	T	SNP
+controlled	H1#1#chrS	5500	G	GTTA	insertion
+controlled	H1#1#chrS	5700	GAT	G	deletion
