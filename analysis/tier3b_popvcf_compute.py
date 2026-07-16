@@ -26,6 +26,7 @@ if __package__ in (None, ""):  # permit ``python analysis/<script>.py``
 
 from analysis.tier3_common import (
     DNA,
+    GFFAnnotation,
     Tier3ValidationError,
     allele_pairwise_diversity,
     collect_fourfold_sites,
@@ -351,7 +352,64 @@ def audit_native_annotation(
 
     # Reconstruct every retained transcript; collect_fourfold_sites additionally
     # checks frame, ambiguity, translation, stops, and overlap disagreement.
+    raw_exclusions = annotation_metadata.get("excluded_transcripts", {})
+    if raw_exclusions is None:
+        raw_exclusions = {}
+    if not isinstance(raw_exclusions, Mapping) or any(
+        not isinstance(identifier, str)
+        or not identifier
+        or not isinstance(reason, str)
+        or not reason
+        for identifier, reason in raw_exclusions.items()
+    ):
+        raise Tier3ValidationError(
+            "annotation excluded_transcripts must map non-empty transcript IDs to reasons"
+        )
+    excluded_transcripts = dict(sorted(raw_exclusions.items()))
+    unknown_exclusions = sorted(set(excluded_transcripts) - set(annotation.transcripts))
+    if unknown_exclusions:
+        raise Tier3ValidationError(
+            "annotation exclusions name absent transcripts: {!r}".format(unknown_exclusions)
+        )
+    excluded_noncanonical = sorted(
+        set(excluded_transcripts) - set(annotation.canonical_transcripts.values())
+    )
+    if excluded_noncanonical:
+        raise Tier3ValidationError(
+            "annotation exclusions are not retained canonical transcripts: {!r}".format(
+                excluded_noncanonical
+            )
+        )
+    annotation.canonical_transcripts = {
+        gene_id: transcript_id
+        for gene_id, transcript_id in annotation.canonical_transcripts.items()
+        if transcript_id not in excluded_transcripts
+    }
+
+    invalid_policy = annotation_metadata.get("invalid_transcript_policy")
+    if invalid_policy not in (None, "fail", "exclude_with_audit"):
+        raise Tier3ValidationError("unsupported invalid_transcript_policy")
+    automatically_excluded: Dict[str, str] = {}
+    if invalid_policy == "exclude_with_audit":
+        for gene_id, transcript_id in sorted(annotation.canonical_transcripts.items()):
+            one_transcript = GFFAnnotation(
+                annotation.sequence_regions,
+                annotation.transcripts,
+                {gene_id: transcript_id},
+            )
+            try:
+                collect_fourfold_sites(annotation_fasta, one_transcript, genetic_code)
+            except Tier3ValidationError as error:
+                automatically_excluded[transcript_id] = str(error)
+        annotation.canonical_transcripts = {
+            gene_id: transcript_id
+            for gene_id, transcript_id in annotation.canonical_transcripts.items()
+            if transcript_id not in automatically_excluded
+        }
+
     retained_ids = sorted(set(annotation.canonical_transcripts.values()))
+    if not retained_ids:
+        raise Tier3ValidationError("annotation exclusions remove every retained transcript")
     reconstructed = {
         transcript_id: reconstruct_cds(annotation_fasta, annotation.transcripts[transcript_id])
         for transcript_id in retained_ids
@@ -406,6 +464,11 @@ def audit_native_annotation(
         "sampled_cds_mismatches": mismatches,
         "all_retained_cds_phase_translation_passed": True,
         "retained_transcripts": len(retained_ids),
+        "declared_excluded_transcripts": excluded_transcripts,
+        "automatically_excluded_invalid_transcripts": automatically_excluded,
+        "excluded_transcripts": dict(
+            sorted({**excluded_transcripts, **automatically_excluded}.items())
+        ),
         "fourfold_sites": len(fourfold),
         "overlap_frame_exclusions": len(overlap_exclusions),
     }
@@ -557,6 +620,65 @@ def _bootstrap(
     return result
 
 
+def _delete_one_unit_jackknife(
+    point_estimate: float,
+    leave_one_out: Mapping[str, float],
+) -> Dict[str, Any]:
+    """Return sampling-unit jackknife uncertainty without replacing block QC.
+
+    Tier 3's genomic block bootstrap remains the primary frozen uncertainty
+    calculation.  A recovery tuple shorter than twenty 1-Mb blocks cannot
+    produce that interval, so this separately labelled jackknife quantifies
+    uncertainty across the twenty biological sampling units conditional on
+    the exact cohort callable mask.
+    """
+
+    unit_ids = sorted(leave_one_out)
+    estimates = [leave_one_out[unit_id] for unit_id in unit_ids]
+    if len(estimates) < 2 or any(not math.isfinite(value) for value in estimates):
+        raise Tier3ValidationError("delete-one-unit jackknife has non-finite replicates")
+    mean = sum(estimates) / len(estimates)
+    standard_error = math.sqrt(
+        (len(estimates) - 1)
+        / len(estimates)
+        * sum((value - mean) ** 2 for value in estimates)
+    )
+    return {
+        "method": "delete_one_sampling_unit_jackknife",
+        "unit": "one selected biological individual",
+        "replicates": len(estimates),
+        "conditional_on": "exact selected-cohort callable mask and frozen site filters",
+        "standard_error": standard_error,
+        "interval_type": "normal_approximation_95_percent",
+        "interval": [
+            max(0.0, point_estimate - 1.959963984540054 * standard_error),
+            point_estimate + 1.959963984540054 * standard_error,
+        ],
+        "leave_one_out_estimates": {
+            unit_id: leave_one_out[unit_id] for unit_id in unit_ids
+        },
+    }
+
+
+def _span_class_counts(
+    fasta: Mapping[str, str],
+    fourfold_by_contig: Mapping[str, Sequence[int]],
+    contig: str,
+    start: int,
+    end: int,
+) -> Tuple[int, int, int]:
+    """Count ACGT and reference-conditioned 4D S/W sites in a half-open span."""
+
+    sequence = fasta[contig][start:end].upper()
+    acgt = sum(sequence.count(base) for base in "ACGT")
+    positions = fourfold_by_contig.get(contig, ())
+    first = bisect.bisect_left(positions, start)
+    last = bisect.bisect_left(positions, end)
+    strong = sum(fasta[contig][position].upper() in "GC" for position in positions[first:last])
+    weak = last - first - strong
+    return acgt, strong, weak
+
+
 def compute_population_pi(
     *,
     dataset_id: str,
@@ -573,6 +695,7 @@ def compute_population_pi(
     bootstrap_replicates: int = BOOTSTRAP_REPLICATES,
     minimum_4d_class_sites: int = MINIMUM_4D_CLASS_SITES,
     polarization_gate: Optional[Mapping[str, Any]] = None,
+    sampling_unit_jackknife: bool = False,
 ) -> Dict[str, Any]:
     """Compute a policy-complete Tier 3b result.
 
@@ -650,9 +773,37 @@ def compute_population_pi(
     for contig, position in sorted(fourfold):
         fourfold_by_contig[contig].append(position)
 
+    initial_s = int(round(sum(stats["S_den"] for stats in block_stats.values())))
+    initial_w = int(round(sum(stats["W_den"] for stats in block_stats.values())))
+    jackknife_stats: Dict[str, Dict[str, float]] = {
+        sample: {
+            "num": 0.0,
+            "den": float(initial_callable),
+            "S_num": 0.0,
+            "S_den": float(initial_s),
+            "W_num": 0.0,
+            "W_den": float(initial_w),
+        }
+        for sample in selected_samples
+        if sampling_unit_jackknife
+    }
+    sample_summaries: Dict[str, Dict[str, int]] = {
+        sample: {
+            "records_in_callable_mask": 0,
+            "called_chromosome_observations": 0,
+            "missing_chromosome_observations": 0,
+            "heterozygous_snv_sites": 0,
+            "nonreference_genotype_sites": 0,
+        }
+        for sample in selected_samples
+    }
+
     exclusion_counts: Dict[str, int] = collections.Counter()
     called_histogram: Dict[int, int] = collections.Counter()
     informative_snvs = 0
+    polymorphic_snvs = 0
+    class_informative_snvs: Dict[str, int] = collections.Counter()
+    class_polymorphic_snvs: Dict[str, int] = collections.Counter()
     contig_order = {contig: index for index, contig in enumerate(vcf_contigs)}
     previous_coordinate: Optional[Tuple[int, int]] = None
     # Records that fail QC must be removed from an otherwise callable mask.
@@ -690,6 +841,20 @@ def compute_population_pi(
         key = (record.contig, record.position // BLOCK_SIZE_BP)
         base = fasta[record.contig][record.position].upper()
         selected_genotypes = [_coerce_genotype(record.genotypes[sample], design) for sample in selected_samples]
+        for sample, genotype in zip(selected_samples, selected_genotypes):
+            summary = sample_summaries[sample]
+            summary["records_in_callable_mask"] += 1
+            summary["called_chromosome_observations"] += sum(
+                allele is not None for allele in genotype
+            )
+            summary["missing_chromosome_observations"] += sum(
+                allele is None for allele in genotype
+            )
+            called_alleles = {allele for allele in genotype if allele is not None}
+            if len(called_alleles) > 1:
+                summary["heterozygous_snv_sites"] += 1
+            if any(allele is not None and allele > 0 for allele in genotype):
+                summary["nonreference_genotype_sites"] += 1
         called = sum(allele is not None for genotype in selected_genotypes for allele in genotype)
         called_histogram[called] += 1
         symbolic_reference_block = bool(record.alts) and all(alt.startswith("<") for alt in record.alts)
@@ -731,25 +896,83 @@ def compute_population_pi(
             for position in positions[first:last]:
                 class_name = "S" if fasta[record.contig][position].upper() in "GC" else "W"
                 block_stats[(record.contig, position // BLOCK_SIZE_BP)][class_name + "_den"] -= 1.0
+            removed_acgt, removed_s, removed_w = _span_class_counts(
+                fasta, fourfold_by_contig, record.contig, record.position, removal_end
+            )
+            for stats in jackknife_stats.values():
+                stats["den"] -= removed_acgt
+                stats["S_den"] -= removed_s
+                stats["W_den"] -= removed_w
             continue
         # Invariant explicit records have diversity zero. Symbolic gVCF ALT is
         # reference-confidence evidence, not a variant allele.
-        if not snv:
-            continue
-        contribution = allele_pairwise_diversity(selected_genotypes, minimum_called)
-        if contribution is None:  # defended above, retained as a fail-closed invariant
-            raise Tier3ValidationError("call-count invariant failed")
-        block_stats[key]["num"] += contribution
-        informative_snvs += 1
-        if (record.contig, record.position) in fourfold:
-            class_name = "S" if base in "GC" else "W"
-            block_stats[key][class_name + "_num"] += contribution
+        if snv:
+            contribution = allele_pairwise_diversity(selected_genotypes, minimum_called)
+            if contribution is None:  # defended above, retained as a fail-closed invariant
+                raise Tier3ValidationError("call-count invariant failed")
+            block_stats[key]["num"] += contribution
+            informative_snvs += 1
+            if contribution > 0:
+                polymorphic_snvs += 1
+            if (record.contig, record.position) in fourfold:
+                class_name = "S" if base in "GC" else "W"
+                block_stats[key][class_name + "_num"] += contribution
+                class_informative_snvs[class_name] += 1
+                if contribution > 0:
+                    class_polymorphic_snvs[class_name] += 1
+
+        remaining_minimum_called = (
+            int(math.ceil(1.8 * (len(selected_samples) - 1)))
+            if design == "wild_diploid"
+            else int(math.ceil(0.9 * (len(selected_samples) - 1)))
+        )
+        jackknife_units = enumerate(selected_samples) if sampling_unit_jackknife else ()
+        for omitted_index, omitted_sample in jackknife_units:
+            remaining_called = called - sum(
+                allele is not None for allele in selected_genotypes[omitted_index]
+            )
+            stats = jackknife_stats[omitted_sample]
+            if remaining_called < remaining_minimum_called:
+                removal_end = (
+                    int(record.info["END"])
+                    if denominator_kind == "gvcf"
+                    and symbolic_reference_block
+                    and "END" in record.info
+                    else record.position + 1
+                )
+                removed_acgt, removed_s, removed_w = _span_class_counts(
+                    fasta, fourfold_by_contig, record.contig, record.position, removal_end
+                )
+                stats["den"] -= removed_acgt
+                stats["S_den"] -= removed_s
+                stats["W_den"] -= removed_w
+                continue
+            if not snv:
+                continue
+            remaining = selected_genotypes[:omitted_index] + selected_genotypes[omitted_index + 1 :]
+            jackknife_contribution = allele_pairwise_diversity(
+                remaining, remaining_minimum_called
+            )
+            if jackknife_contribution is None:
+                raise Tier3ValidationError("jackknife call-count invariant failed")
+            stats["num"] += jackknife_contribution
+            if (record.contig, record.position) in fourfold:
+                stats[("S" if base in "GC" else "W") + "_num"] += jackknife_contribution
 
     diversity_sum = sum(stats["num"] for stats in block_stats.values())
     callable_sites = int(round(sum(stats["den"] for stats in block_stats.values())))
     if callable_sites <= 0:
         raise Tier3ValidationError("no callable sites remain after QC")
     population_pi = diversity_sum / callable_sites
+    leave_one_population_pi: Dict[str, float] = {}
+    if sampling_unit_jackknife:
+        leave_one_population_pi = {
+            sample: stats["num"] / stats["den"]
+            for sample, stats in jackknife_stats.items()
+            if stats["den"] > 0
+        }
+        if len(leave_one_population_pi) != len(selected_samples):
+            raise Tier3ValidationError("jackknife population denominator is zero")
 
     result: Dict[str, Any] = {
         "policy_id": POLICY_ID,
@@ -787,11 +1010,13 @@ def compute_population_pi(
                 str(key): value for key, value in sorted(called_histogram.items())
             },
             "informative_snv_sites": informative_snvs,
+            "polymorphic_snv_sites": polymorphic_snvs,
             "bootstrap": _bootstrap(
                 dataset_id, "population_pi", block_stats, bootstrap_replicates, False, True
             ),
         },
         "exclusion_counts": dict(sorted(exclusion_counts.items())),
+        "sample_summaries": sample_summaries,
         "annotation": annotation_audit,
         "pi_S_over_pi_W": None,
         "polarization_gate": {
@@ -800,6 +1025,10 @@ def compute_population_pi(
             "reason": "deferred_by_tier3-decisions-v1",
         },
     }
+    if sampling_unit_jackknife:
+        result["population_pi"]["uncertainty"] = _delete_one_unit_jackknife(
+            population_pi, leave_one_population_pi
+        )
 
     if fourfold:
         class_results: Dict[str, Dict[str, Any]] = {}
@@ -813,6 +1042,8 @@ def compute_population_pi(
                 "denominator": denominator,
                 "callable_count": denominator,
                 "point_estimate": numerator / denominator if denominator else None,
+                "informative_snv_sites": class_informative_snvs[class_name],
+                "polymorphic_snv_sites": class_polymorphic_snvs[class_name],
             }
         pi_s, pi_w = class_results["S"]["point_estimate"], class_results["W"]["point_estimate"]
         unavailable_reason: Optional[str] = None
@@ -821,6 +1052,22 @@ def compute_population_pi(
         elif pi_w is None or pi_w == 0:
             unavailable_reason = "pi_W_is_zero_or_unavailable"
         ratio_value = pi_s / pi_w if unavailable_reason is None and pi_s is not None and pi_w else None
+        leave_one_classes: Dict[str, Dict[str, float]] = {"S": {}, "W": {}}
+        if sampling_unit_jackknife:
+            for class_name in ("S", "W"):
+                for sample, stats in jackknife_stats.items():
+                    denominator = stats[class_name + "_den"]
+                    if denominator <= 0:
+                        raise Tier3ValidationError(
+                            "jackknife {} denominator is zero".format(class_name)
+                        )
+                    leave_one_classes[class_name][sample] = (
+                        stats[class_name + "_num"] / denominator
+                    )
+                class_results[class_name]["uncertainty"] = _delete_one_unit_jackknife(
+                    class_results[class_name]["point_estimate"],
+                    leave_one_classes[class_name],
+                )
         result["pi_S_over_pi_W"] = {
             "reference_conditioned": True,
             "class_definition": "forward_reference_GC_is_S_AT_is_W",
@@ -838,6 +1085,17 @@ def compute_population_pi(
                 ratio_value is not None,
             ),
         }
+        if sampling_unit_jackknife and ratio_value is not None:
+            leave_one_ratios = {
+                sample: leave_one_classes["S"][sample] / leave_one_classes["W"][sample]
+                for sample in selected_samples
+                if leave_one_classes["W"][sample] > 0
+            }
+            if len(leave_one_ratios) != len(selected_samples):
+                raise Tier3ValidationError("jackknife pi_W is zero")
+            result["pi_S_over_pi_W"]["uncertainty"] = _delete_one_unit_jackknife(
+                ratio_value, leave_one_ratios
+            )
     return result
 
 
@@ -861,6 +1119,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--annotation-provenance", type=Path, help="JSON with provider/release/assembly/status/code")
     parser.add_argument("--contig-mapping", type=Path)
     parser.add_argument("--provider-cds", type=Path)
+    parser.add_argument(
+        "--sampling-unit-jackknife",
+        action="store_true",
+        help="also compute delete-one-selected-individual uncertainty",
+    )
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
     annotation_metadata = None
@@ -878,6 +1141,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         annotation_metadata=annotation_metadata,
         contig_mapping_path=args.contig_mapping,
         provider_cds_path=args.provider_cds,
+        sampling_unit_jackknife=args.sampling_unit_jackknife,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")

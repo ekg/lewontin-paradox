@@ -1,0 +1,3 @@
+tuple_id	population_id	subset	eligible_sample_size	manual_variant_count	production_variant_count	manual_numerator	production_numerator	manual_callable_sites	production_callable_sites	manual_estimate	production_estimate	absolute_difference	status
+ag1000g_phase3_ao_coluzzii	AO_Luanda_2009_coluzzii	3R:10000000-10099999	20	4937	4937	1005.1491987938879	1005.1491987938879	87138	87138	0.011535141944890723	0.011535141944890723	0.0	PASS
+ag1000g_phase3_gm_coluzzii	GM_WaliKunda_2012_coluzzii	3R:10000000-10099999	20	8826	8826	1314.9250099433136	1314.9250099433136	87198	87198	0.015079761117724187	0.015079761117724187	0.0	PASS

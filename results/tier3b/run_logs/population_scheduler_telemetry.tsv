@@ -1,0 +1,3 @@
+tuple_id	job_id	array_task_id	state	elapsed	total_cpu	max_rss	req_mem	alloc_cpus	exit_code
+ag1000g_phase3_ao_coluzzii	1761721_0	0	COMPLETED	01:45:39	00:00:00	not_reported_by_sacct	12G	2	0:0
+ag1000g_phase3_gm_coluzzii	1761721_1	1	COMPLETED	01:43:17	00:00:00	not_reported_by_sacct	12G	2	0:0

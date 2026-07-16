@@ -1,0 +1,48 @@
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+Python 3.10.7
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bcftools 1.14
+Using htslib 1.16
+Copyright (C) 2021 Genome Research Ltd.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+samtools 1.14
+Using htslib 1.16
+Copyright (C) 2021 Genome Research Ltd.
+
+Samtools compilation details:
+    Features:       build=configure curses=yes
+    CC:             gcc
+    CPPFLAGS:
+    CFLAGS:         -Wall -g -O2
+    LDFLAGS:
+    HTSDIR:
+    LIBS:
+    CURSES_LIB:     -lncursesw
+
+HTSlib compilation details:
+    Features:       build=configure libcurl=yes S3=yes GCS=yes libdeflate=no lzma=yes bzip2=yes plugins=no htscodecs=1.3.0
+    CC:             gcc
+    CPPFLAGS:
+    CFLAGS:         -Wall -g -O2 -fvisibility=hidden
+    LDFLAGS:        -fvisibility=hidden
+
+HTSlib URL scheme handlers present:
+    built-in:	 preload, data, file
+    S3 Multipart Upload:	 s3w, s3w+https, s3w+http
+    Amazon S3:	 s3+https, s3+http, s3
+    Google Cloud Storage:	 gs+http, gs+https, gs
+    libcurl:	 imaps, pop3, gophers, http, smb, gopher, ftps, imap, smtp, smtps, rtsp, ftp, telnet, mqtt, https, smbs, tftp, pop3s, dict
+    crypt4gh-needed:	 crypt4gh
+    mem:	 mem
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bgzip (htslib) 1.16
+Copyright (C) 2022 Genome Research Ltd.
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bedtools v2.30.0
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+...........................                                              [100%]
+27 passed in 0.60s
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)

@@ -314,6 +314,96 @@ def test_reference_conditioned_W_S_classes_and_annotation_provenance(tmp_path):
     assert result["annotation"]["contig_dictionary_passed"] is True
 
 
+def test_explicit_native_transcript_exclusion_is_audited_without_editing_gff(tmp_path):
+    samples = _samples()
+    fasta = tmp_path / "truth.fa"
+    fasta.write_bytes((FIXTURES / "truth.fa").read_bytes())
+    bed = tmp_path / "callable.bed"
+    bed.write_bytes((FIXTURES / "expected.callable.bed").read_bytes())
+    sequences = {"chr1": "GCTAGCCAAAAAAAAAAAATCCACCTAAAAAAAAA"}
+    vcf = _write_vcf(tmp_path, sequences, samples, [])
+    metadata = _annotation_metadata()
+    metadata["excluded_transcripts"] = {"tx_minus": "provider CDS ambiguity documented upstream"}
+    result = _compute(
+        tmp_path,
+        vcf,
+        fasta,
+        samples,
+        bed,
+        gff_path=FIXTURES / "truth.gff3",
+        annotation_metadata=metadata,
+    )
+    assert result["annotation"]["excluded_transcripts"] == metadata["excluded_transcripts"]
+    assert result["annotation"]["declared_excluded_transcripts"] == metadata["excluded_transcripts"]
+    assert result["annotation"]["retained_transcripts"] == 1
+    assert result["annotation"]["gff_sha256"]
+
+    metadata["excluded_transcripts"] = {"absent": "not allowed"}
+    with pytest.raises(Tier3ValidationError, match="absent transcripts"):
+        _compute(
+            tmp_path,
+            vcf,
+            fasta,
+            samples,
+            bed,
+            gff_path=FIXTURES / "truth.gff3",
+            annotation_metadata=metadata,
+        )
+
+
+def test_invalid_canonical_transcripts_can_be_excluded_with_exact_audit(tmp_path):
+    samples = _samples()
+    sequences = {"chr1": "GCN"}
+    fasta = _write_fasta(tmp_path, sequences)
+    bed = _write_bed(tmp_path, [("chr1", 0, 3)])
+    vcf = _write_vcf(tmp_path, sequences, samples, [])
+    gff = tmp_path / "native.gff3"
+    gff.write_text(
+        "##gff-version 3\n"
+        "##sequence-region chr1 1 3\n"
+        "chr1\tx\tgene\t1\t3\t.\t+\t.\tID=g\n"
+        "chr1\tx\tmRNA\t1\t3\t.\t+\t.\tID=t;Parent=g;tag=canonical\n"
+        "chr1\tx\tCDS\t1\t3\t.\t+\t0\tParent=t\n",
+        encoding="utf-8",
+    )
+    metadata = _annotation_metadata()
+    metadata["invalid_transcript_policy"] = "exclude_with_audit"
+    with pytest.raises(Tier3ValidationError, match="remove every retained transcript"):
+        _compute(
+            tmp_path,
+            vcf,
+            fasta,
+            samples,
+            bed,
+            gff_path=gff,
+            annotation_metadata=metadata,
+        )
+
+
+def test_delete_one_individual_jackknife_reports_complete_uncertainty(tmp_path):
+    samples = _samples()
+    sequences = {"chr1": "A" * 10}
+    fasta = _write_fasta(tmp_path, sequences)
+    bed = _write_bed(tmp_path, [("chr1", 0, 10)])
+    genotypes = ["0/1"] + ["0/0"] * 19
+    vcf = _write_vcf(tmp_path, sequences, samples, [("chr1", 2, "A", "G", genotypes)])
+    result = _compute(
+        tmp_path,
+        vcf,
+        fasta,
+        samples,
+        bed,
+        sampling_unit_jackknife=True,
+    )
+    uncertainty = result["population_pi"]["uncertainty"]
+    assert uncertainty["method"] == "delete_one_sampling_unit_jackknife"
+    assert uncertainty["replicates"] == 20
+    assert uncertainty["standard_error"] > 0
+    assert len(uncertainty["leave_one_out_estimates"]) == 20
+    assert 0 <= uncertainty["interval"][0] <= result["population_pi"]["point_estimate"]
+    assert uncertainty["interval"][1] >= result["population_pi"]["point_estimate"]
+
+
 @pytest.mark.parametrize(
     "metadata, message",
     [
