@@ -105,7 +105,8 @@ def read_h1_coverage(path: Path, fai: dict[str, int]) -> tuple[dict[str, list[tu
 
 
 def write_haplotype_contig_map(
-    paf: Path, h1_fai: dict[str, int], h2_fai: dict[str, int], output: Path
+    paf: Path, h1_fai: dict[str, int], h2_fai: dict[str, int], output: Path,
+    mapping_status: str = "selected_bounded_mapping",
 ) -> None:
     pairs: dict[tuple[str, str], dict[str, object]] = {}
     mapped_h1: set[str] = set()
@@ -147,7 +148,7 @@ def write_haplotype_contig_map(
                 f"contig_relation_{relation:06d}", h1_name, h1_fai[h1_name], h2_name,
                 h2_fai[h2_name], ",".join(sorted(item["strands"])), item["records"],
                 sum(end - start for start, end in merge(item["h1"])),
-                sum(end - start for start, end in merge(item["h2"])), "selected_bounded_mapping",
+                sum(end - start for start, end in merge(item["h2"])), mapping_status,
             ])
         for h1_name in sorted(set(h1_fai) - mapped_h1):
             relation += 1
@@ -298,6 +299,7 @@ def main() -> int:
     parser.add_argument("--bounded-paf", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--annotation-release", required=True)
+    parser.add_argument("--mapping-status", default="selected_bounded_mapping")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -480,7 +482,9 @@ def main() -> int:
             ])
 
     haplotype_contig_map = args.output_dir / "h1_h2_contig_map.tsv"
-    write_haplotype_contig_map(args.bounded_paf, fai, h2_fai, haplotype_contig_map)
+    write_haplotype_contig_map(
+        args.bounded_paf, fai, h2_fai, haplotype_contig_map, args.mapping_status
+    )
 
     targeted_genes = [genes[item] for item, status in gene_status.items() if status[0]]
     excluded_genes = [genes[item] for item, status in gene_status.items() if status[0] and not status[1]]

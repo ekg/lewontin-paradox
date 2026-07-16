@@ -1,2 +1,2 @@
 dataset_id	scientific_name	stage	status	reason	slurm_job_id	stderr_path	rerun_command
-menidia_menidia_fMenMen1	Menidia menidia	impg_query_preflight	recovered	IMPG default minimum rejected a 64-bp native partition; rerun used documented --min-transitive-len 1	1761687_0;1761688_0	/moosefs/erikg/tier3data/tier3a-biological-20260716/menidia_menidia_fMenMen1/query.stderr	sbatch --array=0 analysis/slurm/tier3a_biological_array.sh
+menidia_menidia_fMenMen1	Menidia menidia	post_partition_shell_dispatch	recovered	partial_attempt_discarded_after_live_script_parse_error_before_IMPG_query	1761798_0	results/tier3a/logs/origin-rerun-1761798_0.err	sbatch --array=0 analysis/slurm/tier3a_biological_array.sh

@@ -1,0 +1,4 @@
+dataset_id	slurm_job_id	slurm_array_task_id	node	requested_cpus	requested_memory	elapsed	max_rss	exit_code	prior_failed_job_id	prior_failure_stage	prior_failure_reason	prior_stderr_path	recovery_command
+menidia_menidia_fMenMen1	1761813_0	0	octopus07	8	64G	00:17:39	not_reported_by_sacct	0:0	1761798_0	post_partition_shell_dispatch	partial_attempt_discarded_after_live_script_parse_error_before_IMPG_query	results/tier3a/logs/origin-rerun-1761798_0.err	sbatch --array=0 analysis/slurm/tier3a_biological_array.sh
+spinachia_spinachia_SK-2024b	1761798_1	1	octopus07	8	64G	00:04:34	not_reported_by_sacct	0:0					not_applicable
+tautogolabrus_adspersus_fTauAds1	1761798_2	2	octopus07	8	64G	00:06:27	not_reported_by_sacct	0:0					not_applicable

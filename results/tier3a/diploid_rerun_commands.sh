@@ -1,27 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-cd "$ROOT"
-mkdir -p results/tier3a/logs
+TIER3A_WORK_ROOT=/moosefs/erikg/tier3data/tier3a-origin-biological-rerun-20260716 sbatch --array=0 analysis/slurm/tier3a_biological_array.sh # menidia_menidia_fMenMen1
+TIER3A_WORK_ROOT=/moosefs/erikg/tier3data/tier3a-origin-biological-rerun-20260716 sbatch --array=1 analysis/slurm/tier3a_biological_array.sh # spinachia_spinachia_SK-2024b
+TIER3A_WORK_ROOT=/moosefs/erikg/tier3data/tier3a-origin-biological-rerun-20260716 sbatch --array=2 analysis/slurm/tier3a_biological_array.sh # tautogolabrus_adspersus_fTauAds1
 
-# Primary biological run: the three acquisition rows are array indices 0-2.
-# Each task consumes the checksum-locked whole-H1/H2 SweepGA --num-mappings
-# 1:1 PAF, then lets IMPG independently index, partition, and query it.
-sbatch --array=0-2 analysis/slurm/tier3a_biological_array.sh
-
-# After the array finishes, replace JOB_ID and capture measured Slurm resources.
-JOB_ID=${1:-JOB_ID}
-sacct -j "$JOB_ID" --allocations -P -n \
-    -o JobIDRaw,JobName,State,ExitCode,Elapsed,MaxRSS,ReqMem,AllocCPUS,NodeList \
-    > "results/tier3a/logs/tier3a-${JOB_ID}.sacct"
-
-# The committed aggregation command is rerunnable after telemetry.tsv has been
-# regenerated from sacct (the run manifest preserves the exact completed paths).
-guix time-machine -C analysis/guix/channels.scm -- \
-    shell -m analysis/guix/manifest.scm --pure -- \
-    python3 analysis/tier3a_biological.py finalize \
-        --manifest results/tier3a/acquisition_corrected_manifest.tsv \
-        --work-root /moosefs/erikg/tier3data/tier3a-origin-biological-20260716 \
-        --telemetry results/tier3a/logs/telemetry.tsv \
-        --output-dir results/tier3a
+# After the array completes, regenerate sacct telemetry and run:
+python3 analysis/tier3a_biological.py finalize --manifest results/tier3a/acquisition_corrected_manifest.tsv --work-root /moosefs/erikg/tier3data/tier3a-origin-biological-rerun-20260716 --telemetry results/tier3a/logs/origin-rerun-telemetry.tsv --supersession-ledger results/tier3a/acquisition_sweepga_supersession.tsv --superseded-results results/tier3a/diploid_superseded_results.tsv --output-dir results/tier3a

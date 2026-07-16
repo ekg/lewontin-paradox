@@ -13,11 +13,13 @@ from __future__ import annotations
 import argparse
 import collections
 import csv
+import datetime as dt
 import hashlib
 import json
 import math
 import random
 import re
+import shlex
 import statistics
 import subprocess
 import sys
@@ -28,6 +30,12 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from analysis.tier3_common import is_fourfold_codon, merge_intervals, reverse_complement
+from analysis.tier3a_origin_remap import (
+    EXPECTED_DATASETS,
+    REQUIRED_COMMAND_TOKEN,
+    SWEEPGA_COMMIT,
+    SWEEPGA_SHA256,
+)
 
 
 DNA = frozenset("ACGT")
@@ -56,8 +64,171 @@ RUN_COLUMNS = (
     "impg_binary_path", "impg_binary_sha256", "impg_commit", "impg_partitions_path",
     "impg_native_partitions_selected", "impg_focus_bed", "impg_regional_vcf_count",
     "impg_normalized_bcf", "impg_normalized_bcf_sha256", "guix_channel_commit",
-    "guix_channels_path", "guix_manifest_path", "guix_profile_store_path", "command",
+    "guix_channels_path", "guix_manifest_path", "guix_profile_store_path",
+    "sweepga_origin_main_commit", "sweepga_native_command_path",
+    "sweepga_native_command_sha256", "sweepga_observed_query_multiplicity",
+    "sweepga_observed_target_multiplicity", "annotation_query_qc_path",
+    "annotation_query_qc_sha256", "preflight_audit_path", "preflight_audit_sha256",
+    "command",
 )
+
+def _resolved(path: str | Path) -> str:
+    return str(Path(path).resolve())
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(f"expected JSON object: {path}")
+    return value
+
+
+def validate_preflight(
+    manifest: Path,
+    commands_path: Path,
+    supersession_path: Path,
+    build_path: Path,
+) -> dict[str, Any]:
+    """Fail closed before any regenerated annotation or IMPG computation."""
+    rows = _read_tsv(manifest)
+    if {row["dataset_id"] for row in rows} != EXPECTED_DATASETS:
+        raise ValueError("corrected manifest does not contain exactly the three biological tuples")
+    for row in rows:
+        if row.get("tier3a_correction_status") != "current_production":
+            raise ValueError(f"{row['dataset_id']}: corrected mapping is not current production")
+        if row.get("sweepga_origin_main_sha256") != SWEEPGA_SHA256:
+            raise ValueError(f"{row['dataset_id']}: unapproved corrected SweepGA identity")
+        if row.get("sweepga_origin_main_commit") != SWEEPGA_COMMIT:
+            raise ValueError(f"{row['dataset_id']}: unapproved corrected SweepGA commit")
+        if REQUIRED_COMMAND_TOKEN not in row.get("sweepga_direct_command", ""):
+            raise ValueError(f"{row['dataset_id']}: native 1:1 syntax absent")
+        if row.get("sweepga_observed_query_multiplicity") != "1" or row.get("sweepga_observed_target_multiplicity") != "1":
+            raise ValueError(f"{row['dataset_id']}: native multiplicity fields failed")
+    build = _load_json(build_path)
+    repository = build.get("repository", {})
+    guix = build.get("guix", {})
+    binary = build.get("binary", {})
+    if repository.get("fetched_origin_main") != SWEEPGA_COMMIT:
+        raise ValueError("build provenance does not prove the fetched origin/main commit")
+    profile = Path(str(guix.get("profile_store_path", "")))
+    if not str(profile).startswith("/gnu/store/") or not profile.is_dir():
+        raise ValueError("pinned Guix build closure is unavailable")
+    source_repo = Path(str(repository.get("parent_path", "")))
+    fetched_commit = subprocess.check_output(
+        [str(profile / "bin/git"), "-C", str(source_repo), "rev-parse", "refs/remotes/origin/main"],
+        text=True,
+    ).strip()
+    if fetched_commit != SWEEPGA_COMMIT:
+        raise ValueError("fetched origin/main ref no longer matches the pinned commit")
+    if not build.get("completion_gate_passed"):
+        raise ValueError("origin/main build completion gate did not pass")
+    repository_root = build_path.resolve().parents[1]
+    for path_key, hash_key in (("channels_file", "channels_sha256"), ("manifest_file", "manifest_sha256")):
+        closure_input = repository_root / str(guix.get(path_key, ""))
+        if not closure_input.is_file() or _sha256(closure_input) != guix.get(hash_key):
+            raise ValueError(f"pinned Guix closure input failed: {path_key}")
+    if binary.get("comparison") != "byte-identical" or binary.get("sha256_build_1") != SWEEPGA_SHA256:
+        raise ValueError("origin/main SweepGA binary is not byte-reproducible")
+    if _sha256(build_path) != rows[0]["sweepga_origin_build_provenance_sha256"]:
+        raise ValueError("origin/main build provenance checksum mismatch")
+
+    command_rows = {row["dataset_id"]: row for row in _read_tsv(commands_path)}
+    if set(command_rows) != EXPECTED_DATASETS:
+        raise ValueError("corrected command manifest is incomplete")
+    ledger = _read_tsv(supersession_path)
+    if not ledger or any(row.get("consumable") != "no" for row in ledger):
+        raise ValueError("supersession ledger must reject every listed artifact")
+    superseded_paths = {_resolved(row["superseded_path"]) for row in ledger if row.get("superseded_path")}
+    superseded_hashes = {row["superseded_sha256"] for row in ledger if row.get("superseded_sha256")}
+    tuple_audits = []
+    for row in rows:
+        dataset = row["dataset_id"]
+        binary_path = Path(row["sweepga_origin_main_realpath"])
+        if _resolved(binary_path) != row["sweepga_origin_main_realpath"] or _sha256(binary_path) != SWEEPGA_SHA256:
+            raise ValueError(f"{dataset}: SweepGA realpath/checksum mismatch")
+        if row["sweepga_origin_main_commit"] != SWEEPGA_COMMIT:
+            raise ValueError(f"{dataset}: unpinned SweepGA commit")
+        command_file = Path(row["sweepga_native_command_path"])
+        command = command_file.read_text(encoding="utf-8").strip()
+        command_tokens = shlex.split(command)
+        native_cap_positions = [
+            index for index, token in enumerate(command_tokens)
+            if token == "--num-mappings"
+        ]
+        if (
+            not command_tokens
+            or command_tokens[0] != str(binary_path)
+            or len(native_cap_positions) != 1
+            or command_tokens[native_cap_positions[0] + 1:native_cap_positions[0] + 2] != ["1:1"]
+        ):
+            raise ValueError(f"{dataset}: native --num-mappings 1:1 command is absent")
+        corrected_command = command_rows[dataset]
+        if corrected_command["command"].strip() != command or corrected_command["binary_sha256"] != SWEEPGA_SHA256:
+            raise ValueError(f"{dataset}: corrected command manifest disagreement")
+        mapping = Path(row["sweepga_bounded_paf_path"])
+        mapping_sha = _sha256(mapping)
+        if mapping_sha != row["sweepga_bounded_paf_sha256"]:
+            raise ValueError(f"{dataset}: corrected PAF checksum mismatch")
+        multiplicity_path = Path(row["sweepga_native_multiplicity_audit_path"])
+        if _sha256(multiplicity_path) != row["sweepga_native_multiplicity_audit_sha256"]:
+            raise ValueError(f"{dataset}: multiplicity audit checksum mismatch")
+        multiplicity = _load_json(multiplicity_path)
+        if (
+            multiplicity.get("status") != "passed"
+            or multiplicity.get("native_num_mappings") != "1:1"
+            or multiplicity.get("observed_native_query_multiplicity_cap") != 1
+            or multiplicity.get("observed_native_target_multiplicity_cap") != 1
+            or multiplicity.get("paf_sha256") != mapping_sha
+        ):
+            raise ValueError(f"{dataset}: native multiplicity proof failed")
+        selected_paths = {
+            _resolved(mapping), _resolved(binary_path), _resolved(command_file),
+            _resolved(multiplicity_path), _resolved(row["annotation_gff_path"]),
+        }
+        selected_hashes = {mapping_sha, SWEEPGA_SHA256, _sha256(command_file), _sha256(multiplicity_path)}
+        if selected_paths & superseded_paths or selected_hashes & superseded_hashes:
+            raise ValueError(f"{dataset}: superseded artifact selected by path or checksum")
+        tuple_audits.append({
+            "dataset_id": dataset,
+            "mapping_path": _resolved(mapping),
+            "mapping_sha256": mapping_sha,
+            "binary_realpath": _resolved(binary_path),
+            "binary_sha256": SWEEPGA_SHA256,
+            "native_command_path": _resolved(command_file),
+            "native_command_sha256": _sha256(command_file),
+            "native_num_mappings": "1:1",
+            "observed_query_multiplicity": 1,
+            "observed_target_multiplicity": 1,
+            "query_coverage": multiplicity["query_coverage"],
+            "target_coverage": multiplicity["target_coverage"],
+        })
+    return {
+        "schema_version": "tier3a-origin-rerun-preflight-v1",
+        "status": "passed",
+        "validated_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "corrected_manifest": _resolved(manifest),
+        "corrected_manifest_sha256": _sha256(manifest),
+        "corrected_commands": _resolved(commands_path),
+        "corrected_commands_sha256": _sha256(commands_path),
+        "supersession_ledger": _resolved(supersession_path),
+        "supersession_ledger_sha256": _sha256(supersession_path),
+        "origin_main_build_provenance": _resolved(build_path),
+        "origin_main_build_provenance_sha256": _sha256(build_path),
+        "origin_main_commit": SWEEPGA_COMMIT,
+        "fetched_origin_main_ref": fetched_commit,
+        "guix_build_profile_store_path": str(profile),
+        "guix_channels_sha256": guix["channels_sha256"],
+        "guix_manifest_sha256": guix["manifest_sha256"],
+        "superseded_paths_rejected": len(superseded_paths),
+        "superseded_checksums_rejected": len(superseded_hashes),
+        "tuples": tuple_audits,
+    }
+
+
+def preflight(args: argparse.Namespace) -> None:
+    audit = validate_preflight(args.manifest, args.commands, args.supersession_ledger, args.build_provenance)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _read_tsv(path: Path) -> list[dict[str, str]]:
@@ -190,6 +361,31 @@ def _lookup_manifest(path: Path, dataset_id: str) -> dict[str, str]:
 
 def prepare(args: argparse.Namespace) -> None:
     row = _lookup_manifest(args.manifest, args.dataset_id)
+    preflight_audit = _load_json(args.preflight_audit)
+    preflight_tuples = {
+        item["dataset_id"]: item for item in preflight_audit.get("tuples", [])
+    }
+    if preflight_audit.get("status") != "passed" or args.dataset_id not in preflight_tuples:
+        raise ValueError("tuple is absent from the passed origin/main preflight")
+    annotation_qc_path = args.annotation_dir / "query_qc.json"
+    annotation_qc = _load_json(annotation_qc_path)
+    if annotation_qc.get("dataset_id") != args.dataset_id:
+        raise ValueError("fresh annotation query QC has the wrong tuple identity")
+    if annotation_qc.get("source", {}).get("bounded_whole_haplotype_paf_sha256") != row["sweepga_bounded_paf_sha256"]:
+        raise ValueError("fresh annotation queries do not derive from the corrected PAF")
+    row.update({
+        "annotation_gene_manifest_path": str((args.annotation_dir / "gene_manifest.tsv").resolve()),
+        "annotation_query_manifest_path": str((args.annotation_dir / "impg_query_manifest.tsv").resolve()),
+        "annotation_span_feature_map_path": str((args.annotation_dir / "impg_span_feature_map.tsv").resolve()),
+        "annotation_query_bed_path": str((args.annotation_dir / "impg_execution_spans.bed").resolve()),
+        "annotation_contig_map_path": str((args.annotation_dir / "h1_h2_contig_map.tsv").resolve()),
+        "annotation_query_qc_path": str(annotation_qc_path.resolve()),
+        "targeted_gene_count": str(annotation_qc["targeted_gene_count"]),
+        "targeted_gene_union_bases": str(annotation_qc["targeted_gene_union_bases"]),
+        "queryable_gene_count": str(annotation_qc["queryable_gene_count"]),
+        "excluded_gene_count": str(annotation_qc["excluded_gene_count"]),
+        "excluded_gene_union_bases": str(annotation_qc["excluded_gene_union_bases"]),
+    })
     out = args.output_dir
     out.mkdir(parents=True, exist_ok=True)
     spans = _read_tsv(Path(row["annotation_span_feature_map_path"]))
@@ -235,17 +431,15 @@ def prepare(args: argparse.Namespace) -> None:
             int(gene["start_0based"]), int(gene["end_0based_exclusive"]),
         )
     }
-    cap_sensitivity = {}
-    for cap in ("1", "5", "10"):
-        query_value = row.get(f"sweepga_cap{cap}_query_coverage", "").strip()
-        target_value = row.get(f"sweepga_cap{cap}_target_coverage", "").strip()
-        if query_value and target_value:
-            cap_sensitivity[cap] = {
-                "query_coverage": float(query_value),
-                "target_coverage": float(target_value),
-            }
-    if "1" not in cap_sensitivity:
-        raise ValueError("production SweepGA 1:1 coverage is absent from the manifest")
+    native_multiplicity = _load_json(Path(row["sweepga_native_multiplicity_audit_path"]))
+    if native_multiplicity.get("paf_sha256") != row["sweepga_bounded_paf_sha256"]:
+        raise ValueError("corrected native multiplicity audit does not match the selected PAF")
+    cap_sensitivity = {
+        "1": {
+            "query_coverage": float(native_multiplicity["query_coverage"]),
+            "target_coverage": float(native_multiplicity["target_coverage"]),
+        }
+    }
     qc = {
         "dataset_id": args.dataset_id,
         "scientific_name": row["scientific_name"],
@@ -284,6 +478,8 @@ def prepare(args: argparse.Namespace) -> None:
     (out / "prepare_qc.json").write_text(json.dumps(qc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     run_input = {key: row[key] for key in row}
     run_input["selected_span_ids"] = sorted(span_by_id)
+    run_input["preflight_audit_path"] = str(args.preflight_audit.resolve())
+    run_input["preflight_audit_sha256"] = _sha256(args.preflight_audit)
     (out / "input.json").write_text(json.dumps(run_input, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
@@ -559,10 +755,14 @@ def summarize(args: argparse.Namespace) -> None:
         for variant in variants:
             key = variant["contig"], variant["position"]
             hits = [row for row in cds_rows if row["contig"] == key[0] and int(row["start_0based"]) <= key[1] < int(row["end_0based_exclusive"])]
+            gene_hits = [row for row in gene_rows if row["contig"] == key[0] and int(row["start_0based"]) <= key[1] < int(row["end_0based_exclusive"])]
             if key in gene_positions:
                 audit_rows.append({
                     **variant,
-                    "gene_ids": ",".join(sorted({gene for row in hits for gene in row["gene_ids"].split(",") if gene})),
+                    "gene_ids": ",".join(sorted(
+                        {row["gene_id"] for row in gene_hits}
+                        | {gene for row in hits for gene in row["gene_ids"].split(",") if gene}
+                    )),
                     "transcript_ids": ",".join(sorted({tx for row in hits for tx in row["transcript_ids"].split(",") if tx})),
                     "cds_ids": ",".join(sorted({row["cds_id"] for row in hits if row["cds_id"]})),
                     "feature_row_ids": ",".join(sorted({row["feature_row_id"] for row in hits})),
@@ -581,6 +781,23 @@ def summarize(args: argparse.Namespace) -> None:
                     break
         if not direct or not direct["ref_matches_h1"] or not direct["alt_matches_h2"]:
             raise ValueError("no representative IMPG SNV validated directly against both H1 and H2")
+        representative_feature = next(
+            row for row in audit_rows
+            if row["contig"] == direct["h1_contig"]
+            and int(row["position"]) + 1 == direct["h1_position_1based"]
+        )
+        direct.update({
+            "h1_native_gff_path": run_input["annotation_gff_path"],
+            "h1_native_gff_sha256": run_input["annotation_gff_sha256"],
+            "fresh_annotation_query_manifest_path": run_input["annotation_query_manifest_path"],
+            "fresh_annotation_query_manifest_sha256": _sha256(Path(run_input["annotation_query_manifest_path"])),
+            "gene_ids": representative_feature["gene_ids"],
+            "transcript_ids": representative_feature["transcript_ids"],
+            "cds_ids": representative_feature["cds_ids"],
+            "feature_row_ids": representative_feature["feature_row_ids"],
+            "cds_phases": representative_feature["cds_phases"],
+            "original_h1_native_annotation_status": "passed",
+        })
     finally:
         h1.close()
         h2.close()
@@ -591,6 +808,12 @@ def summarize(args: argparse.Namespace) -> None:
         "boundary_policy": "half_open_exact_native_features_intersected_with_SweepGA_mapping_and_IMPG_native_partitions",
         "additional_context_bases": 0,
     }
+    (out / "callable_audit.json").write_text(
+        json.dumps(callable_audit, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    (out / "representative_h1_h2_audit.json").write_text(
+        json.dumps(direct, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     summary = {
         "dataset_id": run_input["dataset_id"], "scientific_name": run_input["scientific_name"],
         "biological_input": True, "diversity_rows": diversity_rows, "prepare_qc": prep,
@@ -625,6 +848,74 @@ def validate_diversity_rows(rows: Sequence[Mapping[str, Any]], expected_datasets
             raise ValueError("result row has non-finite estimate or uncertainty")
 
 
+def _lineage_audit(
+    args: argparse.Namespace,
+    rows: Sequence[Mapping[str, Any]],
+    run_rows: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    old_rows = _read_tsv(args.superseded_results)
+    old_hashes = {row["artifact_sha256"] for row in old_rows if row.get("artifact_sha256")}
+    supersession = _read_tsv(args.supersession_ledger)
+    superseded_paths = {_resolved(row["superseded_path"]) for row in supersession if row.get("superseded_path")}
+    superseded_hashes = {row["superseded_sha256"] for row in supersession if row.get("superseded_sha256")}
+    lineage_paths: set[str] = set()
+    lineage_hashes: set[str] = set()
+    for row in rows:
+        for key in ("sweepga_mapping_provenance", "impg_index_provenance", "feature_identity_provenance"):
+            value = str(row.get(key, "")).split(";", 1)[0]
+            if value:
+                lineage_paths.add(_resolved(value))
+    for row in run_rows:
+        for key, value in row.items():
+            text = str(value)
+            if key.endswith("_sha256") and len(text) == 64:
+                lineage_hashes.add(text)
+            elif key.endswith("_path") or key in {"impg_index_path", "impg_normalized_bcf"}:
+                if text:
+                    lineage_paths.add(_resolved(text))
+    for dataset in EXPECTED_DATASETS:
+        work = args.work_root / dataset
+        for relative in (
+            "graph.impg", "partitions/partitions.bed", "focus.bed", "laced.vcf",
+            "normalized.untrimmed.bcf", "normalized.untrimmed.bcf.csi", "normalized.bcf",
+            "normalized.bcf.csi", "summary.json", "callable_audit.json",
+            "representative_h1_h2_audit.json", "variant_feature_audit.tsv",
+            "preflight_audit.json", "input.json", "prepare_qc.json", "mapping_callable.bed",
+            "native_annotation/gene_manifest.tsv", "native_annotation/impg_query_manifest.tsv",
+            "native_annotation/impg_execution_spans.bed", "native_annotation/impg_span_feature_map.tsv",
+            "native_annotation/h1_h2_contig_map.tsv", "native_annotation/query_qc.json",
+        ):
+            path = work / relative
+            if not path.is_file():
+                raise ValueError(f"lineage artifact is missing: {path}")
+            lineage_paths.add(_resolved(path))
+            lineage_hashes.add(_sha256(path))
+    for name in (
+        "diploid_diversity.tsv", "diploid_failures.tsv", "diploid_run_manifest.tsv",
+        "diploid_rerun_commands.sh", "diploid_qc.md",
+    ):
+        path = args.output_dir / name
+        if not path.is_file():
+            raise ValueError(f"new Tier 3A result artifact is missing: {path}")
+        lineage_paths.add(_resolved(path))
+        lineage_hashes.add(_sha256(path))
+    path_overlap = sorted(lineage_paths & superseded_paths)
+    checksum_overlap = sorted(lineage_hashes & (superseded_hashes | old_hashes))
+    if path_overlap or checksum_overlap:
+        raise ValueError("new lineage contains a superseded path or old Tier 3A checksum")
+    return {
+        "schema_version": "tier3a-origin-rerun-lineage-audit-v1",
+        "status": "passed",
+        "old_tier3a_result_checksums": sorted(old_hashes),
+        "supersession_ledger_checksums": sorted(superseded_hashes),
+        "new_lineage_checksums": sorted(lineage_hashes),
+        "old_result_checksum_intersection": [],
+        "superseded_checksum_intersection": [],
+        "superseded_path_intersection": [],
+        "assertion": "no_old_tier3a_result_checksum_or_superseded_artifact_occurs_in_new_lineage",
+    }
+
+
 def finalize(args: argparse.Namespace) -> None:
     acquisition = _read_tsv(args.manifest)
     expected = {row["dataset_id"] for row in acquisition if row["eligibility_status"] == "eligible_biological"}
@@ -643,15 +934,15 @@ def finalize(args: argparse.Namespace) -> None:
     telemetry = _read_tsv(args.telemetry) if args.telemetry.is_file() else []
     telemetry_by_id = {row["dataset_id"]: row for row in telemetry}
     for measured in telemetry:
-        if "recovered" in measured.get("exit_code", ""):
+        if measured.get("prior_failed_job_id"):
             acquired = next(row for row in acquisition if row["dataset_id"] == measured["dataset_id"])
             failures.append({
                 "dataset_id": measured["dataset_id"], "scientific_name": acquired["scientific_name"],
-                "stage": "impg_query_preflight", "status": "recovered",
-                "reason": "IMPG default minimum rejected a 64-bp native partition; rerun used documented --min-transitive-len 1",
-                "slurm_job_id": measured["slurm_job_id"],
-                "stderr_path": str(args.work_root / measured["dataset_id"] / "query.stderr"),
-                "rerun_command": "sbatch --array=0 analysis/slurm/tier3a_biological_array.sh",
+                "stage": measured.get("prior_failure_stage", "scheduler_attempt"), "status": "recovered",
+                "reason": measured["prior_failure_reason"],
+                "slurm_job_id": measured["prior_failed_job_id"],
+                "stderr_path": measured["prior_stderr_path"],
+                "rerun_command": measured.get("recovery_command", "sbatch --array=0 analysis/slurm/tier3a_biological_array.sh"),
             })
     _write_tsv(args.output_dir / "diploid_failures.tsv", FAILURE_COLUMNS, failures)
     run_rows = []
@@ -664,7 +955,7 @@ def finalize(args: argparse.Namespace) -> None:
             "dataset_id": dataset, "scientific_name": acquired["scientific_name"], "status": "completed",
             **measured, "sweepga_hit_cap": "1:1", "sweepga_paf_path": acquired["sweepga_bounded_paf_path"],
             "sweepga_paf_sha256": acquired["sweepga_bounded_paf_sha256"],
-            "sweepga_binary_path": acquired["sweepga_binary_path"], "sweepga_binary_sha256": acquired["sweepga_binary_sha256"],
+            "sweepga_binary_path": acquired["sweepga_origin_main_realpath"], "sweepga_binary_sha256": acquired["sweepga_origin_main_sha256"],
             "sweepga_command": acquired["sweepga_direct_command"], "impg_binary_path": acquired["impg_binary_path"],
             "impg_binary_sha256": acquired["impg_binary_sha256"], "impg_commit": acquired["impg_commit"],
             "impg_index_path": work / "graph.impg", "impg_partitions_path": work / "partitions/partitions.bed",
@@ -676,15 +967,37 @@ def finalize(args: argparse.Namespace) -> None:
             "guix_channels_path": acquired["guix_channels_path"],
             "guix_manifest_path": "analysis/guix/manifest.scm; supplemental analysis/guix/sweepga_impg_smoke_manifest.scm",
             "guix_profile_store_path": (work / "completed.tsv").read_text(encoding="utf-8").rstrip("\n").split("\t")[3],
+            "sweepga_origin_main_commit": acquired["sweepga_origin_main_commit"],
+            "sweepga_native_command_path": acquired["sweepga_native_command_path"],
+            "sweepga_native_command_sha256": _sha256(Path(acquired["sweepga_native_command_path"])),
+            "sweepga_observed_query_multiplicity": acquired["sweepga_observed_query_multiplicity"],
+            "sweepga_observed_target_multiplicity": acquired["sweepga_observed_target_multiplicity"],
+            "annotation_query_qc_path": work / "native_annotation/query_qc.json",
+            "annotation_query_qc_sha256": _sha256(work / "native_annotation/query_qc.json"),
+            "preflight_audit_path": work / "preflight_audit.json",
+            "preflight_audit_sha256": _sha256(work / "preflight_audit.json"),
             "command": f"sbatch --array={sorted(expected).index(dataset)} analysis/slurm/tier3a_biological_array.sh",
         })
     _write_tsv(args.output_dir / "diploid_run_manifest.tsv", RUN_COLUMNS, run_rows)
+    rerun_lines = ["#!/usr/bin/env bash", "set -euo pipefail", ""]
+    for index, dataset in enumerate(sorted(expected)):
+        rerun_lines.append(
+            f"TIER3A_WORK_ROOT={args.work_root} sbatch --array={index} analysis/slurm/tier3a_biological_array.sh # {dataset}"
+        )
+    rerun_lines.extend([
+        "",
+        "# After the array completes, regenerate sacct telemetry and run:",
+        f"python3 analysis/tier3a_biological.py finalize --manifest results/tier3a/acquisition_corrected_manifest.tsv --work-root {args.work_root} --telemetry results/tier3a/logs/origin-rerun-telemetry.tsv --supersession-ledger results/tier3a/acquisition_sweepga_supersession.tsv --superseded-results results/tier3a/diploid_superseded_results.tsv --output-dir results/tier3a",
+    ])
+    commands_output = args.output_dir / "diploid_rerun_commands.sh"
+    commands_output.write_text("\n".join(rerun_lines) + "\n", encoding="utf-8")
+    commands_output.chmod(0o755)
     lines = [
         "# Tier 3A biological diploid QC", "", "## Outcome", "",
-        f"All {len(expected)} acquired biological tuples produced coding-region estimates through SweepGA 1:1 and IMPG.",
+        f"All {len(expected)} acquired biological tuples produced coding-region estimates through pinned origin/main SweepGA native `--num-mappings 1:1` and freshly executed IMPG.",
         "Every row is a coding/CDS annotation-panel estimate, not a genome-wide estimate. The panel was selected by stable hash of exact H1-native execution-span identity before mapping or variant inspection.", "",
         "## Separation of responsibilities", "",
-        "- SweepGA supplied complete whole-H1-versus-H2 mappings and enforced the 1:1 query:target overlap cap. Fixed-point cap validation remains in the acquisition handoff.",
+        "- SweepGA supplied corrected whole-H1-versus-H2 mappings and enforced the native 1:1 query:target overlap cap. Binary realpath/SHA-256, fetched origin/main commit, native commands, multiplicity audits, Guix closure, and the supersession ledger passed before computation.",
         "- IMPG indexed those complete bounded PAFs, formed native graph partitions (`-w 2000 -d 0`), and queried only partitions intersecting selected native-annotation spans.",
         "- `bcftools norm` normalized and split alleles, panel trimming removed partition context, and exact duplicate records were removed before estimates.", "",
         "## Tuple audits", "",
@@ -709,23 +1022,41 @@ def finalize(args: argparse.Namespace) -> None:
             f"Native cap coverage (query,target): {sensitivity_text}. {sensitivity_note}", "",
         ])
     lines.extend([
+        "## Scheduler recovery", "",
+        *(
+            [f"One partial attempt was discarded without artifact reuse: {failures[0]['dataset_id']} job {failures[0]['slurm_job_id']} ({failures[0]['reason']}). The replacement tuple ran from an empty directory and completed successfully.", ""]
+            if failures else ["No scheduler recovery was required.", ""]
+        ),
         "## Boundary, annotation, and uncertainty policy", "",
-        "Coordinates remain zero-based half-open through native feature, SweepGA coverage, and IMPG-partition intersections. Only exact H1 A/C/G/T bases enter denominators. CDS feature row, gene, transcript, protein, locus, strand, and phase identities are retained in each tuple's `variant_feature_audit.tsv`. Fourfold sites require a valid transcript-order phase chain and exclude frame-discordant overlaps.",
+        "Coordinates remain zero-based half-open through native feature, SweepGA coverage, and IMPG-partition intersections. The H1-native GFF query manifests and mapping-derived contig maps were regenerated in the new run tree from the corrected PAF; none came from the invalid run. Only exact H1 A/C/G/T bases enter denominators. CDS feature row, gene, transcript, protein, locus, strand, and phase identities are retained in each tuple's `variant_feature_audit.tsv`. Fourfold sites require a valid transcript-order phase chain and exclude frame-discordant overlaps.",
         "Uncertainty is a deterministic genomic block bootstrap (50-kb blocks, 1,000 replicates). Direct CIGAR traversal is used only for one representative H1/H2 allele audit per tuple; it does not create the primary call set.", "",
         "## Reproducibility", "",
-        "The run manifest records Slurm telemetry, exact biological paths, pinned Guix channel commit/profile, and primary artifacts. `diploid_rerun_commands.sh` contains exact commands. Scheduler stdout/stderr and `sacct` telemetry are under `results/tier3a/logs/`.", "",
-        "Slurm measured successful elapsed times of 4:10 (Spinachia), 6:10 (Tautogolabrus), and a cumulative 17:27 partition/query recovery path (Menidia), all on octopus07 with eight allocated CPUs and 64 GiB requested memory. This cluster's accounting plugin returned empty `MaxRSS` and `TotalCPU`; the manifest records that absence explicitly rather than inventing a utilization value.", "",
+        "The run manifest records Slurm telemetry, exact biological paths, pinned Guix channel commit/profile, and primary artifacts. `diploid_rerun_commands.sh` contains exact commands. Scheduler stdout/stderr and `sacct` telemetry are under `results/tier3a/logs/`. `diploid_lineage_audit.json` proves by machine-readable set intersection that no old Tier 3A result checksum or superseded artifact entered the new lineage.", "",
+        "Slurm allocation, elapsed time, exit status, CPU, memory, and node telemetry for this corrected rerun are recorded tuple-by-tuple in `diploid_run_manifest.tsv` and the fresh `origin-rerun-*.sacct` files. Empty accounting fields remain explicit rather than being inferred.", "",
     ])
     (args.output_dir / "diploid_qc.md").write_text("\n".join(lines), encoding="utf-8")
+    lineage = _lineage_audit(args, rows, run_rows)
+    (args.output_dir / "diploid_lineage_audit.json").write_text(
+        json.dumps(lineage, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     commands = root.add_subparsers(dest="command", required=True)
+    gate = commands.add_parser("preflight")
+    gate.add_argument("--manifest", type=Path, required=True)
+    gate.add_argument("--commands", type=Path, required=True)
+    gate.add_argument("--supersession-ledger", type=Path, required=True)
+    gate.add_argument("--build-provenance", type=Path, required=True)
+    gate.add_argument("--output", type=Path, required=True)
+    gate.set_defaults(function=preflight)
     prepare_p = commands.add_parser("prepare")
     prepare_p.add_argument("--manifest", type=Path, required=True)
     prepare_p.add_argument("--dataset-id", required=True)
     prepare_p.add_argument("--output-dir", type=Path, required=True)
+    prepare_p.add_argument("--annotation-dir", type=Path, required=True)
+    prepare_p.add_argument("--preflight-audit", type=Path, required=True)
     prepare_p.add_argument("--panel-bases", type=int, default=2_000_000)
     prepare_p.set_defaults(function=prepare)
     summary_p = commands.add_parser("summarize")
@@ -742,6 +1073,8 @@ def parser() -> argparse.ArgumentParser:
     final_p.add_argument("--manifest", type=Path, required=True)
     final_p.add_argument("--work-root", type=Path, required=True)
     final_p.add_argument("--telemetry", type=Path, required=True)
+    final_p.add_argument("--supersession-ledger", type=Path, required=True)
+    final_p.add_argument("--superseded-results", type=Path, required=True)
     final_p.add_argument("--output-dir", type=Path, required=True)
     final_p.set_defaults(function=finalize)
     return root
