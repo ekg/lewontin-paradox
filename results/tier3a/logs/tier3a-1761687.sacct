@@ -1,0 +1,3 @@
+JobID|JobIDRaw|JobName|State|ExitCode|Elapsed|TotalCPU|MaxRSS|MaxRSSNode|ReqMem|AllocCPUS|NodeList
+1761687_0|1761687|tier3a-diploid|FAILED|1:0|00:12:42|00:00:00|||64G|8|octopus07
+1761687_0.batch|1761687.batch|batch|FAILED|1:0|00:12:42|00:00:00||||8|octopus07

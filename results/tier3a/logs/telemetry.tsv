@@ -1,0 +1,4 @@
+dataset_id	slurm_job_id	slurm_array_task_id	node	requested_cpus	requested_memory	elapsed	max_rss	exit_code
+menidia_menidia_fMenMen1	1761687_0;1761688_0	0	octopus07	8	64G	00:17:27	not_reported_by_sacct	0:0_final;1:0_recovered_min_transitive_guard
+spinachia_spinachia_SK-2024b	1761684_1	1	octopus07	8	64G	00:04:10	not_reported_by_sacct	0:0
+tautogolabrus_adspersus_fTauAds1	1761684_2	2	octopus07	8	64G	00:06:10	not_reported_by_sacct	0:0
