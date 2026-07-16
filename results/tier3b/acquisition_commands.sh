@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Reproduce the two approved Ag1000G biological tuples. Run from repository root.
+# Reproduce the two approved Ag1000G biological tuples and their frozen-power
+# repair. Run from repository root on a Slurm login node.
 # Large objects remain under MooseFS and are never added to Git.
 ROOT=${TIER3B_ACQUISITION_ROOT:-/moosefs/erikg/tier3scratch/tier3b-acquisition}
 ENV_RECORD=$PWD/analysis/pilot_results/guix_environment.json
@@ -313,19 +314,47 @@ assert {observed-reference_length for key,(reference_length,observed) in mismatc
 print("DGRP disqualified: native GFF/FASTA sequence-region mismatches",mismatches)
 PY
 
-run_guix python3 - results/tier3b/acquisition_manifest.tsv <<'PY'
-import csv, hashlib, math, sys
+# Reproduce the fail-before-repair evidence and the versioned 21-Mb repair on
+# Slurm. The repair job refuses to replace an existing candidate directory;
+# use a fresh TIER3B_ACQUISITION_ROOT for a clean end-to-end reproduction.
+mkdir -p "$ROOT/repair-logs"
+CURRENT_PREFLIGHT_JOB=$(sbatch --parsable --wait \
+  results/tier3b/acquisition_repair_validation_slurm.sh "$PWD" "$ENV_RECORD" "$ROOT" current "$ROOT" \
+  "$ROOT/repair-logs/current-preflight.json")
+REPAIR_ACQUISITION_JOB=$(sbatch --parsable --wait \
+  results/tier3b/acquisition_repair_slurm.sh "$PWD" "$ENV_RECORD" "$ROOT")
+REPAIR_ROOT=$ROOT/repair-3R_10000000_30999999-v1
+REPAIR_POWER_JOB=$(sbatch --parsable --wait \
+  results/tier3b/acquisition_repair_validation_slurm.sh "$PWD" "$ENV_RECORD" "$ROOT" repair "$REPAIR_ROOT" \
+  "$REPAIR_ROOT/acquisition_power_qc.json")
+sacct -j "$CURRENT_PREFLIGHT_JOB,$REPAIR_ACQUISITION_JOB,$REPAIR_POWER_JOB" \
+  --format=JobIDRaw,JobName%28,State,Elapsed,TotalCPU,MaxRSS,ReqMem,AllocCPUS,ExitCode,NodeList \
+  -n -P > "$REPAIR_ROOT/slurm_sacct.tsv"
+
+# Executed repair provenance (2026-07-16): current preflight 1761600,
+# acquisition 1761599, repaired power validation 1761601. All completed on
+# octopus07 with exit 0:0; exact sacct output and checksums are recorded in QC.
+run_guix python3 - results/tier3b/acquisition_manifest.tsv "$REPAIR_ROOT/acquisition_power_qc.json" <<'PY'
+import csv, hashlib, json, math, sys
 from pathlib import Path
 with Path(sys.argv[1]).open(newline="", encoding="utf-8") as handle:
     rows=list(csv.DictReader(handle, dialect="excel-tab"))
 assert len(rows)>=2 and all(r["status"]=="approved" and r["biological"]=="true" for r in rows)
 for row in rows:
-    for path_key, hash_key in (("reference_path","reference_sha256"),("native_annotation_path","native_annotation_sha256"),
-                               ("callset_path","callset_sha256"),("callable_mask_path","callable_mask_sha256"),
-                               ("sample_list_path","sample_list_sha256")):
+    for path_key, hash_key in (("reference_path","reference_sha256"),("reference_fai_path","reference_fai_sha256"),
+                               ("native_annotation_path","native_annotation_sha256"),("callset_path","callset_sha256"),
+                               ("callset_index_path","callset_index_sha256"),("callable_mask_path","callable_mask_sha256"),
+                               ("callable_source_path","callable_source_sha256"),("sample_list_path","sample_list_sha256"),
+                               ("sample_metadata_path","sample_metadata_sha256")):
         digest=hashlib.sha256(Path(row[path_key]).read_bytes()).hexdigest()
         assert digest==row[hash_key], (row["tuple_id"], path_key)
-    assert int(row["sample_count"])==20 and int(row["record_count"])>0
+    assert row["region"]=="3R:10000000-30999999" and int(row["sample_count"])==20
+    assert int(row["record_count"])==20817962
     assert int(row["nonreference_genotype_record_count"])>0 and int(row["callable_sites"])>0
+power=json.loads(Path(sys.argv[2]).read_text())
+assert power["status"]=="PASS" and len(power["tuples"])==2
+for result in power["tuples"]:
+    assert min(result["exact_callable_fourfold"].values())>=10000
+    assert result["eligible_ratio_blocks"]>=20 and result["status"]=="PASS"
 print("validated approved tuples", len(rows))
 PY
