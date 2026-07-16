@@ -44,11 +44,13 @@
   correct mutation–selection–drift route. The argument — including the
   marginal-coalescent refutation of the unbiased case and the
   self-limiting saturation — is formalized and machine-checked in a Lean 4
-  library. A new exact-species Tier-3 composition analysis does not establish
-  the predicted saturation or a causal gBGC effect: the across-class GC3
-  interval includes zero, class-specific directions conflict, and no
-  population or individual diversity tuple passed the frozen provenance and
-  denominator gates.
+  library. A new exact-species Tier-3 analysis does not establish the predicted
+  saturation or a causal gBGC effect: the across-class GC3 interval includes
+  zero and class-specific directions conflict. Biological recovery nevertheless
+  yielded three alignment-conditioned H1/H2 coding-panel assembly pairs and two
+  population cohorts with explicit callable denominators and genomic
+  uncertainty. These assembly, population, and composition modalities are
+  reported separately and are insufficient for a cross-species diversity trend.
 ]
 
 = Introduction
@@ -303,9 +305,10 @@ or whole-genome GC value never fills them.
   slope through the point centroid. _Left:_ native exact-assembly GC3
   ($n=90$; 45 of 135 composition rows lack eligible native annotation).
   _Right:_ whole-genome GC for all exact FASTAs ($n=135$), retained as a
-  weaker sensitivity and never substituted for GC3. Population $pi$, the two
-  individual-heterozygosity modalities, and reference-conditioned
-  $pi_S/pi_W$ have zero eligible tuples; polarized SFS-$B$ is deferred.],
+  weaker sensitivity and never substituted for GC3. Diversity recovery adds
+  three alignment-conditioned H1/H2 assembly pairs and two population cohorts;
+  they are not plotted against the Buffalo predictor because their modalities
+  and sampling frames differ. Polarized SFS-$B$ remains deferred.],
 ) <fig_tier3>
 
 *Across classes.* In an OLS model with taxonomic-class fixed intercepts, the
@@ -337,16 +340,44 @@ Saturation predicts concavity. A quadratic is not a mechanistic saturation
 curve, but its observed convex direction does not support the predicted GC3
 saturation shape.
 
-*Distinct diversity observables.* The finalized Tier 3a and Tier 3b estimate
-tables are header-only because no tuple passed the exact-reference,
-native-annotation, sample, and invariant-denominator gates. Consequently
-population $pi$ ($n=0$), deposited-VGP individual SNV heterozygosity ($n=0$),
-alignment-conditioned H1/H2 individual heterozygosity ($n=0$), and every
-modality-specific $pi_S/pi_W$ ($n=0$) have no effect or interval to estimate.
-Absence is not zero. These observables are neither pooled nor renamed as one
-another. Polarized SFS-$B$ is deferred because the frozen plan has no outgroup,
-ancestral-error model, demographic model, or power threshold; the descriptive
-reference-conditioned ratio is never relabelled $B$.
+*Recovered assembly modality.* The corrected Tier 3a origin/main SweepGA run
+used native `--num-mappings 1:1` mappings followed by fresh IMPG queries. It
+produced three biological H1/H2 comparisons over deterministic H1-native coding
+panels ($n=2$ eligible haplotypes per pair), not genome-wide deposited-individual
+heterozygosity. Coding-gene diversity, defined as H1/H2 alternative alleles per
+callable coding base, was $0.013852$ for _Menidia menidia_ (28,233/2,038,234;
+1,000-replicate 50-kb block-bootstrap 95% interval
+$[0.012354,0.015340]$), $0.00039796$ for _Spinachia spinachia_
+(803/2,017,806; $[0.00032951,0.00048123]$), and $0.00167799$ for
+_Tautogolabrus adspersus_ (3,551/2,116,227;
+$[0.00123835,0.00212181]$). The roughly 35-fold range is heterogeneity, not an
+$N_e$ trend: these are three selected assembly pairs without a common
+population sampling frame.
+
+The corresponding reference-conditioned $pi_S/pi_W$ point estimates were
+$0.6725$, $0.3169$, and $0.7603$. Writing variant counts as $v$ and callable
+fourfold-site counts as $d$, they are computed as
+$(v_S / d_S) / (v_W / d_W)$. Because paired ratio-bootstrap draws were not published, conservative
+intervals formed by dividing the marginal 95% bounds were respectively
+$[0.4827,0.9330]$, $[0.0685,1.7020]$, and $[0.2780,2.1252]$; the latter two
+include one. This ratio is descriptive and is not polarized SFS-$B$.
+
+*Recovered population modality.* Tier 3b analyzed two _Anopheles coluzzii_
+cohorts, each with 20 wild diploid individuals (40 nominal chromosomes), over
+the same 21-Mb region but with population-specific callable masks. Population
+$pi$ is the sum of unbiased pairwise differences divided by callable sites.
+It was $0.0123500$ in AO Luanda (numerator $184,914.842$ over 14,972,821
+callable sites; 10,000-replicate chromosome-stratified 1-Mb block-bootstrap 95%
+interval $[0.0118634,0.0128173]$) and $0.0158698$ in GM Wali Kunda
+($237,893.579/14,990,338$; $[0.0153949,0.0163385]$). The intervals do not
+overlap, documenting within-species population heterogeneity. Their
+reference-conditioned $pi_S/pi_W$ estimates were $0.74266$
+($[0.71292,0.77088]$) and $0.72356$ ($[0.69194,0.75717]$), using the same
+10,000-replicate genomic bootstrap. Component $pi_S$ and $pi_W$ uncertainty
+uses a 20-individual delete-one jackknife. These population estimates are not
+pooled with the assembly comparisons or the single-assembly composition data.
+Polarized SFS-$B$ remains deferred because the frozen plan has no outgroup,
+ancestral-error model, demographic model, or power threshold.
 
 *Claim boundary.* Measurement denominators identify the precision target
 within an assembly; species-bootstrap intervals describe a different,
@@ -355,7 +386,7 @@ Buffalo recombination fields do not define predeclared machinery classes, so
 no post-hoc recombination-class fit was invented. Composition alone cannot
 separate gBGC from mutation bias, selection, life history, phylogeny, or
 assembly/annotation structure. Taken together, the mixed class-specific
-directions, convex shape, unavailable diversity contrasts, and deferred SFS
+directions, convex shape, modality-limited diversity recovery, and deferred SFS
 mean that this run *does not establish gBGC saturation or a causal gBGC
 explanation of the high-population diversity plateau*. It leaves the formal
 mechanism as a testable hypothesis rather than an empirical conclusion.

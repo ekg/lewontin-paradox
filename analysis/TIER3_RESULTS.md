@@ -1,6 +1,7 @@
 # Tier 3 synthesis results
 
-Status: **executed, fail-closed** (`tier3-decisions-v1`, 2026-07-14).
+Status: **executed, biologically recovered, and fail-closed**
+(`tier3-decisions-v1`, recovery synthesis 2026-07-16).
 
 The machine-readable result is `tier3_results.tsv`; `fig_tier3.pdf` and
 `fig_tier3.png` are regenerated from that committed table. These results do
@@ -94,38 +95,61 @@ estimable). Buffalo has sparse recombination measurements but no predeclared
 recombination-machinery classes, so no post-hoc class was invented and that
 model is also explicitly unavailable.
 
-## Diversity observables and missingness
+## Recovered diversity observables
 
-Tier 3a and Tier 3b finalization correctly produced header-only estimate
-tables. No candidate passed all exact-reference, native-annotation, sample,
-phase/collapse where applicable, and invariant-denominator gates. The
-failure ledgers are evidence of missingness; zero eligible rows are not zero
-diversity.
+Fresh Tier 3a and Tier 3b recovery replaces the former header-only state. The
+corrected tables contain 12 direct assembly rows (three identities × four
+annotation/statistic rows), three conservatively derived assembly
+`pi_S_over_pi_W` rows, and eight population rows (two populations × four
+statistics). Every row has a biological identity, explicit eligible `n`,
+positive numerator/variant count and callable denominator, a finite estimate,
+exclusions, software provenance, and a stated uncertainty method and interval.
 
-| observable | observable tier | n | effect / interval | denominator and limitation |
-|---|---|---:|---|---|
-| `population_pi` | declared population sample | 0 | not estimable | no eligible exact-cohort callable denominator |
-| `individual_snv_heterozygosity` | deposited VGP individual calls | 0 | not estimable | no eligible deposited exact-reference call+mask tuple |
-| `individual_snv_heterozygosity` | alignment-conditioned H1/H2 individual | 0 | not estimable | no eligible frozen H1/H2/native-GFF/phase/collapse tuple |
-| `pi_S_over_pi_W` | population | 0 | not estimable | no eligible population diversity and native-4D tuple |
-| `pi_S_over_pi_W` | deposited VGP individual | 0 | not estimable | no eligible deposited individual diversity and native-4D tuple |
-| `pi_S_over_pi_W` | alignment-conditioned individual | 0 | not estimable | no eligible H1/H2 diversity and native-4D tuple |
-| `polarized_sfs_B` | population SFS | 0 | deferred | v1 freezes no outgroup, ancestral-error model, demographic model, or power threshold |
+The assembly modality is an alignment-conditioned H1/H2 comparison over a
+deterministically selected H1-native coding panel (`n=2` haplotypes), not a
+whole-genome estimate and not population diversity. Coding-gene diversity is
+0.0138517 in *Menidia menidia* (28,233/2,038,234 callable bases; 50-kb
+block-bootstrap 95% interval 0.0123545–0.0153404), 0.000397957 in *Spinachia
+spinachia* (803/2,017,806; 0.000329512–0.000481235), and 0.00167799 in
+*Tautogolabrus adspersus* (3,551/2,116,227; 0.00123835–0.00212181). Each
+interval uses 1,000 deterministic genomic bootstrap replicates. The large
+range is reported as heterogeneity among three selected assembly pairs; it is
+not a population-size effect.
 
-Population π, deposited-call individual heterozygosity, and
-alignment-conditioned individual heterozygosity are never pooled, renamed,
-or treated as interchangeable π. The reference-conditioned
-`pi_S_over_pi_W` is never relabelled SFS-B. Because no diversity row exists,
-the alternative callable-mask and deterministic population-downsampling
-sensitivities are unavailable; there are no estimates for those policies to
-contradict or confirm.
+Assembly reference-conditioned `pi_S_over_pi_W` is defined as `(S
+variants/S callable fourfold sites)/(W variants/W callable fourfold sites)`.
+Its point estimates are 0.672544, 0.316941, and 0.760295. Because paired ratio
+bootstrap draws are not present in the published upstream table, the synthesis
+reports conservative ratios of marginal bounds: 0.482732–0.932999,
+0.0685349–1.70202, and 0.278040–2.12518. The latter two include one.
+
+The population modality uses two *Anopheles coluzzii* cohorts of 20 wild
+diploid individuals (40 nominal chromosomes) over the same 21-Mb region with
+population-specific callable masks. Population π—the sum of unbiased pairwise
+differences divided by callable sites—is 0.0123500 in AO Luanda
+(184,914.842/14,972,821; 10,000-replicate chromosome-stratified 1-Mb
+block-bootstrap 95% interval 0.0118634–0.0128173) and 0.0158698 in GM Wali
+Kunda (237,893.579/14,990,338; 0.0153949–0.0163385). Their intervals do not
+overlap. Population `pi_S_over_pi_W` is 0.742656 (0.712917–0.770875) and
+0.723555 (0.691945–0.757168), with the same genomic bootstrap. Component
+`pi_S` and `pi_W` intervals use a 20-individual delete-one jackknife.
+
+Assembly, population, and exact-single-assembly composition estimates are
+never pooled, renamed, or treated as interchangeable. Deposited-call
+whole-genome individual heterozygosity remains unavailable. The
+reference-conditioned ratio is never relabelled polarized SFS-B; SFS-B remains
+deferred because v1 freezes no outgroup, ancestral-error model, demographic
+model, or power threshold. Full identity, numerator, denominator, eligibility,
+exclusion, uncertainty, and software fields are in
+`results/tier3/recovery_evidence_ledger.tsv`.
 
 ## Claim boundary
 
 The composition dataset establishes exact-assembly GC and GC3 measurements
-for the stated denominators. It does not establish population diversity,
-individual heterozygosity, W/S-stratified diversity, polarized gBGC strength,
-phylogenetically corrected effects, or conserved recombination-class effects.
+for the stated denominators. The recovered diversity tables establish only
+their named, modality-specific biological estimates; they do not establish a
+cross-species diversity slope, polarized gBGC strength, phylogenetically
+corrected effects, or conserved recombination-class effects.
 The mixed class-specific GC3 directions and convex rather than concave shape
 do not support a general composition-saturation claim. Mutation bias,
 selection, life history, deep phylogeny, and assembly/annotation structure

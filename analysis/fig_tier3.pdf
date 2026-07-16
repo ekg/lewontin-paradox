@@ -10,7 +10,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 1000 580] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
 endobj
 4 0 obj
-<< /Length 10522 >>
+<< /Length 10510 >>
 stream
 1 1 1 rg 0 0 1000 580 re f
 0.15 0.15 0.15 RG 1 w
@@ -248,7 +248,7 @@ BT /F1 13 Tf 535 505 Td (Whole-genome GC sensitivity) Tj ET
 0.647 0.294 0.588 rg 745.25 439.00 5 5 re f
 0 0 0 RG 2 w 543 287.23 m 932 412.49 l S
 0 0 0 rg BT /F1 10 Tf 535 70 Td (Buffalo pred_log10_N; N=135) Tj ET
-BT /F1 11 Tf 55 35 Td (Diversity panels unavailable: zero eligible population or individual tuples; polarized SFS-B deferred.) Tj ET
+BT /F1 11 Tf 55 35 Td (Recovered diversity: 3 assembly pairs; 2 populations. Modalities separate; SFS-B deferred.) Tj ET
 endstream
 endobj
 5 0 obj
@@ -261,8 +261,8 @@ xref
 0000000087 00000 n
 0000000144 00000 n
 0000000271 00000 n
-0000010845 00000 n
+0000010833 00000 n
 trailer << /Size 6 /Root 1 0 R >>
 startxref
-10915
+10903
 %%EOF

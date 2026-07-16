@@ -85,18 +85,23 @@ metazoan dataset (`analysis/extend_buffalo.py`). Findings:
   (95% species-bootstrap interval −0.00123 to +0.02149; n=90; BH q=0.217).
   Results conflict across groups: positive in birds, uncertain in insects,
   negative in mammals, and null within *Drosophila*. The quadratic shape is
-  convex rather than the predicted saturation concavity. No population π,
-  deposited-individual heterozygosity, alignment-conditioned individual
-  heterozygosity, or modality-specific πS/πW tuple passed the frozen gates;
-  SFS-B is deferred. See `analysis/TIER3_RESULTS.md` and
-  `analysis/tier3_results.tsv`.
+  convex rather than the predicted saturation concavity. Biological recovery
+  adds three corrected alignment-conditioned H1/H2 coding-panel assembly pairs
+  and two 20-individual *Anopheles coluzzii* populations, all with callable
+  denominators and genomic uncertainty. Coding diversity is strongly
+  heterogeneous across assembly pairs; the two populations differ in π, and
+  their reference-conditioned πS/πW intervals lie below one. These modalities
+  are kept separate and do not identify a cross-species diversity slope;
+  deposited-individual heterozygosity and SFS-B remain unavailable/deferred.
+  See `analysis/TIER3_RESULTS.md`, `analysis/tier3_results.tsv`, and
+  `results/tier3/recovery_evidence_summary.md`.
 
 **Current bottom line:** the mathematical saturation mechanism remains a
 testable candidate, but the completed Tier-3 run does not establish its
 predicted composition shape or a causal contribution to Lewontin's paradox.
 Measurement precision, cross-species identification, and causal uncertainty
-are reported separately; missing diversity tuples are not converted to zero
-or borrowed from another modality.
+are reported separately; recovered assembly, population, and composition
+values are not borrowed across modalities.
 
 Open empirical questions: the effective per-site conversion rate `u_eff`
 (the "silent-conversion" measurement problem), the W/S fraction under strong

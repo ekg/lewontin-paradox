@@ -98,6 +98,21 @@ RESULT_FIELDS = [
     "annotation_contig_dictionary_validated",
     "annotation_cds_reconstruction_audit",
     "source_modality",
+    "population_id",
+    "annotation_category",
+    "eligible_sample_size",
+    "nominal_chromosomes",
+    "variant_count",
+    "numerator",
+    "numerator_definition",
+    "uncertainty_method",
+    "uncertainty_unit",
+    "uncertainty_replicates",
+    "uncertainty_standard_error",
+    "interval_type",
+    "exclusions",
+    "software_provenance",
+    "source_result_path",
     "decision_version",
 ]
 
@@ -519,9 +534,15 @@ def leave_one_out(
 
 
 def _observation(
-    row: Mapping[str, str], observable: str, tier: str, value: float, denominator: str, modality: str
+    row: Mapping[str, str],
+    observable: str,
+    tier: str,
+    value: float,
+    denominator: str,
+    modality: str,
+    **metadata: Any,
 ) -> Dict[str, Any]:
-    return {
+    observation = {
         "dataset_id": row.get("dataset_id", ""),
         "scientific_name": row.get("scientific_name", ""),
         "observable": observable,
@@ -530,6 +551,152 @@ def _observation(
         "denominator": denominator,
         "source_modality": modality,
     }
+    observation.update(metadata)
+    return observation
+
+
+def _require_fresh_interval(row: Mapping[str, str], label: str) -> Tuple[float, float]:
+    low = _finite(row.get("bootstrap_ci_low") or row.get("interval_low"))
+    high = _finite(row.get("bootstrap_ci_high") or row.get("interval_high"))
+    if low is None or high is None or low > high:
+        raise SynthesisError(f"{label} lacks a finite ordered uncertainty interval")
+    return low, high
+
+
+def _load_fresh_tier3a(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, Any]]:
+    observations: List[Dict[str, Any]] = []
+    ratio_components: Dict[str, Dict[str, Mapping[str, str]]] = {}
+    for row in rows:
+        label = row.get("statistic_label", "")
+        dataset_id = row.get("dataset_id", "")
+        if not dataset_id or row.get("biological_input", "").lower() not in {"yes", "true"}:
+            raise SynthesisError("fresh Tier 3A row lacks biological dataset identity")
+        value = _finite(row.get("estimate"))
+        denominator_value = _finite(row.get("callable_denominator"))
+        variants = _finite(row.get("variant_numerator"))
+        eligible = _finite(row.get("eligible_haplotypes"))
+        if value is None or denominator_value is None or denominator_value <= 0:
+            raise SynthesisError(f"fresh Tier 3A row {dataset_id}/{label} lacks a finite estimate or positive denominator")
+        if variants is None or variants <= 0 or eligible is None or eligible <= 0:
+            raise SynthesisError(f"fresh Tier 3A row {dataset_id}/{label} lacks a positive numerator or explicit n")
+        low, high = _require_fresh_interval(row, f"fresh Tier 3A row {dataset_id}/{label}")
+        category = row.get("annotation_class", "")
+        observations.append(
+            _observation(
+                row,
+                label,
+                "alignment_conditioned_diploid_assembly",
+                value,
+                f"{row['callable_denominator']} H1-native callable {category} bases",
+                "native_SweepGA_1to1_IMPG_H1_H2_diploid_assembly",
+                population_id="",
+                annotation_category=category,
+                eligible_sample_size=row.get("eligible_haplotypes", ""),
+                nominal_chromosomes=row.get("eligible_haplotypes", ""),
+                variant_count=row.get("variant_numerator", ""),
+                numerator=row.get("variant_numerator", ""),
+                numerator_definition="H1/H2 alternative-allele count at callable sites",
+                ci_low=low,
+                ci_high=high,
+                uncertainty_method="deterministic_genomic_block_bootstrap",
+                uncertainty_unit="50-kb H1-native genomic block",
+                uncertainty_replicates=row.get("bootstrap_replicates", ""),
+                uncertainty_standard_error=row.get("bootstrap_standard_error", ""),
+                interval_type="percentile_95_percent",
+                exclusions=row.get("exclusions_json", ""),
+                software_provenance="results/tier3a/diploid_run_manifest.tsv",
+                source_result_path="results/tier3a/diploid_diversity.tsv",
+            )
+        )
+        if label in {"pi_S_reference_conditioned", "pi_W_reference_conditioned"}:
+            ratio_components.setdefault(dataset_id, {})[label] = row
+
+    for dataset_id, components in sorted(ratio_components.items()):
+        if set(components) != {"pi_S_reference_conditioned", "pi_W_reference_conditioned"}:
+            raise SynthesisError(f"fresh Tier 3A tuple {dataset_id} lacks one reference-conditioned ratio component")
+        s_row = components["pi_S_reference_conditioned"]
+        w_row = components["pi_W_reference_conditioned"]
+        s, w = float(s_row["estimate"]), float(w_row["estimate"])
+        s_low, s_high = _require_fresh_interval(s_row, f"Tier 3A S component {dataset_id}")
+        w_low, w_high = _require_fresh_interval(w_row, f"Tier 3A W component {dataset_id}")
+        if w <= 0 or w_low <= 0:
+            raise SynthesisError(f"fresh Tier 3A tuple {dataset_id} has nonpositive W diversity")
+        observations.append(
+            _observation(
+                s_row,
+                "pi_S_over_pi_W",
+                "alignment_conditioned_diploid_assembly",
+                s / w,
+                f"S={s_row['callable_denominator']};W={w_row['callable_denominator']} H1-native fourfold sites",
+                "derived_from_native_SweepGA_1to1_IMPG_H1_H2_components",
+                population_id="",
+                annotation_category="native_fourfold_reference_conditioned_ratio",
+                eligible_sample_size=s_row.get("eligible_haplotypes", ""),
+                nominal_chromosomes=s_row.get("eligible_haplotypes", ""),
+                variant_count=str(int(s_row["variant_numerator"]) + int(w_row["variant_numerator"])),
+                numerator=f"S={s_row['variant_numerator']};W={w_row['variant_numerator']}",
+                numerator_definition="(S variants/S callable sites)/(W variants/W callable sites)",
+                ci_low=s_low / w_high,
+                ci_high=s_high / w_low,
+                uncertainty_method="conservative_ratio_of_marginal_95_percent_bootstrap_bounds",
+                uncertainty_unit="paired statistic components; covariance unavailable in published table",
+                uncertainty_replicates=s_row.get("bootstrap_replicates", ""),
+                uncertainty_standard_error="",
+                interval_type="conservative_marginal_bound_95_percent",
+                exclusions=s_row.get("exclusions_json", ""),
+                software_provenance="results/tier3a/diploid_run_manifest.tsv",
+                source_result_path="results/tier3a/diploid_diversity.tsv",
+            )
+        )
+    return observations
+
+
+def _load_fresh_tier3b(rows: Sequence[Mapping[str, str]]) -> List[Dict[str, Any]]:
+    observations: List[Dict[str, Any]] = []
+    for row in rows:
+        statistic = row.get("statistic", "")
+        tuple_id = row.get("tuple_id", "")
+        if not tuple_id or row.get("biological", "").lower() != "true":
+            raise SynthesisError("fresh Tier 3B row lacks biological tuple identity")
+        value = _finite(row.get("estimate"))
+        denominator_value = _finite(row.get("callable_site_denominator"))
+        variants = _finite(row.get("variant_count"))
+        eligible = _finite(row.get("eligible_sample_size"))
+        if value is None or denominator_value is None or denominator_value <= 0:
+            raise SynthesisError(f"fresh Tier 3B row {tuple_id}/{statistic} lacks a finite estimate or positive denominator")
+        if variants is None or variants <= 0 or eligible is None or eligible <= 0:
+            raise SynthesisError(f"fresh Tier 3B row {tuple_id}/{statistic} lacks positive variants or explicit n")
+        low, high = _require_fresh_interval(row, f"fresh Tier 3B row {tuple_id}/{statistic}")
+        copied = dict(row)
+        copied["dataset_id"] = tuple_id
+        observations.append(
+            _observation(
+                copied,
+                statistic,
+                "population",
+                value,
+                f"{row['callable_site_denominator']} callable {row.get('annotation_category', '')} sites",
+                row.get("source_modality", "deposited_population_variants"),
+                population_id=row.get("population_id", ""),
+                annotation_category=row.get("annotation_category", ""),
+                eligible_sample_size=row.get("eligible_sample_size", ""),
+                nominal_chromosomes=row.get("nominal_chromosomes", ""),
+                variant_count=row.get("variant_count", ""),
+                numerator=row.get("numerator", ""),
+                numerator_definition=row.get("numerator_definition", ""),
+                ci_low=low,
+                ci_high=high,
+                uncertainty_method=row.get("uncertainty_method", ""),
+                uncertainty_unit=row.get("uncertainty_unit", ""),
+                uncertainty_replicates=row.get("uncertainty_replicates", ""),
+                uncertainty_standard_error=row.get("uncertainty_standard_error", ""),
+                interval_type=row.get("interval_type", ""),
+                exclusions=row.get("exclusions", ""),
+                software_provenance="results/tier3b/population_run_manifest.tsv",
+                source_result_path="results/tier3b/population_diversity.tsv",
+            )
+        )
+    return observations
 
 
 def load_diversity_observations(
@@ -537,64 +704,72 @@ def load_diversity_observations(
 ) -> List[Dict[str, Any]]:
     observations: List[Dict[str, Any]] = []
     if tier3a_path:
-        for row in read_tsv(tier3a_path):
-            modality = row.get("modality", "")
-            if "deposited" in modality:
-                tier = "deposited_vgp_individual"
-            elif "wfmash" in modality or "alignment" in modality:
-                tier = "alignment_conditioned_individual"
-            else:
-                raise SynthesisError(f"unrecognized Tier 3a modality {modality!r}")
-            value = _finite(row.get("individual_snv_heterozygosity"))
-            if value is not None:
-                observations.append(
-                    _observation(
-                        row,
-                        "individual_snv_heterozygosity",
-                        tier,
-                        value,
-                        f"{row.get('total_denominator', '')} callable/alignable bases",
-                        modality,
+        tier3a_rows = read_tsv(tier3a_path)
+        if tier3a_rows and "callable_denominator" in tier3a_rows[0]:
+            observations.extend(_load_fresh_tier3a(tier3a_rows))
+        else:
+            for row in tier3a_rows:
+                modality = row.get("modality", "")
+                if "deposited" in modality:
+                    tier = "deposited_vgp_individual"
+                elif "wfmash" in modality or "alignment" in modality:
+                    tier = "alignment_conditioned_individual"
+                else:
+                    raise SynthesisError(f"unrecognized Tier 3a modality {modality!r}")
+                value = _finite(row.get("individual_snv_heterozygosity"))
+                if value is not None:
+                    observations.append(
+                        _observation(
+                            row,
+                            "individual_snv_heterozygosity",
+                            tier,
+                            value,
+                            f"{row.get('total_denominator', '')} callable/alignable bases",
+                            modality,
+                        )
                     )
-                )
-            ratio = _finite(row.get("pi_S_over_pi_W"))
-            if ratio is not None:
-                observations.append(
-                    _observation(
-                        row,
-                        "pi_S_over_pi_W",
-                        tier,
-                        ratio,
-                        f"W={row.get('fourfold_W_denominator', '')};S={row.get('fourfold_S_denominator', '')}",
-                        modality,
+                ratio = _finite(row.get("pi_S_over_pi_W"))
+                if ratio is not None:
+                    observations.append(
+                        _observation(
+                            row,
+                            "pi_S_over_pi_W",
+                            tier,
+                            ratio,
+                            f"W={row.get('fourfold_W_denominator', '')};S={row.get('fourfold_S_denominator', '')}",
+                            modality,
+                        )
                     )
-                )
     if tier3b_path:
-        for row in read_tsv(tier3b_path):
-            value = _finite(row.get("population_pi"))
-            if value is not None:
-                observations.append(
-                    _observation(
-                        row,
-                        "population_pi",
-                        "population",
-                        value,
-                        f"{row.get('population_pi_denominator', '')} callable cohort sites",
-                        "deposited_population_variants",
+        tier3b_rows = read_tsv(tier3b_path)
+        if tier3b_rows and "callable_site_denominator" in tier3b_rows[0]:
+            observations.extend(_load_fresh_tier3b(tier3b_rows))
+        else:
+            for row in tier3b_rows:
+                value = _finite(row.get("population_pi"))
+                if value is not None:
+                    observations.append(
+                        _observation(
+                            row,
+                            "population_pi",
+                            "population",
+                            value,
+                            f"{row.get('population_pi_denominator', '')} callable cohort sites",
+                            "deposited_population_variants",
+                        )
                     )
-                )
-            ratio = _finite(row.get("pi_S_over_pi_W"))
-            if ratio is not None:
-                observations.append(
-                    _observation(
-                        row,
-                        "pi_S_over_pi_W",
-                        "population",
-                        ratio,
-                        f"W={row.get('pi_W_denominator', '')};S={row.get('pi_S_denominator', '')}",
-                        "deposited_population_variants",
+                ratio = _finite(row.get("pi_S_over_pi_W"))
+                if ratio is not None:
+                    observations.append(
+                        _observation(
+                            row,
+                            "pi_S_over_pi_W",
+                            "population",
+                            ratio,
+                            f"W={row.get('pi_W_denominator', '')};S={row.get('pi_S_denominator', '')}",
+                            "deposited_population_variants",
+                        )
                     )
-                )
     return observations
 
 
@@ -637,10 +812,12 @@ def diversity_claim_rows(observations: Sequence[Mapping[str, Any]]) -> List[Dict
     specifications = [
         ("population_pi", "population"),
         ("individual_snv_heterozygosity", "deposited_vgp_individual"),
-        ("individual_snv_heterozygosity", "alignment_conditioned_individual"),
+        ("diploid_haplotype_diversity", "alignment_conditioned_diploid_assembly"),
+        ("pi_S_reference_conditioned", "alignment_conditioned_diploid_assembly"),
+        ("pi_W_reference_conditioned", "alignment_conditioned_diploid_assembly"),
         ("pi_S_over_pi_W", "population"),
         ("pi_S_over_pi_W", "deposited_vgp_individual"),
-        ("pi_S_over_pi_W", "alignment_conditioned_individual"),
+        ("pi_S_over_pi_W", "alignment_conditioned_diploid_assembly"),
     ]
     rows = []
     for observable, tier in specifications:
@@ -649,7 +826,7 @@ def diversity_claim_rows(observations: Sequence[Mapping[str, Any]]) -> List[Dict
             for item in observations
             if item["observable"] == observable and item["observable_tier"] == tier
         ]
-        n = len(selected)
+        n = len({item.get("population_id") or item.get("dataset_id") for item in selected})
         rows.append(
             _claim(
                 f"status.{observable}.{tier}",
@@ -676,6 +853,61 @@ def diversity_claim_rows(observations: Sequence[Mapping[str, Any]]) -> List[Dict
             conclusion="No SFS-B estimate or causal strength claim was made.",
         )
     )
+    return rows
+
+
+def _diversity_point_rows(observations: Sequence[Mapping[str, Any]]) -> List[Dict[str, str]]:
+    """Publish every recovered diversity observation without cross-modality pooling."""
+
+    rows: List[Dict[str, str]] = []
+    for index, source in enumerate(observations):
+        row = empty_result_row()
+        category = str(source.get("annotation_category", ""))
+        identity = str(source.get("population_id") or source.get("dataset_id") or index)
+        observable = str(source["observable"])
+        row.update(
+            row_kind="point",
+            analysis_id=f"point.{observable}.{identity}.{category or 'all'}",
+            status="estimated",
+            observable=observable,
+            observable_tier=str(source["observable_tier"]),
+            scientific_name=str(source.get("scientific_name", "")),
+            dataset_id=str(source.get("dataset_id", "")),
+            scope="biological_tuple",
+            model="direct_estimate_no_cross_modality_pooling",
+            n=str(source.get("eligible_sample_size", "")),
+            eligible_n=str(source.get("eligible_sample_size", "")),
+            missing_n="0",
+            denominator=str(source.get("denominator", "")),
+            estimate=_format(source.get("value")),
+            ci_low=_format(source.get("ci_low")),
+            ci_high=_format(source.get("ci_high")),
+            uncertainty=(
+                f"{source.get('uncertainty_method', '')}; unit={source.get('uncertainty_unit', '')}; "
+                f"replicates={source.get('uncertainty_replicates', '')}; interval={source.get('interval_type', '')}"
+            ),
+            measurement_precision="Conditional on the stated biological tuple and callable denominator.",
+            cross_species_identification="No cross-species or causal effect is estimated from this point row.",
+            conclusion="Recovered biological estimate for this identity, modality, category, and denominator.",
+            limitation="Assembly, population, and composition modalities remain distinct; reference-conditioned ratios are descriptive and are not polarized SFS-B.",
+            source_modality=str(source.get("source_modality", "")),
+            population_id=str(source.get("population_id", "")),
+            annotation_category=category,
+            eligible_sample_size=str(source.get("eligible_sample_size", "")),
+            nominal_chromosomes=str(source.get("nominal_chromosomes", "")),
+            variant_count=str(source.get("variant_count", "")),
+            numerator=str(source.get("numerator", "")),
+            numerator_definition=str(source.get("numerator_definition", "")),
+            uncertainty_method=str(source.get("uncertainty_method", "")),
+            uncertainty_unit=str(source.get("uncertainty_unit", "")),
+            uncertainty_replicates=str(source.get("uncertainty_replicates", "")),
+            uncertainty_standard_error=str(source.get("uncertainty_standard_error", "")),
+            interval_type=str(source.get("interval_type", "")),
+            exclusions=str(source.get("exclusions", "")),
+            software_provenance=str(source.get("software_provenance", "")),
+            source_result_path=str(source.get("source_result_path", "")),
+        )
+        rows.append(row)
     return rows
 
 
@@ -846,6 +1078,7 @@ def synthesize(
     joined: Sequence[Mapping[str, Any]], observations: Sequence[Mapping[str, Any]]
 ) -> List[Dict[str, str]]:
     results = _point_rows(joined)
+    results.extend(_diversity_point_rows(observations))
     gc3_rows = [row for row in joined if row.get("gc3") is not None]
     whole_rows = list(joined)
     across = fit_ols(gc3_rows, "gc3", fixed_effect="class")
@@ -1203,7 +1436,12 @@ def _pdf_bytes(rows: Sequence[Mapping[str, str]], width=1000, height=580) -> byt
             pyb = 103 + (yb - ymin) / (ymax - ymin) * 374
             commands.append(f"0 0 0 RG 2 w {x0+8} {pya:.2f} m {x0+397} {pyb:.2f} l S")
         commands.append(f"0 0 0 rg BT /F1 10 Tf {x0} 70 Td (Buffalo pred_log10_N; N={len(points)}) Tj ET")
-    commands.append("BT /F1 11 Tf 55 35 Td (Diversity panels unavailable: zero eligible population or individual tuples; polarized SFS-B deferred.) Tj ET")
+    assembly_n = _recovered_identity_count(rows, "alignment_conditioned_diploid_assembly")
+    population_n = _recovered_identity_count(rows, "population")
+    commands.append(
+        "BT /F1 11 Tf 55 35 Td "
+        f"(Recovered diversity: {assembly_n} assembly pairs; {population_n} populations. Modalities separate; SFS-B deferred.) Tj ET"
+    )
     stream = ("\n".join(commands) + "\n").encode("ascii")
     objects = [
         b"<< /Type /Catalog /Pages 2 0 R >>",
@@ -1244,7 +1482,15 @@ def render_figure(
         "WHOLE GENOME GC SENSITIVITY",
         _reported_effect(rows, "sensitivity.whole_genome_gc.across_class_fixed"),
     )
-    canvas.text(90, 750, "DIVERSITY UNAVAILABLE   SFS B DEFERRED   NO CAUSAL CLAIM", color=(145, 35, 35), scale=2)
+    assembly_n = _recovered_identity_count(rows, "alignment_conditioned_diploid_assembly")
+    population_n = _recovered_identity_count(rows, "population")
+    canvas.text(
+        90,
+        750,
+        f"DIVERSITY RECOVERED  ASSEMBLIES {assembly_n}  POPULATIONS {population_n}  MODALITIES DISTINCT  SFS B DEFERRED",
+        color=(35, 95, 65),
+        scale=2,
+    )
     Path(png_path).write_bytes(canvas.png())
     Path(pdf_path).write_bytes(_pdf_bytes(rows))
 
@@ -1256,10 +1502,23 @@ def _reported_effect(rows: Sequence[Mapping[str, str]], analysis_id: str) -> Opt
     return _finite(matches[0].get("effect"))
 
 
+def _recovered_identity_count(rows: Sequence[Mapping[str, str]], tier: str) -> int:
+    return len(
+        {
+            row.get("population_id") or row.get("dataset_id")
+            for row in rows
+            if row.get("row_kind") == "point"
+            and row.get("observable_tier") == tier
+            and row.get("status") == "estimated"
+            and (row.get("population_id") or row.get("dataset_id"))
+        }
+    )
+
+
 def _arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--tier3a", type=Path, default=ANALYSIS / "tier3a_data.tsv")
-    parser.add_argument("--tier3b", type=Path, default=ANALYSIS / "tier3b_data.tsv")
+    parser.add_argument("--tier3a", type=Path, default=ROOT / "results/tier3a/diploid_diversity.tsv")
+    parser.add_argument("--tier3b", type=Path, default=ROOT / "results/tier3b/population_diversity.tsv")
     parser.add_argument("--tier3c", type=Path, default=ANALYSIS / "tier3c_data.tsv")
     parser.add_argument("--buffalo", type=Path, help="verified pinned combined_data.tsv; fetched if omitted")
     parser.add_argument("--results", type=Path, default=ANALYSIS / "tier3_results.tsv")

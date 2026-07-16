@@ -148,6 +148,52 @@ def test_empty_diversity_inputs_become_structured_missingness(tmp_path):
     assert all(row["n"] == "0" for row in claims)
 
 
+def test_fresh_recovery_tables_preserve_modalities_numerators_and_uncertainty():
+    root = Path(__file__).resolve().parents[2]
+    observations = fit.load_diversity_observations(
+        root / "results/tier3a/diploid_diversity.tsv",
+        root / "results/tier3b/population_diversity.tsv",
+    )
+    assert len(observations) == 23
+    assert {row["observable_tier"] for row in observations} == {
+        "alignment_conditioned_diploid_assembly",
+        "population",
+    }
+    assert len({row["dataset_id"] for row in observations if row["observable_tier"] == "alignment_conditioned_diploid_assembly"}) == 3
+    assert len({row["population_id"] for row in observations if row["observable_tier"] == "population"}) == 2
+    for row in observations:
+        assert float(row["value"]) > 0
+        assert float(row["ci_low"]) <= float(row["value"]) <= float(row["ci_high"])
+        assert float(row["eligible_sample_size"]) > 0
+        assert row["numerator"]
+        assert row["denominator"]
+        assert row["uncertainty_method"]
+        assert row["uncertainty_replicates"]
+        assert row["exclusions"]
+        assert row["software_provenance"]
+
+    ratio = next(
+        row for row in observations
+        if row["dataset_id"] == "menidia_menidia_fMenMen1"
+        and row["observable"] == "pi_S_over_pi_W"
+    )
+    assert ratio["value"] == pytest.approx(0.6725436341943015)
+    assert ratio["uncertainty_method"].startswith("conservative_ratio")
+
+
+def test_recovered_diversity_points_are_not_promoted_to_composition_or_sfs():
+    root = Path(__file__).resolve().parents[2]
+    observations = fit.load_diversity_observations(
+        root / "results/tier3a/diploid_diversity.tsv",
+        root / "results/tier3b/population_diversity.tsv",
+    )
+    rows = fit._diversity_point_rows(observations)
+    assert len(rows) == 23
+    assert all(row["observable"] not in {"gc3", "whole_genome_gc", "polarized_sfs_B"} for row in rows)
+    assert all(row["variant_count"] and row["numerator"] and row["denominator"] for row in rows)
+    assert all(row["ci_low"] and row["ci_high"] for row in rows)
+
+
 def test_non_native_gc3_is_missing_but_whole_genome_gc_remains(tmp_path):
     c_path, b_path = tmp_path / "c.tsv", tmp_path / "b.tsv"
     write_tsv(c_path, [composition("Species one", 4, "0.7", "projected")])

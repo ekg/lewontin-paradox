@@ -45,19 +45,23 @@ assemblies/VCFs live in a scratch dir with an accession `manifest.tsv`
 
 ## Final Tier 3 synthesis
 
-The population-VCF execution audit is recorded in `TIER3B_RUN.md`.  No surveyed
-population tuple currently passes the frozen exact-reference, native-annotation,
-sample, and invariant-denominator gates, so `tier3b_data.tsv` is intentionally
-header-only.  Treat it as structured missingness and consult
-`tier3b_failure_ledger.tsv` and `tier3b_qc_provenance.json`; do not interpret
-the absence of rows as zero diversity.
+The recovered biological inputs are `results/tier3a/diploid_diversity.tsv`
+and `results/tier3b/population_diversity.tsv`; the legacy header-only
+`tier3a_data.tsv` and `tier3b_data.tsv` are no longer synthesis inputs. Tier 3a
+has three corrected origin/main SweepGA + IMPG H1/H2 coding-panel assembly
+pairs. Tier 3b has two 20-individual *Anopheles coluzzii* populations. The
+final synthesis keeps these alignment-conditioned assembly estimates,
+population diversity, and exact-single-assembly composition distinct; it does
+not pool them into generic π.
 
-Tier 3a is likewise header-only after its frozen gates. The final synthesis
-keeps population π, deposited-call individual heterozygosity, and
-alignment-conditioned individual heterozygosity distinct; it does not pool
-them into generic π. `tier3_results.tsv` has 270 observable point rows plus
-model and claim rows, including null/negative effects and explicit unavailable
-PGLS, recombination-class, callable-policy, and SFS-B results.
+`tier3_results.tsv` now carries all 23 recovered diversity observations with
+identity, modality, numerator, callable denominator, explicit eligible `n`,
+exclusions, software provenance, and uncertainty, alongside the 270
+composition point rows and model/claim rows. Null/negative composition effects
+and explicit unavailable PGLS, recombination-class, deposited-individual, and
+SFS-B results remain visible. The recovery summary, complete evidence ledger,
+independent headline audit, and checksummed artifact index are under
+`results/tier3/`.
 
 Run the fits and all analysis tests through the pinned environment:
 
