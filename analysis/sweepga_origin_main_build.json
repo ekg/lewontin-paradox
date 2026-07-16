@@ -1,0 +1,134 @@
+{
+  "schema_version": "sweepga-origin-main-build-v1",
+  "generated_at_utc": "2026-07-16T12:00:24Z",
+  "acceptance_status": "blocked_native_short_option_absent",
+  "completion_gate_passed": false,
+  "repository": {
+    "parent_path": "/moosefs/erikg/sweepga",
+    "origin_url": "git@github.com:pangenome/sweepga.git",
+    "fetch_command": "git -C /moosefs/erikg/sweepga fetch --no-tags origin main",
+    "fetched_origin_main": "018e4ce49d2c125820e0ac50dc5feaa02d423683",
+    "existing_checkout_branch": "main",
+    "existing_checkout_head": "018e4ce49d2c125820e0ac50dc5feaa02d423683",
+    "ahead_of_origin_main": 0,
+    "behind_origin_main": 0,
+    "existing_checkout_modified_paths": [
+      "README.md",
+      "docs/BUILD-NOTES.md",
+      "install.sh",
+      "scripts/build-clean.sh"
+    ],
+    "destructive_checkout_operations_performed": false
+  },
+  "source": {
+    "revision": "018e4ce49d2c125820e0ac50dc5feaa02d423683",
+    "source_date_epoch": 1776293668,
+    "checkout_1": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/checkout-1",
+    "checkout_2": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/checkout-2",
+    "archive_sha256_build_1": "a87575b6c8fb6a07a5ceac8c8b17c1cea2dfcc3318b4a10ee86878c4129347ed",
+    "archive_sha256_build_2": "a87575b6c8fb6a07a5ceac8c8b17c1cea2dfcc3318b4a10ee86878c4129347ed",
+    "cargo_lock_sha256": "b1aee267fbe9db8c1ed72bcf2be8b9f7b3ba2a9a71778ce35ee1fb8ac067636a",
+    "src_cli_rs_sha256": "86b96d0af075ef7c71f7874987938921546fd69bcf095e5247ea73277f9a2a9c",
+    "sweepga_source_modified": false
+  },
+  "guix": {
+    "manager_version": "guix (GNU Guix) 1.4.0-7.44bbfc2",
+    "channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "channel_url": "https://git.savannah.gnu.org/git/guix.git",
+    "profile_store_path": "/gnu/store/yfffyhdm3a9bsah4gzw9dzri623af3f6-profile",
+    "channels_file": "analysis/guix/channels.scm",
+    "channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "manifest_file": "analysis/guix/sweepga_origin_main_manifest.scm",
+    "manifest_sha256": "ea9ae1ba3e51ac3302d93add158532befec8fb3c09d188f524ac29237bab17d1",
+    "rust_package_definition": "analysis/guix/packages/rust-binary.scm",
+    "rust_package_definition_sha256": "102d659eab46a7ccc7af606aa533ce2970e03534fcf17621c1a730df74b02e0c",
+    "tool_versions": {
+      "rustc": "1.94.1 (e408947bf 2026-03-25)",
+      "cargo": "1.94.1 (29ea6fb6a 2026-03-24)",
+      "gcc": "12.3.0",
+      "clang": "15.0.7",
+      "cmake": "3.25.1",
+      "pkg_config": "0.29.2",
+      "git": "2.40.1",
+      "binutils_ld": "2.38",
+      "glibc": "2.35",
+      "gsl": "2.7.1",
+      "jemalloc": "5.3.0",
+      "htslib": "1.16"
+    }
+  },
+  "build": {
+    "script": "analysis/sweepga_origin_main_rebuild.sh",
+    "script_sha256": "6138d89a96120aa39272893e64636749c5612ee743c1c81c51f8eac401c5d752",
+    "cargo_commands": [
+      "cargo fetch --locked",
+      "cargo build --release --locked --bin sweepga",
+      "strip --strip-all <copied-sweepga>"
+    ],
+    "independent_cargo_homes": true,
+    "independent_target_directories": true,
+    "rust_source_prefixes_remapped": true,
+    "native_source_prefixes_remapped": true,
+    "build_1_log": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/logs/build-1.log",
+    "build_2_log": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/logs/build-2.log"
+  },
+  "binary": {
+    "build_1_realpath": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/sweepga",
+    "build_2_realpath": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-2/sweepga",
+    "size_bytes": 5193792,
+    "sha256_build_1": "fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b",
+    "sha256_build_2": "fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b",
+    "comparison": "byte-identical",
+    "version_stdout": "sweepga 0.1.1",
+    "elf_interpreter": "/gnu/store/gsjczqir1wbz8p770zndrpw4rnppmxi3-glibc-2.35/lib/ld-linux-x86-64.so.2",
+    "all_resolved_runtime_libraries_in_gnu_store": true
+  },
+  "native_cli": {
+    "help_exposes": [
+      "--num-mappings <NUM_MAPPINGS>"
+    ],
+    "help_exposes_short_n": false,
+    "source_clap_attribute": "#[clap(long = \"num-mappings\", default_value = \"many:many\", help_heading = \"Basic filtering\")]",
+    "source_design_note": "No short flags live on AlnArgs.",
+    "literal_command": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/sweepga h1.fa h2.fa --output-file literal-n-1to1.paf -n 1:1 --scaffold-jump 0 --threads 2",
+    "literal_command_exit_status": 2,
+    "literal_command_stderr": "error: unexpected argument '-n' found",
+    "literal_n_accepted": false,
+    "compatibility_wrapper_or_alias_used": false
+  },
+  "biological_probe": {
+    "pair": "Spinachia spinachia SK-2024b H1/H2",
+    "h1_source_region": "CM106590.1:50001-70000",
+    "h2_source_region": "CM106672.1:45001-65000",
+    "h1_excerpt_sha256": "9f208c839fcd8bfb4f95375afa4e1588b05a230ce97364c50775de05489b8d0a",
+    "h2_excerpt_sha256": "465d2fb7a34f21a04399866cd4b0c7395c2a6dbced415d8fbae63afd4fe4bc7d",
+    "mapping_started": false,
+    "reason": "native CLI rejected -n during argument parsing"
+  },
+  "supported_long_option_probe_before_hard_gate_clarification": {
+    "syntax": "--num-mappings query:target",
+    "cap_1_records": 1,
+    "cap_5_records": 5,
+    "cap_10_records": 10,
+    "deterministic_first_tie_retained": true,
+    "completion_credit": false
+  },
+  "impg_handoff": {
+    "executed_to_completion": false,
+    "native_partition": false,
+    "regional_query": false,
+    "normalized_indexed_vcf_bcf": false,
+    "reason": "stopped at the mandatory native -n acceptance gate; no older binary was substituted"
+  },
+  "acceptance_gates": {
+    "origin_main_fetched": true,
+    "parent_checkout_preserved": true,
+    "guix_clean_build_1": true,
+    "guix_clean_build_2": true,
+    "sweepga_binary_byte_reproducible": true,
+    "exact_binary_identity_proven": true,
+    "literal_n_1to1_accepted": false,
+    "biological_literal_n_mapping_completed": false,
+    "impg_end_to_end_completed": false
+  }
+}
