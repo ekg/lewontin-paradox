@@ -1,0 +1,97 @@
+field_name	type	cardinality	required_for	controlled_vocabulary_or_format	definition_and_validation	missingness_or_exclusion_policy
+record_id	string	1	all	stable project ID	Immutable identifier for one source-estimand-population-time record; unique and never recycled	Missing rejects record
+record_status	enum	1	all	candidate|accepted_primary|accepted_secondary|accepted_scaled_genomic|accepted_absolute_scenario|excluded	Data-tier disposition; a record can occupy only one active status	Missing rejects record
+exclusion_reason	enum	0..1	excluded	circular_same_pi|taxon_ambiguous|population_mismatch|reference_mismatch|time_mismatch|estimand_ambiguous|no_uncertainty|invalid_input|captive_transfer|duplicate|license_blocked|other	Machine-actionable primary reason; free detail goes in quality_notes	Required when excluded; excluded rows remain in ledger
+source_kind	enum	1	all	primary_article|official_database|government_report|dataset_release|software_output|curator_communication	Origin class	Missing rejects record
+source_title	string	1	all	UTF-8	Exact title of original source, not a secondary citation	Missing rejects record
+source_authors	string	0..1	literature	Verbatim citation form	Authors or institutional author	Missing lowers quality; do not invent
+source_year	integer	0..1	literature	YYYY	Publication year	Missing lowers quality
+source_doi	string	0..1	literature	canonical DOI without resolver prefix	DOI validated by resolution and title match	DOI or source_url required
+source_url	string	0..1	all	HTTPS preferred	Direct record/dataset/article URL, not search-result URL	URL or DOI required
+source_version	string	0..1	database_dataset	provider version/release	Immutable release identifier	Moving/latest-only source is candidate, not accepted
+source_license	string	0..1	database_dataset	SPDX or provider terms	Reuse/access terms and restrictions	Unknown license blocks bulk acquisition, not manual citation
+source_retrieved_utc	date	1	all	YYYY-MM-DD	Actual retrieval/curation date in UTC	Missing rejects record
+source_sha256	string	0..1	dataset_software	64 lowercase hex	Hash of locally approved snapshot/output	Required before executable use; literature metadata may omit
+source_locator	string	1	all	page/table/figure/supplement/row/field	Exact place where value and definition were extracted	Missing rejects quantitative record
+extraction_method	enum	1	all	manual_double_entry|table_parser|api|author_file|software_generated|ocr_verified	How value entered	OCR alone is candidate until manually verified
+extractor_id	string	1	all	project curator ID	Person/agent responsible	Missing rejects record
+independent_verifier_id	string	0..1	accepted	project curator ID	Second checker for value, unit and context	Required for truth cases and primary covariates before freeze
+quoted_estimand_definition	string	1	Ne_or_abundance	Short source quotation or faithful source-specific definition	Definition as used by source; quotations must remain within copyright limits	Missing means estimand_ambiguous exclusion
+estimand_code	enum	1	all	Ne_inbreeding|Ne_variance|Ne_LD|Nb_LD|Ne_temporal|Nb_temporal|Ne_pedigree|Nb_pedigree|Ne_coalescent_longterm|theta_scaled|lambda_history|cross_coalescence_rate|Ne_mu_history|Nc_total|Nc_mature|abundance_index|density|EOO|AOO|range_area|body_mass|generation_time|generation_length|fecundity|longevity|age_maturity|dispersal|mutation_rate|other	Non-collapsible estimand vocabulary; Ne variants must never share a generic Ne code	Unknown/other requires definition and is excluded from pooled Ne analysis
+method_code	enum	1	all	PSMC|MSMC2|SMC++|LD|temporal|pedigree|sibship|SFS|site_pattern_MSC|census_survey|mark_recapture|telemetry|database_compilation|direct_trio_mutation|other	Measurement/inference method	Do not map legacy MSMC to MSMC2
+software_name	string	0..1	computed	UTF-8	Exact software/tool	Required for computed estimates
+software_version_commit	string	0..1	computed	version plus source commit	Immutable software identity	Missing keeps record candidate
+software_guix_derivation	string	0..1	computed	Guix derivation/store path	Execution provenance	Missing excludes new computational output from accepted tiers
+command_config_sha256	string	0..1	computed	64 lowercase hex	Hash of command/config/model code	Missing excludes new computational output from accepted tiers
+estimand_value	number	0..1	point_or_interval	finite	Reported central value, not silently midpoint of a range	May be null when posterior samples/interval are primary
+estimand_unit	string	1	all	UCUM-like plus explicit denominator	Native unit, including per bp per generation where relevant	Missing rejects record
+interval_lower	number	0..1	uncertain	finite	Lower bound in native unit	Do not fabricate from SE
+interval_upper	number	0..1	uncertain	finite	Upper bound in native unit	Both bounds and interval_type travel together
+interval_type	enum	0..1	uncertain	95CI|90CI|95CrI|90CrI|SE|SD|range|minmax|scenario|one_sided	Meaning/coverage of error field	Unknown interval is not accepted as numeric uncertainty
+posterior_scenario_path	string	0..1	absolute_or_uncertain	project-relative path	Posterior draws or scenario table used in measurement-error analysis	Point-only borrowed calibration cannot enter absolute tier
+sample_size_individuals	integer	0..1	population_measure	>=0	Number of biological individuals, not reads/loci	Unknown is explicit null and lowers quality
+sample_size_families	integer	0..1	pedigree	>=0	Number of pedigrees/families	Required where source reports it
+sample_size_loci	integer	0..1	genetic	>=0	Number of loci/sites after filters	Required for genetic Ne where available
+biological_sampling_unit	enum	1	all	individual|chromosome|haplotype|family|breeder|cohort|population|species|survey_plot|other	Unit that generated observations	Ambiguous unit excludes from quantitative pooling
+life_stage	string	0..1	ecological_demographic	controlled project glossary	Life stage of sampled/count individuals	Unknown retained but mismatch score worsens
+sex_scope	enum	0..1	ecological_demographic	female|male|both|unknown|not_applicable	Sex represented	Unknown explicit, never assumed both
+population_id	string	0..1	population_measure	stable project population ID	Join key for a delimited biological population	Species-level source may be null but cannot be population-aligned
+population_name_source	string	0..1	population_measure	verbatim	Original population/stock/site label	Required for population-specific Ne
+geography_text	string	0..1	population_measure	verbatim locality	Source locality description	Required for population-specific Ne
+latitude	number	0..1	population_measure	decimal degrees WGS84	Representative/centroid latitude with geography_method	Never geocode vague locality without uncertainty flag
+longitude	number	0..1	population_measure	decimal degrees WGS84	Representative/centroid longitude	Same policy as latitude
+geography_method	enum	0..1	population_measure	reported_point|reported_polygon|digitized|geocoded|unknown	Origin of coordinates	Unknown prevents fine spatial matching
+measurement_start_date	date	0..1	temporal_alignment	YYYY-MM-DD or companion precision	First sampling/measurement date	Year-only represented with date_precision, not fake day
+measurement_end_date	date	0..1	temporal_alignment	YYYY-MM-DD	Last sampling/measurement date	Missing if genuinely instantaneous
+date_precision	enum	0..1	temporal_alignment	day|month|year|range|unknown	Precision of dates	Unknown worsens alignment quality
+generation_interval_used	number	0..1	temporal_absolute	years per generation	Generation time used by source/estimator, distinct from comparative generation length	Required for generation/calendar conversion
+temporal_window_generations	string	0..1	Ne	point or range	Generations to which estimand applies	Missing prevents combining contemporary and long-term records
+taxon_project_id	string	1	all	stable project taxon ID	Canonical join key independent of mutable name	Missing rejects record
+taxon_scientific_name_source	string	1	all	verbatim	Name as published	Missing rejects record
+taxon_accepted_name	string	1	all	accepted binomial/trinomial	Name under recorded authority at curation	Missing rejects record
+taxon_authority	string	1	all	GBIF|NCBI|CatalogueOfLife|IUCN|other plus version	Authority and release used for accepted concept	Missing rejects record
+taxon_authority_id	string	1	all	authority identifier	Identifier under taxon_authority	Missing rejects record
+taxon_rank	enum	1	all	species|subspecies|population|hybrid|other	Rank/concept	Non-species records require explicit analysis rule
+synonym_resolution	string	0..1	all	source name -> accepted name with evidence	Audit trail for name reconciliation	No fuzzy matching without documented resolution
+taxon_match_distance	enum	1	all	exact_concept|synonym_same_concept|subspecies_to_species|congener|family|higher|unresolved	Taxonomic distance between measurement and response taxon	Primary covariates permit exact/synonym only; transfers are scenario tier
+taxon_transfer_rationale	string	0..1	transferred	UTF-8	Explicit biological justification and direction	Required for any non-exact transfer
+reference_accession_version	string	0..1	genomic	versioned GCA/GCF/other	Exact coordinate reference	Missing rejects genomic input
+reference_fasta_sha256	string	0..1	genomic	64 lowercase hex	Exact reference bytes	Missing rejects new genomic inference
+callset_accession_version	string	0..1	genomic	immutable callset release	Provider callset identity	Missing rejects deposited callset inference
+callset_sha256	string	0..1	genomic	64 lowercase hex	Exact callset bytes	Missing rejects new inference
+sample_list_sha256	string	0..1	genomic_population	64 lowercase hex	Frozen selected samples and order	Missing rejects population inference
+same_individual_homolog_evidence	string	0..1	assembly_haplotypes	accession/BioSample/release evidence	Evidence H1/H2 are homologs from one biological individual	Missing classifies H1/H2 as assembly/composition only
+heterozygosity_retained_evidence	string	0..1	assembly_to_genotype	method/QC evidence	Proof pipeline preserves allelic differences rather than haploid consensus/collapse	Missing prohibits PSMC/MSMC2 input generation
+phasing_method	string	0..1	phased_method	laboratory/statistical/assembly method	How haplotypes were phased and reference coordinate representation produced	Missing rejects MSMC2 multi-haplotype input
+phase_block_n50_bp	number	0..1	phased_method	>=0 bp	Phase continuity QC	Missing lowers quality; thresholds set by pilot
+switch_error_rate	number	0..1	phased_method	0..1	Estimated switch-error rate with validation source	Unknown requires sensitivity and may reject cross-individual MSMC2
+callable_mask_path	string	0..1	genomic	project-relative or approved absolute path	Reference-matched callable/missing intervals	Missing rejects sequential/SFS inference
+callable_mask_sha256	string	0..1	genomic	64 lowercase hex	Mask identity	Missing rejects new inference
+callable_bases	integer	0..1	genomic	>=0	Audited callable denominator	Zero/missing rejects inference
+coverage_median_x	number	0..1	raw_read_calling	>=0	Autosomal median depth	Unknown requires deposited-callset validation route
+genotype_error_rate	number	0..1	genomic	0..1	Validated error estimate	Unknown triggers sensitivity/quality downgrade
+missing_genotype_fraction	number	0..1	genomic	0..1	Post-filter missingness	Threshold is method/pilot specific
+mutation_rate_value	number	0..1	absolute_conversion	per bp per generation	Exact mu used, never borrowed invisibly	Missing retains scaled units only
+mutation_rate_source_record_id	string	0..1	absolute_conversion	record_id foreign key	Direct-trio/literature/model rate provenance	Required for absolute conversion
+mutation_rate_match_distance	enum	0..1	absolute_conversion	direct_population|same_species|subspecies|congener|family|model_predicted|higher	Transfer distance for mu	Beyond same species is scenario-only
+mutation_rate_uncertainty_path	string	0..1	absolute_conversion	project-relative path	Distribution/scenarios for mu	Borrowed/model mu requires this field
+generation_time_value	number	0..1	calendar_conversion	years per generation	Exact g used for calendar scaling	Missing keeps generations, not years
+generation_time_source_record_id	string	0..1	calendar_conversion	record_id foreign key	Provenance for g	Required for calendar conversion
+generation_time_match_distance	enum	0..1	calendar_conversion	direct_population|same_species|subspecies|congener|family|model_predicted|higher	Transfer distance for g	Beyond same species is scenario-only
+generation_time_uncertainty_path	string	0..1	calendar_conversion	project-relative path	Distribution/scenarios for g	Borrowed/model g requires this field
+ploidy_convention	string	0..1	genomic_absolute	method-specific formula	Autosomal diploid/haploid/sex-linked convention and formula	Missing prohibits absolute label
+recombination_assumption	string	0..1	linkage_method	map/rate/rho-over-mu convention	Exact recombination input or fitted assumption	Missing prevents absolute/rate interpretation when relevant
+calibration_population_id	string	0..1	absolute_conversion	population_id	Population from which mu/g/map/model calibration came	Missing if direct species-level; otherwise required
+quality_flag	enum	1	all	A_truth|B_primary|C_secondary|D_scenario|E_candidate|X_excluded	Overall evidence class under written rubric	Missing rejects record
+quality_notes	string	0..1	all	UTF-8	Specific limitations, reviewer decisions and deviations	Never use notes to override a failed hard gate
+response_dataset_overlap	enum	1	all	none|same_species_different_population|same_population_different_samples|shared_samples_different_loci|shared_sites_or_samples|derived_from_response|unknown	Operational circularity/leakage field relative to analyzed pi	Only none is eligible primary; unknown excluded from primary
+independence_tier	enum	1	all	independent_primary|independent_secondary|partially_shared|genomic_shared|circular_excluded	Analysis permission derived from overlap and method	Circular/shared cannot enter primary independent-covariate design matrix
+response_dataset_id	string	0..1	all	project dataset ID	Pi dataset against which independence was audited	Required before analysis freeze
+population_match_score	number	0..1	join	0..1 prespecified rubric	Spatial/population correspondence, not subjective post hoc	Below pilot threshold excludes population-level claim
+temporal_match_score	number	0..1	join	0..1 prespecified rubric	Overlap/proximity between covariate and pi sampling dates	Below pilot threshold moves record to sensitivity only
+join_decision	enum	1	all	exact_population|near_population|species_only|taxonomic_transfer|no_join	Final allowed join granularity	Primary population analysis requires exact/approved near match
+phylogeny_tip_id	string	0..1	primary_species_analysis	exact tree tip	Identifier in frozen tree	Missing species is excluded from phylogenetic primary fit, not assigned a congener tip
+measurement_error_model	string	0..1	quantitative_analysis	distribution plus parameters/path	Likelihood/prior used for uncertain predictor/response	Point-imputation without error model prohibited
+missingness_code	enum	1	all	not_missing|not_measured|not_reported|not_applicable|not_accessible|failed_qc|taxon_unmatched|structural_exclusion	Why a value is null	Missing is never encoded as zero
+imputation_status	enum	1	all	observed|interval_censored|model_imputed|scenario_transferred|not_imputed	Observed versus modeled status	Model-imputed predictors excluded from main fit; permitted in labeled sensitivity
+curation_state	enum	1	all	extracted|verified|frozen|superseded	Workflow status	Only frozen records enter preregistered analysis
