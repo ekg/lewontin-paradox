@@ -1,0 +1,211 @@
+{
+  "blockers": [
+    {
+      "code": "QUOTA_UNAVAILABLE",
+      "message": "No accessible user quota interface was available. Downstream acquisition must fail closed until exact quota evidence is recorded."
+    }
+  ],
+  "downstream_acquisition_ready": false,
+  "generated_at_utc": "2026-07-17T17:58:57Z",
+  "layout": [
+    {
+      "mode_octal": "0o2770",
+      "name": "manifests",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests",
+      "relative_to_root": "manifests"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "immutable_objects",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256",
+      "relative_to_root": "objects/sha256"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "accession_views",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/views/accession",
+      "relative_to_root": "views/accession"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "version_views",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/views/version",
+      "relative_to_root": "views/version"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "staging",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/staging",
+      "relative_to_root": "staging"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "staging_acquisition",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/staging/acquisition",
+      "relative_to_root": "staging/acquisition"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "staging_partials",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/staging/partials",
+      "relative_to_root": "staging/partials"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "staging_outputs",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/staging/outputs",
+      "relative_to_root": "staging/outputs"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "quarantine",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/quarantine",
+      "relative_to_root": "quarantine"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "logs",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/logs",
+      "relative_to_root": "logs"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "locks",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/locks",
+      "relative_to_root": "locks"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "pilot",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/pilot",
+      "relative_to_root": "pilot"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "pilot_manifests",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/pilot/manifests",
+      "relative_to_root": "pilot/manifests"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "pilot_runs",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/pilot/runs",
+      "relative_to_root": "pilot/runs"
+    },
+    {
+      "mode_octal": "0o2770",
+      "name": "pilot_outputs",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/pilot/outputs",
+      "relative_to_root": "pilot/outputs"
+    }
+  ],
+  "root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+  "root_owner": {
+    "gid": 1001,
+    "group": "erikg",
+    "mode_octal": "0o2770",
+    "owner": "erikg",
+    "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+    "uid": 1001,
+    "world_writable": false
+  },
+  "smoke_tests": {
+    "atomic_promotion": {
+      "destination": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/.validation/validation-22174-7573bb1e0b/5e354f44c6f71718742548a44b8fe1e3bc9fb95a240f0d9125fb61321665c5c0",
+      "source": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/staging/partials/validation-22174-7573bb1e0b/payload.partial",
+      "status": "pass"
+    },
+    "checksum_verification": {
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/.validation/validation-22174-7573bb1e0b/5e354f44c6f71718742548a44b8fe1e3bc9fb95a240f0d9125fb61321665c5c0",
+      "status": "pass"
+    },
+    "cleanup": {
+      "paths_removed": [
+        "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/staging/partials/validation-22174-7573bb1e0b",
+        "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/.validation/validation-22174-7573bb1e0b",
+        "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/locks/validation-22174-7573bb1e0b.lock",
+        "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/.validation"
+      ],
+      "status": "pass"
+    },
+    "file_fsync": {
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/staging/partials/validation-22174-7573bb1e0b/payload.partial",
+      "status": "pass"
+    },
+    "lock_behavior": {
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/locks/validation-22174-7573bb1e0b.lock",
+      "status": "pass"
+    },
+    "object_device": 47,
+    "object_dir_fsync": {
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/.validation/validation-22174-7573bb1e0b",
+      "status": "pass"
+    },
+    "partial_device": 47,
+    "payload_sha256": "5e354f44c6f71718742548a44b8fe1e3bc9fb95a240f0d9125fb61321665c5c0",
+    "payload_size_bytes": 20,
+    "same_filesystem": true,
+    "staging_dir_fsync": {
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/staging/partials/validation-22174-7573bb1e0b",
+      "status": "pass"
+    },
+    "test_id": "validation-22174-7573bb1e0b"
+  },
+  "system_evidence": {
+    "commands": [
+      {
+        "command": "/bin/ls -ld /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "drwxrws--- 10 erikg erikg 1 Jul 17 17:57 /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0\n",
+        "timestamp_utc": "2026-07-17T17:58:57Z"
+      },
+      {
+        "command": "/bin/findmnt -T /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "TARGET   SOURCE             FSTYPE OPTIONS\n/moosefs mfs#octopus04:9521 fuse   rw,nosuid,nodev,noatime,user_id=0,group_id=0,allow_other\n",
+        "timestamp_utc": "2026-07-17T17:58:57Z"
+      },
+      {
+        "command": "/usr/bin/stat -f -c 'fstype=%T block_size=%S blocks=%b blocks_available=%a files=%c files_free=%d' /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "fstype=fuseblk block_size=65536 blocks=3163819648 blocks_available=1544559016 files=1014154225 files_free=1004580301\n",
+        "timestamp_utc": "2026-07-17T17:58:57Z"
+      },
+      {
+        "command": "/bin/df -hP /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "Filesystem          Size  Used Avail Use% Mounted on\nmfs#octopus04:9521  189T   97T   93T  52% /moosefs\n",
+        "timestamp_utc": "2026-07-17T17:58:57Z"
+      },
+      {
+        "command": "/bin/df -iP /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "Filesystem             Inodes   IUsed      IFree IUse% Mounted on\nmfs#octopus04:9521 1014154225 9573924 1004580301    1% /moosefs\n",
+        "timestamp_utc": "2026-07-17T17:58:57Z"
+      },
+      {
+        "command": "/usr/bin/mfsmount -V",
+        "exit_code": 0,
+        "stderr": "LizardFS version 3.12.0-devel\nFUSE library version: 2.9.9\n",
+        "stdout": "fusermount version: 2.9.9\n",
+        "timestamp_utc": "2026-07-17T17:58:57Z"
+      }
+    ],
+    "inode_state": {
+      "command": "/bin/df -iP /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+      "output": "Filesystem             Inodes   IUsed      IFree IUse% Mounted on\nmfs#octopus04:9521 1014154225 9573924 1004580301    1% /moosefs\n",
+      "status": "reported"
+    },
+    "quota_state": {
+      "available_interfaces": [],
+      "message": "No user-visible quota command was available from the current environment.",
+      "status": "blocked"
+    }
+  },
+  "task_id": "prepare-vgp-data"
+}

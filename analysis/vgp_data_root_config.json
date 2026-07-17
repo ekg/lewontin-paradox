@@ -1,0 +1,35 @@
+{
+  "contract_version": "1.0",
+  "task_id": "prepare-vgp-data",
+  "root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+  "default_directory_mode": "2770",
+  "layout": {
+    "manifests": "manifests",
+    "immutable_objects": "objects/sha256",
+    "accession_views": "views/accession",
+    "version_views": "views/version",
+    "staging": "staging",
+    "staging_acquisition": "staging/acquisition",
+    "staging_partials": "staging/partials",
+    "staging_outputs": "staging/outputs",
+    "quarantine": "quarantine",
+    "logs": "logs",
+    "locks": "locks",
+    "pilot": "pilot",
+    "pilot_manifests": "pilot/manifests",
+    "pilot_runs": "pilot/runs",
+    "pilot_outputs": "pilot/outputs"
+  },
+  "transfer_contract": {
+    "acquisition_partial_scope": "staging/partials",
+    "acquisition_staging_scope": "staging/acquisition",
+    "immutable_promotion_target": "objects/sha256",
+    "accession_view_scope": "views/accession",
+    "version_view_scope": "views/version",
+    "compute_input_policy": "Mount or read only verified immutable inputs or accession views that resolve to verified immutable inputs.",
+    "compute_workdir_policy": "Copy mutable working sets to SLURM_TMPDIR before compute stages write temporary data.",
+    "compute_network_policy": "Compute arrays never download biological payloads or reach out to providers.",
+    "output_validation_policy": "Validate outputs in scratch or staging, then atomically promote only validated final outputs into pilot/outputs.",
+    "cleanup_scope_policy": "Directory scans and cleanup must remain inside the configured VGP_DATA_ROOT and may not traverse unrelated project data."
+  }
+}
