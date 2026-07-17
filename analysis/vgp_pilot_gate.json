@@ -1,0 +1,827 @@
+{
+  "authorization_boundary": {
+    "authorize_commands": {
+      "acquire": [
+        "python3",
+        "-m",
+        "analysis.gate_vgp_pilot",
+        "authorize",
+        "--gate",
+        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_gate.json",
+        "--manifest",
+        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_manifest.tsv",
+        "--root-config",
+        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_data_root_config.json",
+        "--action",
+        "acquire"
+      ],
+      "compute": [
+        "python3",
+        "-m",
+        "analysis.gate_vgp_pilot",
+        "authorize",
+        "--gate",
+        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_gate.json",
+        "--manifest",
+        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_manifest.tsv",
+        "--root-config",
+        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_data_root_config.json",
+        "--action",
+        "compute"
+      ]
+    },
+    "cap_vector_digest": "d51827af5600976f52549ce1a16a7f38bef03f671814d351ff2270ebe7b1b59e",
+    "manifest_digest": "f27b81f369af18caf97a1ccee1b14d8a8b050d665832e6e99f188041275f49ce",
+    "root_contract_digest": "912e47c66eeacaf8db3ff535fb857b296eb890d56e2ba0f38af3fdeb4ec12989"
+  },
+  "blockers": [
+    {
+      "code": "SOURCE_COUNT_DISCREPANCY_UNRESOLVED",
+      "message": "the frozen raw VGP catalog still disagrees with the planning headline counts and no explicit signed discrepancy resolution is bundled here",
+      "source": "analysis/vgp_phase1_freeze_provenance.json"
+    },
+    {
+      "code": "NO_SELECTED_ROWS",
+      "message": "the frozen pilot manifest selects zero rows, so no bounded pilot can be authorized",
+      "source": "analysis/vgp_pilot_manifest.tsv"
+    },
+    {
+      "code": "ZERO_COMPOSITION_ELIGIBLE_ROWS",
+      "message": "no manifest row independently satisfies exact H1/native-annotation/denominator requirements",
+      "source": "analysis/vgp_pilot_manifest.tsv"
+    },
+    {
+      "code": "ZERO_DIVERSITY_ELIGIBLE_ROWS",
+      "message": "no manifest row independently satisfies the paired same-individual diversity requirements",
+      "source": "analysis/vgp_pilot_manifest.tsv"
+    },
+    {
+      "code": "QUOTA_UNAVAILABLE",
+      "message": "No user-visible quota command was available from the current environment.",
+      "source": "analysis/vgp_data_root_validation.json"
+    }
+  ],
+  "cap_vector": {
+    "dimensions": {
+      "aggregate_core_hours": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 280.0
+          },
+          {
+            "source": "decision_D012",
+            "value": 280.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 280.0
+          },
+          {
+            "source": "resource_budget_selected_stage_sum_high",
+            "value": 0.0
+          }
+        ],
+        "unit": "core-h",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_sum_high"
+      },
+      "aggregate_wall_hours": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 17.5
+          },
+          {
+            "source": "decision_D012",
+            "value": 17.5
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 17.5
+          },
+          {
+            "source": "resource_budget_selected_stage_sum_high",
+            "value": 0.0
+          }
+        ],
+        "unit": "h",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_sum_high"
+      },
+      "cpus_per_element": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 8.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 8.0
+          }
+        ],
+        "unit": "count",
+        "value": 8.0,
+        "winner_source": "execution_plan_small_cap"
+      },
+      "file_inodes": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 60000.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 60000.0
+          },
+          {
+            "source": "resource_budget_selected_stage_sum_high",
+            "value": 0.0
+          },
+          {
+            "source": "filesystem_safe_available",
+            "value": 753435225.0
+          }
+        ],
+        "unit": "count",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_sum_high"
+      },
+      "metadata_operations": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 500000.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 500000.0
+          },
+          {
+            "source": "resource_budget_selected_stage_sum_high",
+            "value": 0.0
+          }
+        ],
+        "unit": "count",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_sum_high"
+      },
+      "moosefs_read_gb": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 180.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 180.0
+          },
+          {
+            "source": "resource_budget_selected_stage_sum_high",
+            "value": 0.0
+          }
+        ],
+        "unit": "GB",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_sum_high"
+      },
+      "moosefs_write_gb": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 200.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 200.0
+          },
+          {
+            "source": "resource_budget_selected_stage_sum_high",
+            "value": 0.0
+          }
+        ],
+        "unit": "GB",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_sum_high"
+      },
+      "pause_fraction": {
+        "sources": [
+          {
+            "source": "decision_D018",
+            "value": 0.8
+          }
+        ],
+        "unit": "fraction",
+        "value": 0.8,
+        "winner_source": "decision_D018"
+      },
+      "peak_bandwidth_mib_s": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 120.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 120.0
+          },
+          {
+            "source": "resource_budget_selected_stage_max_high",
+            "value": 0.0
+          }
+        ],
+        "unit": "MiB/s",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_max_high"
+      },
+      "peak_local_scratch_gb": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 150.0
+          },
+          {
+            "source": "decision_D012",
+            "value": 150.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 150.0
+          },
+          {
+            "source": "resource_budget_selected_stage_max_high",
+            "value": 0.0
+          },
+          {
+            "source": "filesystem_safe_available",
+            "value": 75918.164754432
+          }
+        ],
+        "unit": "GB",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_max_high"
+      },
+      "peak_memory_gib_per_job": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 96.0
+          },
+          {
+            "source": "decision_D012",
+            "value": 96.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 96.0
+          },
+          {
+            "source": "resource_budget_selected_stage_max_high",
+            "value": 0.0
+          }
+        ],
+        "unit": "GiB",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_max_high"
+      },
+      "persistent_input_gb": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 160.0
+          },
+          {
+            "source": "decision_D011",
+            "value": 160.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 160.0
+          },
+          {
+            "source": "selected_manifest_exact",
+            "value": 0.0
+          },
+          {
+            "source": "filesystem_safe_available",
+            "value": 75918.164754432
+          }
+        ],
+        "unit": "GB",
+        "value": 0.0,
+        "winner_source": "selected_manifest_exact"
+      },
+      "persistent_output_gb": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 32.0
+          },
+          {
+            "source": "decision_D012",
+            "value": 32.0
+          },
+          {
+            "source": "resource_budget_stratified_pilot",
+            "value": 32.0
+          },
+          {
+            "source": "resource_budget_selected_stage_sum_high",
+            "value": 0.0
+          },
+          {
+            "source": "filesystem_safe_available",
+            "value": 75918.164754432
+          }
+        ],
+        "unit": "GB",
+        "value": 0.0,
+        "winner_source": "resource_budget_selected_stage_sum_high"
+      },
+      "quota_headroom_fraction": {
+        "sources": [
+          {
+            "source": "decision_D018",
+            "value": 0.25
+          }
+        ],
+        "unit": "fraction",
+        "value": 0.25,
+        "winner_source": "decision_D018"
+      },
+      "selected_pair_species_count": {
+        "sources": [
+          {
+            "source": "selected_pair_count",
+            "value": 0.0
+          }
+        ],
+        "unit": "count",
+        "value": 0.0,
+        "winner_source": "selected_pair_count"
+      },
+      "selected_species_count": {
+        "sources": [
+          {
+            "source": "selected_manifest_count",
+            "value": 0.0
+          }
+        ],
+        "unit": "count",
+        "value": 0.0,
+        "winner_source": "selected_manifest_count"
+      },
+      "stop_fraction": {
+        "sources": [
+          {
+            "source": "decision_D018",
+            "value": 0.95
+          }
+        ],
+        "unit": "fraction",
+        "value": 0.95,
+        "winner_source": "decision_D018"
+      },
+      "tier3a_concurrency": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 2.0
+          },
+          {
+            "source": "resource_budget_sweepga",
+            "value": 10.0
+          }
+        ],
+        "unit": "count",
+        "value": 2.0,
+        "winner_source": "execution_plan_small_cap"
+      },
+      "tier3c_concurrency": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 8.0
+          },
+          {
+            "source": "resource_budget_tier3c",
+            "value": 16.0
+          }
+        ],
+        "unit": "count",
+        "value": 8.0,
+        "winner_source": "execution_plan_small_cap"
+      },
+      "transfer_concurrency": {
+        "sources": [
+          {
+            "source": "execution_plan_small_cap",
+            "value": 2.0
+          },
+          {
+            "source": "decision_D018",
+            "value": 2.0
+          },
+          {
+            "source": "resource_budget_stage_assets",
+            "value": 2.0
+          }
+        ],
+        "unit": "count",
+        "value": 2.0,
+        "winner_source": "execution_plan_small_cap"
+      }
+    },
+    "selected_stage_totals_high": {
+      "aggregate_core_hours": 0.0,
+      "aggregate_wall_hours": 0.0,
+      "file_inodes": 0.0,
+      "metadata_operations": 0.0,
+      "moosefs_read_gb": 0.0,
+      "moosefs_write_gb": 0.0,
+      "peak_bandwidth_mib_s": 0.0,
+      "peak_memory_gib_per_job": 0.0,
+      "peak_scratch_gb": 0.0,
+      "persistent_output_gb": 0.0,
+      "selected_composition_species_count": 0.0,
+      "selected_pair_species_count": 0.0,
+      "selected_species_count": 0.0
+    },
+    "sha256": "d51827af5600976f52549ce1a16a7f38bef03f671814d351ff2270ebe7b1b59e"
+  },
+  "decision": {
+    "go_requires_exact_match": true,
+    "projected_persistent_gb_against_safe_free_gb": {
+      "projected": 0.0,
+      "safe_free_gb": 75918.164754432,
+      "within_safe_margin": true
+    },
+    "status": "NO_GO"
+  },
+  "decision_sha256": "ae67031eaa4781984cb9da31ee7a9cd18ee4f2667f98e2a201918fc75ae57284",
+  "generated_at_utc": "2026-07-17T19:05:29Z",
+  "inputs": {
+    "decisions": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vertebrate_scaleout_decisions.tsv",
+      "sha256": "ec23412bc5c93ed81376324ac90f749b9dbd29afe9a7591552315dd8eb995cae"
+    },
+    "execution_plan": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vertebrate_scaleout_execution_plan.md",
+      "sha256": "9e6fd40ae4bc01f6e1b5a7c7cf74c9e4a1bba27b7262e7ef53467e0d6c93f595"
+    },
+    "freeze_provenance": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_phase1_freeze_provenance.json",
+      "sha256": "8b3c847ba261a218b2f81b379041d7215dcb547e1b854b1d780fc6903fde463b"
+    },
+    "manifest": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_manifest.tsv",
+      "sha256": "f27b81f369af18caf97a1ccee1b14d8a8b050d665832e6e99f188041275f49ce"
+    },
+    "resource_budget": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vertebrate_scaleout_resource_budget.tsv",
+      "sha256": "d0659b1dfc29fd078de7b5f6f82399fb43d125d96403b88a774515d4539e7692"
+    },
+    "root_config": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_data_root_config.json",
+      "sha256": "912e47c66eeacaf8db3ff535fb857b296eb890d56e2ba0f38af3fdeb4ec12989"
+    },
+    "root_validation": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_data_root_validation.json",
+      "sha256": "fa49635fac94b13a7fc3a9d0dbcdfa3f36cd1ed437633479f5a87957e0594149"
+    },
+    "size_budget": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_size_budget.tsv",
+      "sha256": "f0be4a495d2385536daadf23811911990a390cbdbdfbf1d7c8e904097b355e40"
+    }
+  },
+  "quota_evidence": {
+    "free_bytes": 101224219672576,
+    "free_inodes": 1004580301,
+    "inode_status": "reported",
+    "quota_interfaces": [],
+    "quota_message": "No user-visible quota command was available from the current environment.",
+    "quota_status": "blocked",
+    "root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+    "safe_free_bytes": 75918164754432,
+    "safe_free_inodes": 753435225
+  },
+  "reproduction": {
+    "freeze_provenance_candidate_summary": {
+      "rejected_count": 74,
+      "resolved_row_count": 74,
+      "seed_count": 74,
+      "selected_count": 0
+    },
+    "manifest_candidate_count": 74,
+    "selected_candidate_ids": [],
+    "selected_row_count": 0,
+    "size_budget_summary": {
+      "aggregate_selected_download_bytes_exact": 0,
+      "aggregate_selected_persistent_bytes_exact": 0,
+      "candidate_budget_row_count": 74,
+      "selected_download_bytes_exact": 0,
+      "selected_persistent_bytes_exact": 0,
+      "selected_row_count": 0
+    },
+    "source_catalog": {
+      "counts": {
+        "current_fish_completed_refseq_species": [
+          "Acipenser ruthenus",
+          "Amblyraja radiata",
+          "Amia calva",
+          "Anabas testudineus",
+          "Anguilla anguilla",
+          "Carcharodon carcharias",
+          "Chanos chanos",
+          "Chelmon rostratus",
+          "Cottoperca gobio",
+          "Cyclopterus lumpus",
+          "Denticeps clupeoides",
+          "Echeneis naucrates",
+          "Enoplosus armatus",
+          "Erpetoichthys calabaricus",
+          "Esox lucius",
+          "Gadus morhua",
+          "Gouania willdenowi",
+          "Hemiscyllium ocellatum",
+          "Heptranchias perlo",
+          "Heterodontus francisci",
+          "Hippoglossus hippoglossus",
+          "Hypanus sabinus",
+          "Lampris incognitus",
+          "Latimeria chalumnae",
+          "Lepisosteus oculatus",
+          "Mastacembelus armatus",
+          "Megalops cyprinoides",
+          "Melanotaenia boesemani",
+          "Myripristis murdjan",
+          "Narcine bancroftii",
+          "Notolabrus celidotus",
+          "Parambassis ranga",
+          "Pempheris klunzingeri",
+          "Periophthalmus magnuspinnatus",
+          "Pristiophorus japonicus",
+          "Pristis pectinata",
+          "Pygocentrus nattereri",
+          "Salarias fasciatus",
+          "Scatophagus argus",
+          "Scleropages formosus",
+          "Scyliorhinus canicula",
+          "Sebastes umbrosus",
+          "Sparus aurata",
+          "Sphaeramia orbicularis",
+          "Syngnathus acus",
+          "Takifugu rubripes",
+          "Thalassophryne amazonica",
+          "Thunnus maccoyii",
+          "Toxotes jaculatrix"
+        ],
+        "current_fish_triple_species": [
+          "Acipenser ruthenus",
+          "Amia calva",
+          "Astatotilapia calliptera",
+          "Cyclopterus lumpus",
+          "Enoplosus armatus",
+          "Hemiscyllium ocellatum",
+          "Heptranchias perlo",
+          "Heterodontus francisci",
+          "Lampris incognitus",
+          "Lepisosteus oculatus",
+          "Narcine bancroftii",
+          "Pempheris klunzingeri",
+          "Pristiophorus japonicus",
+          "Syngnathus acus"
+        ],
+        "discrepancies": [
+          {
+            "delta": -2,
+            "expected": 120,
+            "metric": "completed_annotated",
+            "observed": 118
+          },
+          {
+            "delta": -2,
+            "expected": 40,
+            "metric": "triple_eligible",
+            "observed": 38
+          },
+          {
+            "delta": 1,
+            "expected": 13,
+            "metric": "triple_eligible_fish",
+            "observed": 14
+          },
+          {
+            "delta": 3,
+            "expected": 46,
+            "metric": "completed_refseq_fish",
+            "observed": 49
+          }
+        ],
+        "observed": {
+          "completed": 223,
+          "completed_annotated": 118,
+          "completed_refseq_fish": 49,
+          "triple_eligible": 38,
+          "triple_eligible_fish": 14,
+          "unique_species": 714
+        }
+      },
+      "discrepancies": [
+        {
+          "delta": -2,
+          "expected": 120,
+          "metric": "completed_annotated",
+          "observed": 118
+        },
+        {
+          "delta": -2,
+          "expected": 40,
+          "metric": "triple_eligible",
+          "observed": 38
+        },
+        {
+          "delta": 1,
+          "expected": 13,
+          "metric": "triple_eligible_fish",
+          "observed": 14
+        },
+        {
+          "delta": 3,
+          "expected": 46,
+          "metric": "completed_refseq_fish",
+          "observed": 49
+        }
+      ],
+      "line_count": 717,
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv",
+      "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4"
+    }
+  },
+  "row_audit": {
+    "blocked_examples": [
+      {
+        "candidate_id": "dasypus_novemcinctus_gca_030445035_2",
+        "issues": [
+          {
+            "code": "H1_SHA256_MISSING",
+            "message": "missing H1 SHA-256"
+          },
+          {
+            "code": "H2_SHA256_MISSING",
+            "message": "missing H2 SHA-256 for paired row"
+          },
+          {
+            "code": "ANNOTATION_URL_MISSING",
+            "message": "missing annotation GFF URL"
+          }
+        ]
+      },
+      {
+        "candidate_id": "jaculus_jaculus_gca_020740685_1",
+        "issues": [
+          {
+            "code": "H1_SHA256_MISSING",
+            "message": "missing H1 SHA-256"
+          },
+          {
+            "code": "H2_SHA256_MISSING",
+            "message": "missing H2 SHA-256 for paired row"
+          },
+          {
+            "code": "ANNOTATION_URL_MISSING",
+            "message": "missing annotation GFF URL"
+          }
+        ]
+      },
+      {
+        "candidate_id": "ochotona_princeps_gca_030435755_1",
+        "issues": [
+          {
+            "code": "H1_SHA256_MISSING",
+            "message": "missing H1 SHA-256"
+          },
+          {
+            "code": "H2_SHA256_MISSING",
+            "message": "missing H2 SHA-256 for paired row"
+          },
+          {
+            "code": "ANNOTATION_URL_MISSING",
+            "message": "missing annotation GFF URL"
+          }
+        ]
+      },
+      {
+        "candidate_id": "hippopotamus_amphibius_gca_030028045_1",
+        "issues": [
+          {
+            "code": "H1_SHA256_MISSING",
+            "message": "missing H1 SHA-256"
+          },
+          {
+            "code": "H2_SHA256_MISSING",
+            "message": "missing H2 SHA-256 for paired row"
+          },
+          {
+            "code": "ANNOTATION_URL_MISSING",
+            "message": "missing annotation GFF URL"
+          }
+        ]
+      },
+      {
+        "candidate_id": "camelus_dromedarius_gca_036321535_1",
+        "issues": [
+          {
+            "code": "H1_SHA256_MISSING",
+            "message": "missing H1 SHA-256"
+          },
+          {
+            "code": "H2_SHA256_MISSING",
+            "message": "missing H2 SHA-256 for paired row"
+          },
+          {
+            "code": "ANNOTATION_URL_MISSING",
+            "message": "missing annotation GFF URL"
+          }
+        ]
+      },
+      {
+        "candidate_id": "diceros_bicornis_minor_gca_020826845_1",
+        "issues": [
+          {
+            "code": "H1_SHA256_MISSING",
+            "message": "missing H1 SHA-256"
+          },
+          {
+            "code": "H2_SHA256_MISSING",
+            "message": "missing H2 SHA-256 for paired row"
+          },
+          {
+            "code": "ANNOTATION_URL_MISSING",
+            "message": "missing annotation GFF URL"
+          }
+        ]
+      },
+      {
+        "candidate_id": "manis_pentadactyla_gca_030020395_1",
+        "issues": [
+          {
+            "code": "H1_SHA256_MISSING",
+            "message": "missing H1 SHA-256"
+          },
+          {
+            "code": "H2_SHA256_MISSING",
+            "message": "missing H2 SHA-256 for paired row"
+          },
+          {
+            "code": "ANNOTATION_URL_MISSING",
+            "message": "missing annotation GFF URL"
+          }
+        ]
+      },
+      {
+        "candidate_id": "macropus_eugenii_gca_028372415_2",
+        "issues": [
+          {
+            "code": "H1_SHA256_MISSING",
+            "message": "missing H1 SHA-256"
+          },
+          {
+            "code": "H2_ACCESSION_INVALID",
+            "message": "missing or unversioned H2 accession for paired row"
+          },
+          {
+            "code": "H2_URL_MISSING",
+            "message": "missing exact H2 FASTA URL for paired row"
+          }
+        ]
+      }
+    ],
+    "selected_rows": [],
+    "summary": {
+      "composition_ready_count": 0,
+      "diversity_ready_count": 0,
+      "issue_counts": {
+        "ANNOTATION_MD5_MISSING": 74,
+        "ANNOTATION_NOT_NATIVE": 74,
+        "ANNOTATION_SHA256_MISSING": 74,
+        "ANNOTATION_SIZE_MISSING": 74,
+        "ANNOTATION_URL_MISSING": 74,
+        "CALLABLE_BASES_UNRESOLVED": 74,
+        "DECLARED_DOWNLOAD_SIZE_MISMATCH": 10,
+        "H1_SHA256_MISSING": 74,
+        "H2_ACCESSION_INVALID": 3,
+        "H2_MD5_MISSING": 3,
+        "H2_SHA256_MISSING": 25,
+        "H2_SIZE_MISSING": 3,
+        "H2_URL_MISSING": 3,
+        "PAIR_NOT_SAME_INDIVIDUAL": 4,
+        "QUERYABLE_GENE_BASES_UNRESOLVED": 74,
+        "QUERYABLE_GENE_COUNT_UNRESOLVED": 74
+      },
+      "selected_ready_count": 0
+    }
+  },
+  "schema_version": "1.0",
+  "task_id": "gate-vgp-pilot"
+}
