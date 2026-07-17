@@ -1,0 +1,2 @@
+run_id	generated_at_utc	record_type	status	candidate_id	sbatch_command	slurm_job_id	slurm_array_job_id	dependency	requested_cpus	requested_memory_gib	requested_wall_hours	requested_scratch_gb	requested_read_gb	requested_write_gb	retry_index	final_state	max_rss_gib	elapsed_seconds	cpu_time_seconds	scratch_peak_gb	io_read_gb	io_write_gb	metadata_operations	failure_code	notes
+vgp-pilot-run-20260717T193655Z	2026-07-17T19:36:55Z	run_summary	refused_preflight												0	NOT_SUBMITTED		0	0	0	0	0	0	GATE_NO_GO	gate refusal prevented sbatch submission and sacct telemetry collection
