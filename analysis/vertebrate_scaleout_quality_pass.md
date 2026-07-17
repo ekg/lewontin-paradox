@@ -16,12 +16,15 @@ The definitions were tightened before planning dispatch. This pass authorizes
 planning only. It does not authorize bulk downloads, Slurm submission, a full
 vertebrate run, or expensive demographic inference.
 
-At review time, `sync-origin-scaleout-guidance` was
+At initial review time, `sync-origin-scaleout-guidance` was
 `failed-pending-eval` and had not registered its inventory artifact. Both
-planning tasks therefore now have that synchronization task as a direct
-dependency, as well as the quality-pass dependency. This prevents a planner
-from running without the synchronized guidance even if the quality task is
-released early by graph-state recovery.
+planning tasks therefore received a direct synchronization prerequisite as
+well as the quality-pass dependency. The original task later exhausted its
+provider retries; the coordinator replaced it with `rerun-sync-origin`, which
+completed the inventory and a 19-test pinned-Guix smoke validation. The live
+graph now gates this quality task and both planners directly on that successful
+rerun. This prevents a planner from running without the synchronized guidance
+even if quality-task graph state is recovered independently.
 
 ## Edits reviewed and applied
 
@@ -55,7 +58,9 @@ released early by graph-state recovery.
 - Required inventory/preflight, stratified pilot, reviewed expansion waves, and
   full-catalog phases with quantitative go/no-go conditions and separate
   authorization before expensive execution.
-- Added `sync-origin-scaleout-guidance` as a direct dependency.
+- Added a direct synchronization prerequisite; the live dependency is the
+  successful replacement `rerun-sync-origin` after the original task exhausted
+  provider retries.
 
 Manual result: the definition contains the required eligibility inventory,
 resource extrapolation, Slurm/I/O design, provenance, phylogenetic/statistical
@@ -102,7 +107,9 @@ design, and pilot/full phases.
 - Required a tiered data model, phylogenetically aware primary analysis,
   method-specific availability and resource estimates, pinned GNU Guix
   environments, truth-case pilots, and quantitative go/no-go review.
-- Added `sync-origin-scaleout-guidance` as a direct dependency.
+- Added a direct synchronization prerequisite; the live dependency is the
+  successful replacement `rerun-sync-origin` after the original task exhausted
+  provider retries.
 
 Manual result: the definition compares viable methods, audits data
 availability, controls circularity and absolute scaling, records uncertainty,
@@ -151,5 +158,8 @@ explicit execution-authorization boundary with staged go/no-go decisions.
   covariates.
 - The synthesis has direct dependencies on both planners and an explicit,
   non-ready authorization boundary before expensive execution.
+- `rerun-sync-origin` is complete, its inventory is integrated as
+  `analysis/vertebrate_scaleout_origin_inventory.md`, and the quality task and
+  both planners directly depend on that successful synchronization handoff.
 - Automated graph assertions are recorded in the WG task log after execution.
 - No compute job or bulk download was launched by this quality pass.
