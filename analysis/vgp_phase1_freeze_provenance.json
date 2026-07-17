@@ -1,0 +1,139 @@
+{
+  "candidate_summary": {
+    "rejected_count": 74,
+    "resolved_row_count": 74,
+    "seed_count": 74,
+    "selected_count": 0
+  },
+  "counts": {
+    "current_fish_completed_refseq_species": [
+      "Acipenser ruthenus",
+      "Amblyraja radiata",
+      "Amia calva",
+      "Anabas testudineus",
+      "Anguilla anguilla",
+      "Carcharodon carcharias",
+      "Chanos chanos",
+      "Chelmon rostratus",
+      "Cottoperca gobio",
+      "Cyclopterus lumpus",
+      "Denticeps clupeoides",
+      "Echeneis naucrates",
+      "Enoplosus armatus",
+      "Erpetoichthys calabaricus",
+      "Esox lucius",
+      "Gadus morhua",
+      "Gouania willdenowi",
+      "Hemiscyllium ocellatum",
+      "Heptranchias perlo",
+      "Heterodontus francisci",
+      "Hippoglossus hippoglossus",
+      "Hypanus sabinus",
+      "Lampris incognitus",
+      "Latimeria chalumnae",
+      "Lepisosteus oculatus",
+      "Mastacembelus armatus",
+      "Megalops cyprinoides",
+      "Melanotaenia boesemani",
+      "Myripristis murdjan",
+      "Narcine bancroftii",
+      "Notolabrus celidotus",
+      "Parambassis ranga",
+      "Pempheris klunzingeri",
+      "Periophthalmus magnuspinnatus",
+      "Pristiophorus japonicus",
+      "Pristis pectinata",
+      "Pygocentrus nattereri",
+      "Salarias fasciatus",
+      "Scatophagus argus",
+      "Scleropages formosus",
+      "Scyliorhinus canicula",
+      "Sebastes umbrosus",
+      "Sparus aurata",
+      "Sphaeramia orbicularis",
+      "Syngnathus acus",
+      "Takifugu rubripes",
+      "Thalassophryne amazonica",
+      "Thunnus maccoyii",
+      "Toxotes jaculatrix"
+    ],
+    "current_fish_triple_species": [
+      "Acipenser ruthenus",
+      "Amia calva",
+      "Astatotilapia calliptera",
+      "Cyclopterus lumpus",
+      "Enoplosus armatus",
+      "Hemiscyllium ocellatum",
+      "Heptranchias perlo",
+      "Heterodontus francisci",
+      "Lampris incognitus",
+      "Lepisosteus oculatus",
+      "Narcine bancroftii",
+      "Pempheris klunzingeri",
+      "Pristiophorus japonicus",
+      "Syngnathus acus"
+    ],
+    "discrepancies": [
+      {
+        "delta": -2,
+        "expected": 120,
+        "metric": "completed_annotated",
+        "observed": 118
+      },
+      {
+        "delta": -2,
+        "expected": 40,
+        "metric": "triple_eligible",
+        "observed": 38
+      },
+      {
+        "delta": 1,
+        "expected": 13,
+        "metric": "triple_eligible_fish",
+        "observed": 14
+      },
+      {
+        "delta": 3,
+        "expected": 46,
+        "metric": "completed_refseq_fish",
+        "observed": 49
+      }
+    ],
+    "observed": {
+      "completed": 223,
+      "completed_annotated": 118,
+      "completed_refseq_fish": 49,
+      "triple_eligible": 38,
+      "triple_eligible_fish": 14,
+      "unique_species": 714
+    }
+  },
+  "generated_at_utc": "2026-07-17T18:24:11Z",
+  "outputs": {
+    "budget_tsv": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-179/analysis/vgp_pilot_size_budget.tsv",
+    "manifest_tsv": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-179/analysis/vgp_pilot_manifest.tsv",
+    "rejections_tsv": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-179/analysis/vgp_pilot_rejections.tsv"
+  },
+  "quota_gate": {
+    "source": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-179/analysis/vgp_data_root_config.json",
+    "status": "NO_GO_pending_quota_interface"
+  },
+  "source_catalog": {
+    "license": {
+      "default_branch": "main",
+      "license_name": null,
+      "license_spdx_id": null,
+      "repo_url": "https://github.com/VGP/vgp-phase1"
+    },
+    "line_count": 717,
+    "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv",
+    "retrieved_at_utc": "2026-07-17T18:21:07Z",
+    "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4",
+    "size_bytes": 327466,
+    "source_commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "source_commit_committed_at_utc": "2025-07-08T00:41:28Z",
+    "source_commit_html_url": "https://github.com/VGP/vgp-phase1/commit/dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "source_url": "https://raw.githubusercontent.com/VGP/vgp-phase1/dc1b2af5a7741b97d66fb10cb2bce97f41765cdf/VGPPhase1-freeze-1.0.tsv"
+  },
+  "task_id": "freeze-vgp-manifest"
+}
