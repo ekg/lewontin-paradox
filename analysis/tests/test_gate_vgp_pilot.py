@@ -102,6 +102,40 @@ def test_authorize_rejects_mutated_manifest_and_changed_root(tmp_path):
         )
 
 
+def test_authorize_rejects_tampered_gate_payload(tmp_path):
+    _built, gate_out, _review_out = _build(tmp_path)
+    tampered = json.loads(gate_out.read_text(encoding="utf-8"))
+    tampered["decision"]["status"] = "GO"
+    gate_out.write_text(json.dumps(tampered, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    with pytest.raises(Tier3ValidationError, match="gate decision hash does not match"):
+        gate.authorize_gate_action(
+            gate_out,
+            ROOT / "analysis/vgp_pilot_manifest.tsv",
+            ROOT / "analysis/vgp_data_root_config.json",
+            "acquire",
+        )
+
+
+def test_authorize_rejects_changed_live_cap_vector(tmp_path):
+    _built, gate_out, _review_out = _build(tmp_path)
+    rows = gate.load_tsv(ROOT / "analysis/vertebrate_scaleout_resource_budget.tsv")
+    mutated = copy.deepcopy(rows)
+    for row in mutated:
+        if row["stage_or_dataset"] == "stratified_pilot" and row["scenario"] == "high":
+            row["peak_aggregate_bandwidth_mib_s"] = "119.0"
+            break
+    mutated_path = tmp_path / "resource_budget_mutated.tsv"
+    _write_tsv(mutated_path, mutated)
+    with pytest.raises(Tier3ValidationError, match="cap vector digest mismatch"):
+        gate.authorize_gate_action(
+            gate_out,
+            ROOT / "analysis/vgp_pilot_manifest.tsv",
+            ROOT / "analysis/vgp_data_root_config.json",
+            "acquire",
+            resource_budget_path=mutated_path,
+        )
+
+
 def test_build_gate_fails_closed_when_exact_size_is_missing(tmp_path):
     rows = gate.load_tsv(ROOT / "analysis/vgp_pilot_size_budget.tsv")
     mutated = copy.deepcopy(rows)

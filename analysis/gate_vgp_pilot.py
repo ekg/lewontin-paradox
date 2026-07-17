@@ -1286,7 +1286,71 @@ def load_gate(path: Path) -> dict[str, Any]:
     return gate
 
 
-def authorize_gate_action(gate_path: Path, manifest_path: Path, root_config_path: Path, action: str) -> dict[str, Any]:
+def recompute_current_cap_vector(
+    gate: Mapping[str, Any],
+    *,
+    manifest_path: Path | None = None,
+    size_budget_path: Path | None = None,
+    root_config_path: Path | None = None,
+    root_validation_path: Path | None = None,
+    decisions_path: Path | None = None,
+    execution_plan_path: Path | None = None,
+    resource_budget_path: Path | None = None,
+) -> dict[str, Any]:
+    input_paths = gate["inputs"]
+    manifest_path = manifest_path or Path(input_paths["manifest"]["path"])
+    size_budget_path = size_budget_path or Path(input_paths["size_budget"]["path"])
+    root_config_path = root_config_path or Path(input_paths["root_config"]["path"])
+    root_validation_path = root_validation_path or Path(input_paths["root_validation"]["path"])
+    decisions_path = decisions_path or Path(input_paths["decisions"]["path"])
+    execution_plan_path = execution_plan_path or Path(input_paths["execution_plan"]["path"])
+    resource_budget_path = resource_budget_path or Path(input_paths["resource_budget"]["path"])
+
+    manifest_rows = load_tsv(manifest_path)
+    size_budget_rows = load_tsv(size_budget_path)
+    root_config = load_json(root_config_path)
+    root_validation = load_json(root_validation_path)
+    decision_rows = load_tsv(decisions_path)
+    execution_plan_text = execution_plan_path.read_text(encoding="utf-8")
+    resource_budget_rows = load_tsv(resource_budget_path)
+
+    _size_budget_blockers, size_budget_summary = manifest_budget_consistency(manifest_rows, size_budget_rows)
+    plan_caps = parse_small_cap_from_execution_plan(execution_plan_text)
+    decision_caps = parse_decision_caps(decision_rows)
+    relevant_budget_rows = collect_resource_budget_rows(resource_budget_rows)
+    _root_blockers, quota_summary = parse_root_validation(root_config, root_validation)
+    cap_vector = build_cap_vector(
+        plan_caps,
+        decision_caps,
+        relevant_budget_rows,
+        manifest_rows,
+        size_budget_summary,
+        quota_summary,
+    )
+    return {
+        "cap_vector": cap_vector,
+        "manifest_path": manifest_path,
+        "size_budget_path": size_budget_path,
+        "root_config_path": root_config_path,
+        "root_validation_path": root_validation_path,
+        "decisions_path": decisions_path,
+        "execution_plan_path": execution_plan_path,
+        "resource_budget_path": resource_budget_path,
+    }
+
+
+def authorize_gate_action(
+    gate_path: Path,
+    manifest_path: Path,
+    root_config_path: Path,
+    action: str,
+    *,
+    size_budget_path: Path | None = None,
+    root_validation_path: Path | None = None,
+    decisions_path: Path | None = None,
+    execution_plan_path: Path | None = None,
+    resource_budget_path: Path | None = None,
+) -> dict[str, Any]:
     gate = load_gate(gate_path)
     if action not in {"acquire", "compute"}:
         raise Tier3ValidationError(f"unknown gate action {action!r}")
@@ -1300,6 +1364,22 @@ def authorize_gate_action(gate_path: Path, manifest_path: Path, root_config_path
         raise Tier3ValidationError(
             f"root contract digest mismatch: expected {gate['authorization_boundary']['root_contract_digest']}, observed {root_digest}"
         )
+    current = recompute_current_cap_vector(
+        gate,
+        manifest_path=manifest_path,
+        size_budget_path=size_budget_path,
+        root_config_path=root_config_path,
+        root_validation_path=root_validation_path,
+        decisions_path=decisions_path,
+        execution_plan_path=execution_plan_path,
+        resource_budget_path=resource_budget_path,
+    )
+    current_cap_digest = current["cap_vector"]["sha256"]
+    expected_cap_digest = gate["authorization_boundary"]["cap_vector_digest"]
+    if current_cap_digest != expected_cap_digest:
+        raise Tier3ValidationError(
+            f"cap vector digest mismatch: expected {expected_cap_digest}, observed {current_cap_digest}"
+        )
     if gate["decision"]["status"] != "GO":
         raise Tier3ValidationError(
             f"gate decision is {gate['decision']['status']}; {action} is not authorized for this manifest/root/cap vector"
@@ -1308,7 +1388,7 @@ def authorize_gate_action(gate_path: Path, manifest_path: Path, root_config_path
         "action": action,
         "manifest_digest": manifest_digest,
         "root_contract_digest": root_digest,
-        "cap_vector_digest": gate["authorization_boundary"]["cap_vector_digest"],
+        "cap_vector_digest": current_cap_digest,
     }
 
 
@@ -1331,7 +1411,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     authorize = subparsers.add_parser("authorize", help="enforce the gate before acquisition or compute")
     authorize.add_argument("--gate", type=Path, default=DEFAULT_GATE_JSON)
     authorize.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    authorize.add_argument("--size-budget", type=Path, default=None)
     authorize.add_argument("--root-config", type=Path, default=DEFAULT_ROOT_CONFIG)
+    authorize.add_argument("--root-validation", type=Path, default=None)
+    authorize.add_argument("--decisions", type=Path, default=None)
+    authorize.add_argument("--execution-plan", type=Path, default=None)
+    authorize.add_argument("--resource-budget", type=Path, default=None)
     authorize.add_argument("--action", required=True, choices=("acquire", "compute"))
 
     args = parser.parse_args(argv)
@@ -1350,7 +1435,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             review_out=args.review_out,
         )
         return 0
-    authorize_gate_action(args.gate, args.manifest, args.root_config, args.action)
+    authorize_gate_action(
+        args.gate,
+        args.manifest,
+        args.root_config,
+        args.action,
+        size_budget_path=args.size_budget,
+        root_validation_path=args.root_validation,
+        decisions_path=args.decisions,
+        execution_plan_path=args.execution_plan,
+        resource_budget_path=args.resource_budget,
+    )
     return 0
 
 
