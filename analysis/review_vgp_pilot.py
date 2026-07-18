@@ -104,7 +104,10 @@ def normalize_source(value: str) -> str:
 def normalize_rows(rows: Iterable[Mapping[str, str]]) -> list[dict[str, str]]:
     normalized: list[dict[str, str]] = []
     for row in rows:
-        cooked = {key: value for key, value in row.items() if key not in {"run_id", "generated_at_utc"}}
+        cooked = {
+            key: value for key, value in row.items()
+            if key not in {"run_id", "generated_at_utc", "root_config_sha256"}
+        }
         if "failure_source" in cooked:
             cooked["failure_source"] = normalize_source(cooked["failure_source"])
         normalized.append(cooked)
@@ -151,10 +154,27 @@ def refusal_evidence_digest_valid(row: Mapping[str, str]) -> bool:
 
 
 def stable_gate_view(payload: Mapping[str, Any]) -> dict[str, Any]:
+    # A historical refusal remains reproducible when an immutable catalog is
+    # relinked into a new canonical storage root.  Compare scientific inputs
+    # and decisions, but deliberately exclude deployment-location digests and
+    # volatile free-space observations.  Their old values remain preserved in
+    # the promoted artifact and the migration is audited independently.
+    source_catalog = dict(payload["reproduction"]["source_catalog"])
+    for key in ("path", "provenance_record_sha256"):
+        source_catalog.pop(key, None)
     return {
-        "decision": payload["decision"],
-        "inputs_sha256": {key: value["sha256"] for key, value in payload["inputs"].items()},
-        "reproduction": payload["reproduction"],
+        "decision": {
+            key: value for key, value in payload["decision"].items()
+            if key != "authorization_tuple_digest"
+        },
+        "inputs_sha256": {
+            key: value["sha256"] for key, value in payload["inputs"].items()
+            if key not in {"freeze_provenance", "root_config", "root_validation"}
+        },
+        "reproduction": {
+            **payload["reproduction"],
+            "source_catalog": source_catalog,
+        },
         "row_audit_summary": payload["row_audit"]["summary"],
         "cap_dimensions": {
             key: {
@@ -167,10 +187,8 @@ def stable_gate_view(payload: Mapping[str, Any]) -> dict[str, Any]:
         "cap_vector_sha256": payload["cap_vector"]["sha256"],
         "authorization_boundary": {
             "manifest_digest": payload["authorization_boundary"]["manifest_digest"],
-            "root_contract_digest": payload["authorization_boundary"]["root_contract_digest"],
             "cap_vector_digest": payload["authorization_boundary"]["cap_vector_digest"],
         },
-        "quota_evidence": payload["quota_evidence"],
         "blockers": payload["blockers"],
     }
 

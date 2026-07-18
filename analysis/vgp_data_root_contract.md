@@ -1,16 +1,16 @@
 # VGP data root contract
 
-Date: 2026-07-17T17:58:57Z
+Date: 2026-07-18T17:38:47Z
 
 Versioned config artifact: `analysis/vgp_data_root_config.json`
 
 ## Root status
 
-- Authorized root: `/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0`
+- Authorized root: `/moosefs/erikg/vgp`
 - Owner/group: `erikg:erikg`
 - Root mode: `0o2770`
 - World-writable: `false`
-- Downstream acquisition ready: `false`
+- Downstream acquisition ready: `true`
 
 ## Durable layout
 
@@ -58,35 +58,35 @@ Versioned config artifact: `analysis/vgp_data_root_config.json`
 
 ### Filesystem and MooseFS evidence
 
-- `2026-07-17T17:58:57Z` `/bin/ls -ld /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0` exit=`0`
+- `2026-07-18T17:38:47Z` `/bin/ls -ld /moosefs/erikg/vgp` exit=`0`
 
 ```text
-drwxrws--- 10 erikg erikg 1 Jul 17 17:57 /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0
+drwxrws--- 10 erikg erikg 3001182 Jul 18 17:30 /moosefs/erikg/vgp
 ```
-- `2026-07-17T17:58:57Z` `/bin/findmnt -T /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0` exit=`0`
+- `2026-07-18T17:38:47Z` `/bin/findmnt -T /moosefs/erikg/vgp` exit=`0`
 
 ```text
 TARGET   SOURCE             FSTYPE OPTIONS
 /moosefs mfs#octopus04:9521 fuse   rw,nosuid,nodev,noatime,user_id=0,group_id=0,allow_other
 ```
-- `2026-07-17T17:58:57Z` `/usr/bin/stat -f -c 'fstype=%T block_size=%S blocks=%b blocks_available=%a files=%c files_free=%d' /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0` exit=`0`
+- `2026-07-18T17:38:47Z` `/usr/bin/stat -f -c 'fstype=%T block_size=%S blocks=%b blocks_available=%a files=%c files_free=%d' /moosefs/erikg/vgp` exit=`0`
 
 ```text
-fstype=fuseblk block_size=65536 blocks=3163819648 blocks_available=1544559016 files=1014154225 files_free=1004580301
+fstype=fuseblk block_size=65536 blocks=3163819648 blocks_available=1542289743 files=1014444374 files_free=1004580301
 ```
-- `2026-07-17T17:58:57Z` `/bin/df -hP /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0` exit=`0`
+- `2026-07-18T17:38:47Z` `/bin/df -hP /moosefs/erikg/vgp` exit=`0`
 
 ```text
 Filesystem          Size  Used Avail Use% Mounted on
-mfs#octopus04:9521  189T   97T   93T  52% /moosefs
+mfs#octopus04:9521  189T   97T   92T  52% /moosefs
 ```
-- `2026-07-17T17:58:57Z` `/bin/df -iP /moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0` exit=`0`
+- `2026-07-18T17:38:47Z` `/bin/df -iP /moosefs/erikg/vgp` exit=`0`
 
 ```text
 Filesystem             Inodes   IUsed      IFree IUse% Mounted on
-mfs#octopus04:9521 1014154225 9573924 1004580301    1% /moosefs
+mfs#octopus04:9521 1014444374 9864073 1004580301    1% /moosefs
 ```
-- `2026-07-17T17:58:57Z` `/usr/bin/mfsmount -V` exit=`0`
+- `2026-07-18T17:38:47Z` `/usr/bin/mfsmount -V` exit=`0`
 
 ```text
 fusermount version: 2.9.9
@@ -98,7 +98,11 @@ FUSE library version: 2.9.9
 
 ## Blockers
 
-- `QUOTA_UNAVAILABLE`: No accessible user quota interface was available. Downstream acquisition must fail closed until exact quota evidence is recorded.
+- None.
+
+## Confidence warnings
+
+- `QUOTA_INTERFACE_UNAVAILABLE`: No user-visible quota helper was found; direct filesystem headroom remains authoritative.
 
 ## Git hygiene note
 

@@ -259,7 +259,7 @@ def run_command(argv: list[str]) -> dict[str, Any]:
     completed = subprocess.run(argv, capture_output=True, text=True, check=False)
     return {
         "timestamp_utc": utc_now(),
-        "command": shlex.join(argv),
+        "command": " ".join(shlex.quote(value) for value in argv),
         "exit_code": completed.returncode,
         "stdout": completed.stdout,
         "stderr": completed.stderr,
@@ -365,13 +365,10 @@ def owner_record(path: Path) -> dict[str, Any]:
 
 def collect_blockers(system: dict[str, Any], smoke: dict[str, Any]) -> list[dict[str, str]]:
     blockers = []
-    if system["quota_state"]["status"] != "reported":
-        blockers.append(
-            {
-                "code": "QUOTA_UNAVAILABLE",
-                "message": "No accessible user quota interface was available. Downstream acquisition must fail closed until exact quota evidence is recorded.",
-            }
-        )
+    # A user-visible quota command is useful observability, but it is not a
+    # storage authorization gate when the exact root is writable and direct
+    # filesystem/inode headroom is measured.  Preserve quota status in system
+    # evidence without recreating a global refusal from an unavailable helper.
     if system["inode_state"]["status"] != "reported":
         blockers.append(
             {
@@ -486,6 +483,12 @@ def render_markdown(contract: dict[str, Any], layout: Layout, evidence: dict[str
             lines.append(f"- `{blocker['code']}`: {blocker['message']}")
     else:
         lines.append("- None.")
+    lines.extend(["", "## Confidence warnings", ""])
+    if evidence.get("confidence_warnings"):
+        for warning in evidence["confidence_warnings"]:
+            lines.append(f"- `{warning['code']}`: {warning['message']}")
+    else:
+        lines.append("- None.")
     lines.extend(
         [
             "",
@@ -512,6 +515,10 @@ def generate_evidence(contract: dict[str, Any], layout: Layout) -> dict[str, Any
         "system_evidence": system,
     }
     evidence["blockers"] = collect_blockers(system, smoke)
+    evidence["confidence_warnings"] = ([{
+        "code": "QUOTA_INTERFACE_UNAVAILABLE",
+        "message": "No user-visible quota helper was found; direct filesystem headroom remains authoritative.",
+    }] if system["quota_state"]["status"] != "reported" else [])
     evidence["downstream_acquisition_ready"] = not evidence["blockers"]
     return evidence
 

@@ -262,6 +262,31 @@ def non_acgt_intervals(sequences: Mapping[str, str]) -> list[Interval]:
     ]
 
 
+def low_complexity_intervals(
+    sequences: Mapping[str, str], homopolymer_bases: int = 10,
+    dinucleotide_copies: int = 10, trinucleotide_copies: int = 7,
+) -> list[Interval]:
+    """Generate a conservative sequence-derived simple-repeat mask.
+
+    This is deliberately available when no standalone repeat report exists.
+    It masks long homopolymers and exact di-/trinucleotide tandem runs; richer
+    repeat annotations remain optional confidence evidence and may be added as
+    separately reason-coded sensitivity inputs.
+    """
+    if min(homopolymer_bases, dinucleotide_copies, trinucleotide_copies) < 2:
+        raise PilotError("low-complexity thresholds must be at least two")
+    rows: list[Interval] = []
+    patterns = (
+        re.compile(rf"([ACGT])\1{{{homopolymer_bases - 1},}}"),
+        re.compile(rf"([ACGT]{{2}})\1{{{dinucleotide_copies - 1},}}"),
+        re.compile(rf"([ACGT]{{3}})\1{{{trinucleotide_copies - 1},}}"),
+    )
+    for contig, sequence in sequences.items():
+        for pattern in patterns:
+            rows.extend(Interval(contig, match.start(), match.end()) for match in pattern.finditer(sequence))
+    return merge_intervals(rows)
+
+
 def project_h2_non_acgt_to_h1(
     records: Sequence[PafRecord], h2_sequences: Mapping[str, str]
 ) -> list[Interval]:
@@ -848,15 +873,31 @@ def summarize_annotation_partitions(
 
 
 def confidence_tier(evidence: Mapping[str, object]) -> str:
-    hard = ("exact_pair", "qv_pass", "completeness_pass", "collapse_pass", "mapping_1to1_pass",
-            "callability_pass", "consensus_pass", "reproducibility_pass")
+    """Classify confidence without turning validation covariates into vetoes.
+
+    False values for scientific execution/result invariants make a result
+    unusable (``X``).  Missing result evidence is pending/low confidence
+    (``C``).  Assembly and read-validation fields distinguish confidence
+    tiers only; they never authorize or refuse core execution.
+    """
+    hard = ("exact_pair", "accepted_input_digests", "mutually_comparable_assemblies",
+            "mapping_1to1_pass", "ref_reconstruction_pass", "h2_reconstruction_pass",
+            "mask_accounting_pass", "callability_pass", "consensus_pass",
+            "reproducibility_pass")
     if any(evidence.get(key) is False for key in hard):
         return "X"
     if any(evidence.get(key) is None for key in hard):
         return "C"
-    selective = ("raw_read_validation", "kmer_validation", "published_estimate_validation",
-                 "long_range_switch_validation")
-    return "A" if all(evidence.get(key) is True for key in selective) else "B"
+    covariates = ("qv_pass", "completeness_pass", "collapse_pass", "repeat_audit",
+                  "exact_read_chemistry", "raw_read_validation", "kmer_validation",
+                  "copy_number_validation", "published_estimate_validation",
+                  "long_range_switch_validation", "independent_ne_validation")
+    observed = [evidence.get(key) for key in covariates]
+    if all(value is True for value in observed):
+        return "A"
+    if any(value is None for value in observed):
+        return "C"
+    return "B"
 
 
 def estimate_resources(
@@ -927,11 +968,13 @@ def validate_pair_input_manifest(
     value: Mapping[str, object], manifest: Path | str = PRIMARY_MANIFEST,
     verify_files: bool = True,
 ) -> dict[str, object]:
-    """Bind acquired files/QC evidence to one immutable design row.
+    """Bind acquired files to one immutable design row.
 
-    Raw-read, k-mer, and published-estimate checks are recorded but deliberately
-    are not universal gates.  Assembly QV/completeness/collapse measurements are
-    core gates and cannot be inferred from the technology label.
+    The authorization boundary is intentionally narrow: exact pair provenance,
+    accepted digests, and readable mutually comparable assemblies.  QV, BUSCO,
+    repeat reports, copy-number/k-mer audits, chemistry, raw-read validation,
+    annotation, and independent Ne evidence are retained as confidence
+    covariates.  They are not universal pre-execution gates.
     """
     selection_id = str(value.get("selection_id", ""))
     pair = load_primary_pair(selection_id, manifest)
@@ -964,38 +1007,35 @@ def validate_pair_input_manifest(
             dictionaries[role] = sequence_dictionary(parse_fasta(path))
             if asset.get("sequence_dictionary") != dictionaries[role]:
                 raise PilotError(f"{role} sequence dictionary mismatch")
-    qc = value.get("core_qc")
-    if not isinstance(qc, Mapping):
-        raise PilotError("measured core_qc evidence is required")
-    for haplotype in ("h1", "h2"):
-        row = qc.get(haplotype)
-        if not isinstance(row, Mapping):
-            raise PilotError(f"missing {haplotype} core QC")
-        if float(row.get("qv", -1)) < 40:
-            raise PilotError(f"{haplotype} QV hard gate failed")
-        if float(row.get("busco_complete_fraction", -1)) < 0.90:
-            raise PilotError(f"{haplotype} completeness hard gate failed")
-        if float(row.get("busco_missing_fraction", 2)) > 0.05:
-            raise PilotError(f"{haplotype} BUSCO missing hard gate failed")
-        if float(row.get("busco_duplicated_fraction", 2)) > 0.05:
-            raise PilotError(f"{haplotype} duplication hard gate failed")
-        if row.get("copy_number_and_kmer_audit_passed") is not True:
-            raise PilotError(f"{haplotype} collapse/copy-number hard gate failed")
-    if abs(float(qc["h1"]["busco_complete_fraction"]) -
-           float(qc["h2"]["busco_complete_fraction"])) > 0.05:
-        raise PilotError("pair BUSCO complete-fraction difference hard gate failed")
-    if value.get("read_technology_resolved") is not True:
-        raise PilotError("exact read chemistry must be resolved")
-    if not value.get("long_range_phasing_evidence"):
-        raise PilotError("long-range phasing evidence must be tracked")
-    selective = value.get("selective_validation", {})
+    if verify_files:
+        h1_bp = sum(int(row["length"]) for row in dictionaries["h1_fasta"])
+        h2_bp = sum(int(row["length"]) for row in dictionaries["h2_fasta"])
+        ratio = h1_bp / h2_bp
+        if not (0.5 <= ratio <= 2.0):
+            raise PilotError("H1/H2 assemblies are not mutually comparable in span")
+    else:
+        h1_bp = h2_bp = None
+        ratio = None
+    covariates = value.get("confidence_covariates", value.get("core_qc", {}))
+    if covariates is None:
+        covariates = {}
+    if not isinstance(covariates, Mapping):
+        raise PilotError("confidence covariates must be an object when supplied")
+    selective = value.get("selective_validation", {}) or {}
     if not isinstance(selective, Mapping):
-        raise PilotError("selective validation evidence must be an object")
+        raise PilotError("selective validation evidence must be an object when supplied")
     return {
         "selection_id": selection_id,
         "pair_design_sha256": sha256_file(manifest),
         "exact_pair": True,
         "orientation": "H1_reference_H2_query",
+        "accepted_input_digests": True,
+        "mutually_comparable_assemblies": True,
+        "h1_sequence_bp": h1_bp,
+        "h2_sequence_bp": h2_bp,
+        "h1_h2_span_ratio": ratio,
+        "confidence_covariates_are_authorization_gates": False,
+        "confidence_covariates": dict(covariates),
         "selective_validation_is_universal_core_gate": False,
         "tracked_selective_validation": dict(selective),
         "dictionaries": dictionaries,

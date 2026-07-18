@@ -22,10 +22,13 @@ with (out/"unscaled_trajectory.tsv").open("w",newline="") as handle:
     writer=csv.DictWriter(handle,fieldnames=("interval","time_2N0","lambda"),
                           delimiter="\t",lineterminator="\n")
     writer.writeheader(); writer.writerows(rows)
-if not scenario_path.is_file():
-    raise SystemExit("mutation-rate/generation-time scenario table is required")
-with scenario_path.open(newline="") as handle:
-    scenarios=list(csv.DictReader(handle,delimiter="\t"))
+if scenario_path.is_file():
+    with scenario_path.open(newline="") as handle:
+        scenarios=list(csv.DictReader(handle,delimiter="\t"))
+else:
+    # Absolute scaling is optional.  Its absence cannot veto the unscaled PSMC
+    # trajectory or manufacture a zero-valued demographic estimate.
+    scenarios=[]
 for row in scenarios: row["theta_0"]=theta
 _,scaled=scale_unscaled_trajectory(rows,scenarios)
 fields=("scenario_id","interval","time_years","effective_size","mutation_rate_per_generation",
@@ -51,6 +54,7 @@ finite=sum(row["finite"] == "true" for row in boot)
 (out/"psmc_qc.json").write_text(json.dumps({
     "bootstrap_attempts":200,"finite_bootstraps":finite,"minimum_finite_required":190,
     "passed":finite>=190,"unscaled_primary_preserved":True,"scenario_scaling_separate":True,
+    "absolute_scaling_status":"available" if scenarios else "not_available_nonblocking",
 },sort_keys=True)+"\n")
 if finite < 190: raise SystemExit("fewer than 190/200 finite bootstrap trajectories")
 PY

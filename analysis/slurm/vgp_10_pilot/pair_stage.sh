@@ -45,16 +45,18 @@ mapping)
 import sys
 from pathlib import Path
 from analysis.vgp_10_pilot import (
-    non_acgt_intervals,paf_h1_intervals,parse_fasta,parse_paf,
+    low_complexity_intervals,non_acgt_intervals,paf_h1_intervals,parse_fasta,parse_paf,
     project_h2_non_acgt_to_h1,read_bed,subtract_intervals,write_bed,
 )
 paf,h1,h2,universe,out=sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],Path(sys.argv[5])
 records=parse_paf(paf)
 one_to_one=paf_h1_intervals(records)
+h1_sequences=parse_fasta(h1)
 write_bed(out/"h1.1to1.bed",one_to_one)
 write_bed(out/"not_1to1.bed",subtract_intervals(read_bed(universe),one_to_one))
-write_bed(out/"h1_gap_or_N.bed",non_acgt_intervals(parse_fasta(h1)))
+write_bed(out/"h1_gap_or_N.bed",non_acgt_intervals(h1_sequences))
 write_bed(out/"h2_gap_or_N.bed",project_h2_non_acgt_to_h1(records,parse_fasta(h2)))
+write_bed(out/"repeat_or_low_complexity_primary.bed",low_complexity_intervals(h1_sequences))
 PY
     ;;
 impg)
@@ -126,6 +128,15 @@ materialize_mask_consensus_psmc(
     exclusions,output,contig_map=manifest.get("h1_to_h2_contig_map"),
     selection_id=selection,attempts=200,aligned_regions=manifest.get("concordance_regions"),
 )
+reconciliation=json.loads((output/"masks/mask_reconciliation.json").read_text())
+result_gates=manifest.get("result_gates",{})
+minimum_bp=int(result_gates.get("minimum_callable_bp",100_000_000))
+minimum_fraction=float(result_gates.get("minimum_callable_fraction",0.60))
+if reconciliation["callable_bp"] < minimum_bp:
+    raise SystemExit(f"callable sequence hard gate failed: {reconciliation['callable_bp']} < {minimum_bp}")
+if reconciliation["callable_fraction"] < minimum_fraction:
+    raise SystemExit(
+        f"callable fraction hard gate failed: {reconciliation['callable_fraction']} < {minimum_fraction}")
 PY
     ;;
 *)

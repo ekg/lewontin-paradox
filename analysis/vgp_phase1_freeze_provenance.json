@@ -126,7 +126,7 @@
       "repo_url": "https://github.com/VGP/vgp-phase1"
     },
     "line_count": 717,
-    "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv",
+      "path": "/moosefs/erikg/vgp/manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv",
     "retrieved_at_utc": "2026-07-17T18:21:07Z",
     "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4",
     "size_bytes": 327466,

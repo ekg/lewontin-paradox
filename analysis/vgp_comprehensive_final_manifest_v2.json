@@ -1,0 +1,170 @@
+{
+  "analysis_contract": {
+    "annotation_absence_core_veto": false,
+    "annotation_role": "post_core_optional_exact_bound_partition",
+    "cross_species_model_status": "NOT_IDENTIFIABLE_ZERO_ELIGIBLE_PAIRS",
+    "cross_species_phylogenetic_model": "versioned_tree_PGLS_or_hierarchical_phylogenetic_covariance",
+    "mutation_generation_scenario_status": "NOT_MATERIALIZED_NO_APPROVED_TIER",
+    "same_pair_model": "joint_multivariate_outcomes_with_pair_cluster_covariance",
+    "same_pair_psmc_independent_evidence": false,
+    "sampling_unit": "one audited diploid individual/H1-H2 pair",
+    "unscaled_psmc_status": "NOT_MATERIALIZED_CORE_NOT_RUN",
+    "windows_are_independent_species_replicates": false
+  },
+  "catalog": {
+    "commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "rows": 716,
+    "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4"
+  },
+  "catalog_row_statuses": {
+    "dispositions": {
+      "excluded": 187,
+      "failed": 529
+    },
+    "primary_reason_codes": {
+      "CATALOG_NO_LINKED_HAPLOTYPE": 49,
+      "CATALOG_NO_RELEASED_MAIN_ACCESSION": 135,
+      "CATALOG_ONLY_SELF_LINK_NOT_PAIR": 3,
+      "UPSTREAM_SCALEOUT_NOT_AUTHORIZED": 529
+    }
+  },
+  "claim_classification_counts": {
+    "bounded": 1,
+    "design-only": 2,
+    "not identifiable": 6,
+    "suggestive": 1,
+    "supported": 2
+  },
+  "closed_world": {
+    "biological_estimates": 0,
+    "biological_jobs_submitted": 0,
+    "catalog_duplicate_name_rows": 2,
+    "catalog_rows": 716,
+    "catalog_unique_scientific_names": 714,
+    "completed_pairs": 0,
+    "distinct_nonself_pair_candidates": 566,
+    "eligible_pairs": 0,
+    "exact_annotation_subset_pairs": 0,
+    "linked_haplotype_entries": 569,
+    "mirror_inventory_objects": 47870,
+    "mirror_verified_or_reused_objects": 0,
+    "released_catalog_rows": 581,
+    "self_links_excluded": 3,
+    "unreleased_catalog_rows": 135
+  },
+  "core_pair_statuses": {
+    "confidence_tiers": {
+      "UNASSIGNED": 566,
+      "X": 3
+    },
+    "dispositions": {
+      "excluded": 3,
+      "failed": 566
+    },
+    "primary_reason_codes": {
+      "CATALOG_SELF_LINK_NOT_PAIR": 3,
+      "UPSTREAM_SCALEOUT_NOT_AUTHORIZED": 566
+    }
+  },
+  "decision": "CLOSED_WORLD_RECONCILED_BIOLOGICAL_EFFECTS_NOT_IDENTIFIABLE",
+  "environment": {
+    "channels": "analysis/guix/channels.scm",
+    "guix_channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "manifest": "analysis/guix/manifest.scm",
+    "pure_environment_required": true
+  },
+  "evidence_freeze_utc": "2026-07-18T00:00:00Z",
+  "execution_boundary": "REVIEWED_RECONCILIATION_ONLY_NO_ACQUISITION_NO_BIOLOGICAL_COMPUTE",
+  "gene_conversion": {
+    "direct": {
+      "estimate": "NOT_ESTIMABLE",
+      "products": 52,
+      "published_candidates_excluded": 58,
+      "state": "EXECUTED_PREFLIGHT_INPUT_GATE",
+      "tetrads": 13,
+      "validated_events": 0
+    },
+    "non_allelic": {
+      "estimate": "NOT_ESTIMABLE",
+      "state": "NOT_RUN_DESIGN_ONLY"
+    },
+    "phylogenetic": {
+      "estimate": "NOT_ESTIMABLE",
+      "panels": 2,
+      "state": "EXECUTED_PREFLIGHT_INPUT_GATE",
+      "taxa": 10,
+      "verified_sequence_bytes": 0
+    },
+    "population": {
+      "estimate": "NOT_ESTIMABLE",
+      "state": "NOT_RUN_DESIGN_ONLY"
+    }
+  },
+  "input_digests": {
+    "analysis/direct_gene_conversion_dataset_manifest.tsv": "29f8996d82344f6ea2851fa117451207dd8632a5edd1003cc3dde77eaf20cda1",
+    "analysis/direct_gene_conversion_pilot.md": "d0fea954c728286cf1f06e552938fa938f490a5af5c65d8526079f4949509464",
+    "analysis/direct_gene_conversion_summary.tsv": "585f200e96a583a92d18f6ee18c5fb3168248372715927181ed25c5e23df31fc",
+    "analysis/direct_gene_conversion_tracts.tsv": "99f56f40fd0bf80acfc919ec9340989554bef41f6c0cea83bde7cf870c60b9c2",
+    "analysis/gene_conversion_claim_matrix.tsv": "31a340a0d42d4f940c3dd5e43d56df48632a441a6539ccc1c7c594884b5cb486",
+    "analysis/gene_conversion_dataset_manifest.tsv": "d4f6d84d7c753aad27225019abf319aadedda82dae5416d76ae88a861a32cf96",
+    "analysis/gene_conversion_estimand_manifest.tsv": "44b0a5a513c30652aeadd690f65d7b78e439a5494d8697c35481692e66021e10",
+    "analysis/guix/channels.scm": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "analysis/guix/manifest.scm": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "analysis/guix/vgp-phylogenetic-gbgc-preflight-manifest.scm": "8973dc50db52f78f2c6a75417cd0967f00bcd8aea41c619d05ab24bf88f60743",
+    "analysis/run_vgp_comprehensive_synthesis_guix.sh": "c6fcd47987a088fa339738f96ab6f7e4cc6de0c6d2691f5d3795247d6d0bfcf8",
+    "analysis/synthesize_vgp_comprehensive.py": "61b3f5097bd68bafd65378cd7036f6f34bffeeaf795ea7a1b02e5d7706172460",
+    "analysis/tests/test_vgp_comprehensive_synthesis.py": "da2d79436f43587252633c9076815c2fa90d0962427fa007c0ae7d0f43baddbb",
+    "analysis/vgp_10_pilot_review_decision.json": "561a327d2a7d83c004a011d9bac1ec4b45cf44067858a29a3036bb772a57fc7b",
+    "analysis/vgp_10_pilot_review_gates.tsv": "142672c9440481e4bec226a594080301466a8fba7d6bf853af2f4c4cd1d33b0e",
+    "analysis/vgp_10_pilot_scaleout_manifest.tsv": "4bed1367c2f521a72b3f7ec2e625b141b7e35e6ce2103a8f29b33f0a824805fc",
+    "analysis/vgp_10_pilot_scaleout_resource_manifest.tsv": "efc3d69119744116ab73cc75a438d2a2ccd9dcd10eeb9b06c95b02cd9b8b456e",
+    "analysis/vgp_analysis_manifest.json": "24b923af85de48bbb17575d4e79ad2a3062d560b10993ea70fa63d6a5e163cd1",
+    "analysis/vgp_core_scaleout_independent_validation.tsv": "b280b493e9c23bc6c3ebb6f9d39d32f0cade2ad3898f28e4bf013467d7eebefb",
+    "analysis/vgp_core_scaleout_manifest.tsv": "5bf2f6102cbd66e881d5fcaedfb22bfdff518e3f49c2dfbb01bbd493e0b461f6",
+    "analysis/vgp_core_scaleout_paper_pairs.tsv": "d76e1c242a26e08328f280b557677b4eece0ef64d0a7a3890a077b34f3243de1",
+    "analysis/vgp_core_scaleout_paper_summary.tsv": "24f4f644c33d08a3b417deee0071b2898026d1eee51d7f3c7d5edc6dfc86da6c",
+    "analysis/vgp_core_scaleout_qc.tsv": "14f37e1ed85176ab49ddac69ab19f8d2b5a3a22837957482f2b0a21f8218b321",
+    "analysis/vgp_core_scaleout_results.md": "aee30eae473d64ee1827ace34c85010eb1f2f247813029082ecb2bc1cf18889d",
+    "analysis/vgp_core_scaleout_scaling_scenarios.tsv": "959e79777df0cc334b2a8a95d896d1717da0b66898c1e6fe6d8b441c745641df",
+    "analysis/vgp_core_scaleout_sensitivity.tsv": "0cd004efa435383da1714e499cc4cf0607b9bfc9b44fe38e421ee545739f7cca",
+    "analysis/vgp_core_scaleout_summary.json": "66acc937fe10cb5e1a1698ab77a31bffde2f3ebc845fb4b7dbe8097d19d07f04",
+    "analysis/vgp_core_scaleout_telemetry.tsv": "9f423f2a296210b36059e66f2db392e822849dc97c3603053050960f6b8d66a3",
+    "analysis/vgp_core_scaleout_wave_manifest.tsv": "3003ec7239376d79189f4ba4e3801835dcaf3818bd35bc3e9b65a2ed67754806",
+    "analysis/vgp_freeze1_mirror_manifest.tsv": "935d18268c8b3b2ca5eb68332282a39db29fef563164adc8b6a493131b4675a0",
+    "analysis/vgp_freeze1_mirror_summary.json": "801ab3ffce1eca0f43d08ac406ded2604839f783221b4ff91cdc856699596a4c",
+    "analysis/vgp_phylogenetic_gbgc_clade_manifest.tsv": "4d349ff8434100ab709d64385475189ccc356e86b7b276a9c870332ee4037ac9",
+    "analysis/vgp_phylogenetic_gbgc_pilot.md": "27036fcfc572314d908c65191a858c0ac6dc3ff7723118f1fcd8674b51ee539b",
+    "analysis/vgp_phylogenetic_gbgc_qc.tsv": "444a7cc4f5d1050b802926f24f03b45ac7bdcc931418628df874f143f7d51768",
+    "analysis/vgp_phylogenetic_gbgc_results.tsv": "03071a46068e804aca8b04026eb9b80c01f9b63a364017ce2009d5340aa7ca4a"
+  },
+  "output_digests": {
+    "analysis/vgp_comprehensive_claim_ledger.tsv": "bb2b052d4cfed9ebd2bae070f9ebda9ae91df34bbf1d418146da7473a7363eef",
+    "analysis/vgp_comprehensive_figure_closed_world.svg": "350ac5a9f256fc8c815c643a041334147d04085f6f014448d7ffb8e836d5af6c",
+    "analysis/vgp_comprehensive_figure_evidence.svg": "11e74a9ad831ae41caef8f6c42ad65d05c42df3cb79cf0cf89bcd5da975cb7ae",
+    "analysis/vgp_comprehensive_synthesis.md": "bd5c061feef19b5928b6adbf208a18f13c7d29c1076d3d83aed7582145c97948",
+    "analysis/vgp_comprehensive_table_core.tsv": "4c1b17fba4b3eff14008b404ddc4f22d88f071aaa04b5d3e61acab02621c2d9a",
+    "analysis/vgp_comprehensive_table_gene_conversion.tsv": "1ee2dc610a7c1c1d4ca864aab9436ab4f7d3a2123d5b29d7aa78844ccd899bf3"
+  },
+  "pilot_review": {
+    "alternates": 6,
+    "authorization": "BOUNDED_REPAIR_AND_TEN_SLOT_REPILOT_ONLY",
+    "decision": "CONDITIONAL_GO",
+    "full_scaleout_authorized": false,
+    "gate_counts": {
+      "FAIL": 11,
+      "FAIL_NOT_ESTIMABLE": 2,
+      "NOT_REACHED": 28,
+      "PASS": 15
+    },
+    "primary_passes": 0,
+    "primary_slots": 10
+  },
+  "reproducible_commands": [
+    "./analysis/run_vgp_comprehensive_synthesis_guix.sh",
+    "./analysis/run_vgp_comprehensive_synthesis_guix.sh --tests",
+    "./analysis/run_vgp_comprehensive_synthesis_guix.sh --all-tests"
+  ],
+  "schema_version": "vgp-comprehensive-final-manifest-v2.0.0",
+  "supersedes_manifest_without_mutating_history": "analysis/vgp_comprehensive_final_manifest.json",
+  "task_id": "synthesize-vgp-program"
+}

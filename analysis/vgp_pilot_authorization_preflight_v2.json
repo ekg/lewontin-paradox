@@ -1,0 +1,196 @@
+{
+  "authorization_id": "vgp10-auth-20260718-v2",
+  "authorization_payload_sha256": "f8145b384b5abe4282fe9d9732a1858b6e668bdf8e0863005f5ae512154c2b15",
+  "authorized_pair_count": 10,
+  "authorized_selection_ids": [
+    "P01",
+    "P02",
+    "P03",
+    "P04",
+    "P05",
+    "P06",
+    "P07",
+    "P08",
+    "P09",
+    "P10"
+  ],
+  "biological_execution": false,
+  "environment": {
+    "impg_sha256": "c587dc2326cd24f887b1fcb3938404229ad0f0a27ef0773e90c287b1ade160d4",
+    "pass": true,
+    "profile": "/gnu/store/3c2mxm30rbzvnw7qsi235mrkk3m38fym-profile",
+    "sweepga_sha256": "fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b"
+  },
+  "global_authorization_result": "GO_10_OF_10",
+  "pair_checks": [
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM070310.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "CM070250.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 1.1054915899720283,
+      "selection_id": "P01"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM078529.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "CM078626.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 0.9985294663183143,
+      "selection_id": "P02"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM054345.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "CM054207.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 1.0511148339445577,
+      "selection_id": "P03"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM030145.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "JAGFVT010000071.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 1.0509495615300355,
+      "selection_id": "P04"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM068885.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "JAYKKY010000001.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 1.0009669668971137,
+      "selection_id": "P05"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM051056.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "JAQFWZ010000002.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 0.9414039803805921,
+      "selection_id": "P06"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM106587.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "CM106669.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 1.0037468234236901,
+      "selection_id": "P07"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM109610.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "CM108917.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 1.031997845300679,
+      "selection_id": "P08"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM071036.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "CM070962.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 1.1570484641635899,
+      "selection_id": "P09"
+    },
+    {
+      "authorized": true,
+      "h1": {
+        "first_header": "CM036659.1",
+        "gzip_stream_complete": true
+      },
+      "h2": {
+        "first_header": "JAJGRZ010001000.1",
+        "gzip_stream_complete": true
+      },
+      "observed_h1_h2_span_ratio": 0.9599959000370468,
+      "selection_id": "P10"
+    }
+  ],
+  "performed_at_utc": "2026-07-18T17:00:00Z",
+  "scheduler": {
+    "checked": true,
+    "controller": "Slurmctld(primary) at octopus01 is UP",
+    "packets": [
+      {
+        "packet": "analysis/slurm/vgp_10_pilot/authorized/v2.0.0/P07.canary.sbatch",
+        "result": "sbatch: Job 1781493 to start at 2026-07-18T17:46:17 using 32 processors on nodes octopus02 in partition highmem"
+      },
+      {
+        "packet": "analysis/slurm/vgp_10_pilot/authorized/v2.0.0/P07.canary.mem256.sbatch",
+        "result": "sbatch: Job 1781494 to start at 2026-07-18T17:46:17 using 32 processors on nodes octopus02 in partition highmem"
+      },
+      {
+        "packet": "analysis/slurm/vgp_10_pilot/authorized/v2.0.0/P07.canary.mem512.sbatch",
+        "result": "sbatch: Job 1781495 to start at 2026-07-18T17:46:17 using 32 processors on nodes octopus02 in partition highmem"
+      }
+    ],
+    "partitions": [
+      "workers*|up|infinite|48|386641+",
+      "allnodes|up|infinite|48+|386641+",
+      "tux|up|infinite|96|773574+",
+      "1tbmem|up|infinite|48|1027731",
+      "headnode|up|infinite|48|515666",
+      "highmem|up|infinite|48|515666+",
+      "386mem|up|infinite|48|386641+",
+      "lowmem|up|infinite|48|386641+"
+    ],
+    "pass": true
+  },
+  "schema_version": "vgp-pilot-authorization-preflight-v2.0.0",
+  "slurm_jobs_submitted": 0,
+  "storage": {
+    "free_bytes": 101119647088640,
+    "headroom_pass": true,
+    "path": "/moosefs/erikg/vgp",
+    "ten_pair_conservative_required_bytes": 687194767360,
+    "writable": true
+  }
+}

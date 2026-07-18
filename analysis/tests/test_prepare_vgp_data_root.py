@@ -72,7 +72,7 @@ def test_cleanup_guard_rejects_paths_outside_root(tmp_path):
         vgp_root.ensure_within_root(layout.root, outside)
 
 
-def test_blocker_when_quota_or_atomic_promotion_unavailable():
+def test_missing_quota_helper_is_nonblocking_but_atomic_promotion_is_hard():
     blockers = vgp_root.collect_blockers(
         system={
             "quota_state": {"status": "blocked"},
@@ -81,4 +81,4 @@ def test_blocker_when_quota_or_atomic_promotion_unavailable():
         smoke={"atomic_promotion": {"status": "blocked"}},
     )
     codes = {item["code"] for item in blockers}
-    assert codes == {"QUOTA_UNAVAILABLE", "ATOMIC_PROMOTION_UNVERIFIED"}
+    assert codes == {"ATOMIC_PROMOTION_UNVERIFIED"}

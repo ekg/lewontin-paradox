@@ -19,6 +19,21 @@ inheritable authorization policy. A new run must bind a separate versioned
 current authorization packet to its immutable inputs and scientific preflight
 gates.
 
+The current packet is `vgp_pilot_authorization_v2.json`, with live read-only
+preflight in `vgp_pilot_authorization_preflight_v2.json` and the exact P07
+128/256/512-GiB canary packets under
+`slurm/vgp_10_pilot/authorized/v2.0.0/`. It authorizes all ten frozen primary
+pairs for core diversity and unscaled PSMC. Missing optional QC lowers
+confidence; it does not reduce the authorized pair count. See
+`vgp_pilot_authorization_handoff_v2.md` for the exact execution boundary and
+handoff command.
+
+All active VGP CAS, mirror, staging, raw/validation, derived-output, and Slurm
+paths resolve under the canonical shared root `/moosefs/erikg/vgp`. The former
+project-named root is migration input only; verified objects were hard-linked
+into the canonical CAS without redownload as recorded in
+`vgp_data_root_migration_v1.json`.
+
 ## Plans & surveys
 
 | file | what |

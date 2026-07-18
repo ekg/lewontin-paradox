@@ -234,7 +234,7 @@
     "sweepga_impg": {"path": "analysis/guix/sweepga_impg_smoke_manifest.scm", "sha256": "c0ef5afd6c988341da8446ff3f70af274dd12f5514bc053d3d4e6f0cbdcee521"},
     "psmc": {"status": "implementation_task_must_add_source_pinned_reproducible_package"}
   },
-  "data_root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+  "data_root": "/moosefs/erikg/vgp",
   "slurm": {
     "strategy": "size-stratified dependency arrays; IMPG native-partition shards; pair-level join; bounded PSMC bootstrap batches",
     "initial_mapping_concurrency": {"small": 2, "medium": 1, "large": 1},

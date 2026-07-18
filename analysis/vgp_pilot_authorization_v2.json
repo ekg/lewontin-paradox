@@ -1,0 +1,1174 @@
+{
+  "authorization_id": "vgp10-auth-20260718-v2",
+  "authorization_scope": "ten frozen primary same-individual H1/H2 pairs",
+  "authorized_pair_count": 10,
+  "authorized_selection_ids": [
+    "P01",
+    "P02",
+    "P03",
+    "P04",
+    "P05",
+    "P06",
+    "P07",
+    "P08",
+    "P09",
+    "P10"
+  ],
+  "biological_jobs_submitted_by_authorization": 0,
+  "canary": {
+    "job_packets": {
+      "initial_128_gib": "analysis/slurm/vgp_10_pilot/authorized/v2.0.0/P07.canary.sbatch",
+      "oom_retry_256_gib": "analysis/slurm/vgp_10_pilot/authorized/v2.0.0/P07.canary.mem256.sbatch",
+      "oom_retry_512_gib": "analysis/slurm/vgp_10_pilot/authorized/v2.0.0/P07.canary.mem512.sbatch"
+    },
+    "measured_compressed_input_bytes": 245511792,
+    "selection_id": "P07",
+    "selection_rule": "minimum immutable summed CAS compressed assembly bytes; selection_id lexical tie-break",
+    "species": "Spinachia spinachia",
+    "worker": "analysis/slurm/vgp_10_pilot/authorized/v2.0.0/run_canary.sh"
+  },
+  "canonical_data_root": "/moosefs/erikg/vgp",
+  "confidence_covariates_not_authorization_gates": [
+    "final_sequence_qv",
+    "busco_completeness_missingness_and_duplication",
+    "kmer_and_copy_number_audit",
+    "standalone_repeat_report",
+    "exact_raw_read_chemistry",
+    "raw_read_validation",
+    "annotation",
+    "independent_ne_evidence"
+  ],
+  "environment": {
+    "capture": "analysis/guix/vgp_10_pilot/realization.json",
+    "capture_sha256": "c37690b52536a5573c9a172375464247f826e4f904443d2181c00c725f897a12",
+    "guix_channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "impg": {
+      "name": "impg",
+      "path": "/moosefs/erikg/tier3data/tier3a-acquisition-20260716/tools/sweepga-impg-guix-handoff-018e4ce-101df81/impg",
+      "sha256": "c587dc2326cd24f887b1fcb3938404229ad0f0a27ef0773e90c287b1ade160d4"
+    },
+    "sweepga": {
+      "name": "sweepga",
+      "path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/sweepga",
+      "sha256": "fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b"
+    }
+  },
+  "execution_requires_fresh_preflight": "analysis/vgp_pilot_authorization_preflight_v2.json",
+  "generated_at_utc": "2026-07-18T17:00:00Z",
+  "hard_per_pair_result_gates": [
+    "sweepga_alignment_success",
+    "retained_query_multiplicity_lte_1",
+    "retained_target_multiplicity_lte_1",
+    "every_vcf_ref_matches_h1",
+    "manifest_bound_h2_reconstruction",
+    "callable_plus_ordered_mask_reasons_equals_h1_universe_exactly",
+    "callable_bp_gte_100000000",
+    "callable_fraction_gte_0.60"
+  ],
+  "hard_pre_execution_gates": [
+    "exact_same_individual_h1_h2_pair_and_accession_provenance",
+    "accepted_cas_input_sha256_and_byte_size",
+    "readable_mutually_comparable_assemblies",
+    "accepted_sweepga_and_impg_executable_digests",
+    "writable_storage_with_required_headroom",
+    "valid_slurm_controller_partition_and_packet"
+  ],
+  "historical_artifacts_mutated": false,
+  "legacy_data_root_is_migration_input_only": true,
+  "missing_optional_qc_global_job_count_effect": 0,
+  "pairs": [
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "CONDITIONAL_EXACT_BINDING",
+      "assembly_span_ratio_h1_over_h2": 1.1054915899720283,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN39296380",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_036321535.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/80/cd/80cd96d5973f2c657baddc7f209b8dc378fc3e2396864004a231c982e6964a5c",
+        "compressed_bytes": 679858530,
+        "compression": "gzip",
+        "sha256": "80cd96d5973f2c657baddc7f209b8dc378fc3e2396864004a231c982e6964a5c"
+      },
+      "h1_accession_version": "GCA_036321535.1",
+      "h2": {
+        "accession_version": "GCA_036321565.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/24/b9/24b9d47990524d32e89324e7124160dfa980358a419240fdec497a76d7e15a3b",
+        "compressed_bytes": 625942474,
+        "compression": "gzip",
+        "sha256": "24b9d47990524d32e89324e7124160dfa980358a419240fdec497a76d7e15a3b"
+      },
+      "h2_accession_version": "GCA_036321565.1",
+      "individual_or_isolate": "mCamDro1",
+      "missing_confidence_covariates": [
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 749,
+          "assembly_sequence_bp": 4393098473,
+          "compressed_input_bytes": 1305801004,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 3917403012,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P01",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Camelus dromedarius"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "CONDITIONAL_EXACT_BINDING",
+      "assembly_span_ratio_h1_over_h2": 0.9985294663183143,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN41253811",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_039906515.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/bf/59/bf59ea14b9438280ae285895f3cdab1c77f92a3d702d2362e6c2f08d468b8845",
+        "compressed_bytes": 772711587,
+        "compression": "gzip",
+        "sha256": "bf59ea14b9438280ae285895f3cdab1c77f92a3d702d2362e6c2f08d468b8845"
+      },
+      "h1_accession_version": "GCA_039906515.1",
+      "h2": {
+        "accession_version": "GCA_039906525.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/23/0d/230d49c1d3e2ad5a17b2c937beaffaad00a3a06273cb4d84dec75389e86eeddd",
+        "compressed_bytes": 735353178,
+        "compression": "gzip",
+        "sha256": "230d49c1d3e2ad5a17b2c937beaffaad00a3a06273cb4d84dec75389e86eeddd"
+      },
+      "h2_accession_version": "GCA_039906525.1",
+      "individual_or_isolate": "mPseCra1",
+      "missing_confidence_covariates": [
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 1110,
+          "assembly_sequence_bp": 5353123058,
+          "compressed_input_bytes": 1508064765,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 4524194295,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P02",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Pseudorca crassidens"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "NOT_AUTHORIZED_ANNOTATION_ONLY",
+      "assembly_span_ratio_h1_over_h2": 1.0511148339445577,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN33339572",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_028858725.2",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/71/7c/717ccefb41d4107efa50151ae1e2e83fc13407df56ef0c83d1e65859e79e5264",
+        "compressed_bytes": 371548250,
+        "compression": "gzip",
+        "sha256": "717ccefb41d4107efa50151ae1e2e83fc13407df56ef0c83d1e65859e79e5264"
+      },
+      "h1_accession_version": "GCA_028858725.2",
+      "h2": {
+        "accession_version": "GCA_028858625.2",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/54/ae/54aeb74bb909ca918d09287fb1865d1a88da3ab664a58a16c0dbebe7c2619358",
+        "compressed_bytes": 342211708,
+        "compression": "gzip",
+        "sha256": "54aeb74bb909ca918d09287fb1865d1a88da3ab664a58a16c0dbebe7c2619358"
+      },
+      "h2_accession_version": "GCA_028858625.2",
+      "individual_or_isolate": "bColStr4",
+      "missing_confidence_covariates": [
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 726,
+          "assembly_sequence_bp": 2365968587,
+          "compressed_input_bytes": 713759958,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 2141279874,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P03",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Colius striatus"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "NOT_AUTHORIZED_ANNOTATION_ONLY",
+      "assembly_span_ratio_h1_over_h2": 1.0509495615300355,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN16870685",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_017639655.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/04/cc/04ccd3c9cd806ec636d3e7fdec925019f10513b3fd9f82027cc4eb05f928c458",
+        "compressed_bytes": 383752456,
+        "compression": "gzip",
+        "sha256": "04ccd3c9cd806ec636d3e7fdec925019f10513b3fd9f82027cc4eb05f928c458"
+      },
+      "h1_accession_version": "GCA_017639655.1",
+      "h2": {
+        "accession_version": "GCA_017639645.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/76/c8/76c894da17d4d6a0e0ead113b11a7d00ec3b4f2742a05ba3920d057549739f83",
+        "compressed_bytes": 362169437,
+        "compression": "gzip",
+        "sha256": "76c894da17d4d6a0e0ead113b11a7d00ec3b4f2742a05ba3920d057549739f83"
+      },
+      "h2_accession_version": "GCA_017639645.1",
+      "individual_or_isolate": "bFalNau1",
+      "missing_confidence_covariates": [
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 1397,
+          "assembly_sequence_bp": 2372467332,
+          "compressed_input_bytes": 745921893,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 2237765679,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P04",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Falco naumanni"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "CONDITIONAL_EXACT_BINDING",
+      "assembly_span_ratio_h1_over_h2": 1.0009669668971137,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN37159891",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_035149785.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/5e/2a/5e2a2f727eed3c8f592360831575c6c7e8fe534c7120b38f7bb3883a2650f8e7",
+        "compressed_bytes": 483730904,
+        "compression": "gzip",
+        "sha256": "5e2a2f727eed3c8f592360831575c6c7e8fe534c7120b38f7bb3883a2650f8e7"
+      },
+      "h1_accession_version": "GCA_035149785.1",
+      "h2": {
+        "accession_version": "GCA_035125265.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/5e/1a/5e1a5a1588ecc2139ab8b8e0088b91690722cedff9ed10effef9d3a9084201a3",
+        "compressed_bytes": 483109615,
+        "compression": "gzip",
+        "sha256": "5e1a5a1588ecc2139ab8b8e0088b91690722cedff9ed10effef9d3a9084201a3"
+      },
+      "h2_accession_version": "GCA_035125265.1",
+      "individual_or_isolate": "rCanAsp1",
+      "missing_confidence_covariates": [
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 529,
+          "assembly_sequence_bp": 3060141947,
+          "compressed_input_bytes": 966840519,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 2900521557,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P05",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Candoia aspera"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "CONDITIONAL_EXACT_BINDING",
+      "assembly_span_ratio_h1_over_h2": 0.9414039803805921,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN32145295",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_027789765.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/3c/96/3c96774cc724dab83a93dfe46d63b618ff954cc76dd8baca3856ee6f7c9e5067",
+        "compressed_bytes": 649693405,
+        "compression": "gzip",
+        "sha256": "3c96774cc724dab83a93dfe46d63b618ff954cc76dd8baca3856ee6f7c9e5067"
+      },
+      "h1_accession_version": "GCA_027789765.1",
+      "h2": {
+        "accession_version": "GCA_027789725.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/41/e9/41e9f255dd3ddeca38334b6fbca57c1960c192da1c4fd9827b222d9e5d16a30c",
+        "compressed_bytes": 668208086,
+        "compression": "gzip",
+        "sha256": "41e9f255dd3ddeca38334b6fbca57c1960c192da1c4fd9827b222d9e5d16a30c"
+      },
+      "h2_accession_version": "GCA_027789725.1",
+      "individual_or_isolate": "aDenEbr1",
+      "missing_confidence_covariates": [
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 6360,
+          "assembly_sequence_bp": 4567738964,
+          "compressed_input_bytes": 1317901491,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 3953704473,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P06",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Dendropsophus ebraccatus"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "CONDITIONAL_EXACT_BINDING",
+      "assembly_span_ratio_h1_over_h2": 1.0037468234236901,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN36735485",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_048126635.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/2b/75/2b758e606304f7cb5e795d7939979b08c21bf4f3eac7ea3cf1c6ab0a463733c7",
+        "compressed_bytes": 123263591,
+        "compression": "gzip",
+        "sha256": "2b758e606304f7cb5e795d7939979b08c21bf4f3eac7ea3cf1c6ab0a463733c7"
+      },
+      "h1_accession_version": "GCA_048126635.1",
+      "h2": {
+        "accession_version": "GCA_048127205.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/6e/7e/6e7e9d88b88a3d030d80009191a06c525fbcc50044db05da4d81a8e9ad97ed40",
+        "compressed_bytes": 122248201,
+        "compression": "gzip",
+        "sha256": "6e7e9d88b88a3d030d80009191a06c525fbcc50044db05da4d81a8e9ad97ed40"
+      },
+      "h2_accession_version": "GCA_048127205.1",
+      "individual_or_isolate": "fSpiSpi1",
+      "missing_confidence_covariates": [
+        "busco_completeness_missingness_and_duplication",
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 606,
+          "assembly_sequence_bp": 813562223,
+          "compressed_input_bytes": 245511792,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 736535376,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P07",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Spinachia spinachia"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "CONDITIONAL_EXACT_BINDING",
+      "assembly_span_ratio_h1_over_h2": 1.031997845300679,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN46987722",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_048628825.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/84/0c/840cac9d6f4a1748c0a96152ff20c251b9d0b439620d76e5b5e13f51248484b2",
+        "compressed_bytes": 171181962,
+        "compression": "gzip",
+        "sha256": "840cac9d6f4a1748c0a96152ff20c251b9d0b439620d76e5b5e13f51248484b2"
+      },
+      "h1_accession_version": "GCA_048628825.1",
+      "h2": {
+        "accession_version": "GCA_048544195.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/d4/21/d42107e102c3af869ff025a1fd442f7b66e30ed5e19fe4ef9de0d4adac181182",
+        "compressed_bytes": 167473473,
+        "compression": "gzip",
+        "sha256": "d42107e102c3af869ff025a1fd442f7b66e30ed5e19fe4ef9de0d4adac181182"
+      },
+      "h2_accession_version": "GCA_048544195.1",
+      "individual_or_isolate": "fMenMen1",
+      "missing_confidence_covariates": [
+        "busco_completeness_missingness_and_duplication",
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 2694,
+          "assembly_sequence_bp": 1124806929,
+          "compressed_input_bytes": 338655435,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 1015966305,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P08",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Menidia menidia"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "CONDITIONAL_EXACT_BINDING",
+      "assembly_span_ratio_h1_over_h2": 1.1570484641635899,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN39432692",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_036365525.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/13/b1/13b10338338e4ea22176fd420ff5ddb8e4035cdf296ae02f360ac4104a62e8cf",
+        "compressed_bytes": 1540946143,
+        "compression": "gzip",
+        "sha256": "13b10338338e4ea22176fd420ff5ddb8e4035cdf296ae02f360ac4104a62e8cf"
+      },
+      "h1_accession_version": "GCA_036365525.1",
+      "h2": {
+        "accession_version": "GCA_036365495.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/ae/f8/aef89000059a38f48367b8ec6f13e970ffae5311233d323ed10c2d6654973345",
+        "compressed_bytes": 1407146173,
+        "compression": "gzip",
+        "sha256": "aef89000059a38f48367b8ec6f13e970ffae5311233d323ed10c2d6654973345"
+      },
+      "h2_accession_version": "GCA_036365495.1",
+      "individual_or_isolate": "sHetFra1",
+      "missing_confidence_covariates": [
+        "exact_raw_read_chemistry",
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 9373,
+          "assembly_sequence_bp": 11209934419,
+          "compressed_input_bytes": 2948092316,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 8844276948,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P09",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Heterodontus francisci"
+    },
+    {
+      "annotation_absence_blocks_core": false,
+      "annotation_authorization": "CONDITIONAL_EXACT_BINDING",
+      "assembly_span_ratio_h1_over_h2": 0.9599959000370468,
+      "authorized_outputs": [
+        "core_diversity",
+        "unscaled_psmc"
+      ],
+      "biosample": "SAMN22550098",
+      "confidence_tier_at_authorization": "C",
+      "core_authorization": "AUTHORIZED",
+      "h1": {
+        "accession_version": "GCA_020745735.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/0e/0a/0e0a9f256659f5fa45b2b077dec4fa3ba2959e397f9c7892311619bac272510e",
+        "compressed_bytes": 1214926276,
+        "compression": "gzip",
+        "sha256": "0e0a9f256659f5fa45b2b077dec4fa3ba2959e397f9c7892311619bac272510e"
+      },
+      "h1_accession_version": "GCA_020745735.1",
+      "h2": {
+        "accession_version": "GCA_020745765.1",
+        "cas_path": "/moosefs/erikg/vgp/objects/sha256/6c/00/6c0040f8d98d6a418ee5d770a1c6b4929eebec0a38e75792ff08632f6b54360a",
+        "compressed_bytes": 1259410750,
+        "compression": "gzip",
+        "sha256": "6c0040f8d98d6a418ee5d770a1c6b4929eebec0a38e75792ff08632f6b54360a"
+      },
+      "h2_accession_version": "GCA_020745765.1",
+      "individual_or_isolate": "sHemOce1",
+      "missing_confidence_covariates": [
+        "final_sequence_qv",
+        "independent_ne_evidence",
+        "kmer_and_copy_number_audit",
+        "raw_read_validation",
+        "standalone_repeat_report"
+      ],
+      "missing_covariates_block_core": false,
+      "resources": {
+        "measurement_basis": {
+          "assembly_contigs": 13215,
+          "assembly_sequence_bp": 8132928280,
+          "compressed_input_bytes": 2474337026,
+          "source": "immutable CAS object sizes plus frozen NCBI assembly metadata"
+        },
+        "stages": {
+          "annotation": {
+            "cpus_per_task": 8,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "32G",
+            "slurm_time": "08:00:00"
+          },
+          "consensus": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "1-00:00:00"
+          },
+          "impg": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "mapping": {
+            "cpus_per_task": 32,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "128G",
+            "slurm_time": "2-00:00:00"
+          },
+          "preflight": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 7423011078,
+            "slurm_mem": "16G",
+            "slurm_time": "01:00:00"
+          },
+          "psmc": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "08:00:00"
+          },
+          "psmc_finalize": {
+            "cpus_per_task": 4,
+            "scratch_bytes_high": 17179869184,
+            "slurm_mem": "16G",
+            "slurm_time": "02:00:00"
+          },
+          "variants": {
+            "cpus_per_task": 16,
+            "scratch_bytes_high": 68719476736,
+            "slurm_mem": "64G",
+            "slurm_time": "12:00:00"
+          }
+        },
+        "whole_canary_packet": {
+          "cpus_per_task": 32,
+          "initial_memory_gib": 128,
+          "node_local_scratch_bytes_high": 68719476736,
+          "oom_retry_memory_gib": [
+            256,
+            512
+          ],
+          "slurm_time": "3-00:00:00"
+        }
+      },
+      "selection_id": "P10",
+      "sequence_derived_repeat_or_low_complexity_mask": "GENERATE_DURING_MAPPING",
+      "species": "Hemiscyllium ocellatum"
+    }
+  ],
+  "schema_version": "vgp-pilot-execution-authorization-v2.0.0",
+  "source_artifacts": {
+    "analysis/guix/vgp_10_pilot/realization.json": "c37690b52536a5573c9a172375464247f826e4f904443d2181c00c725f897a12",
+    "analysis/vgp_10_pair_manifest.tsv": "bf6c9ff647aed332bfc002bf803e8307203b51432343f2eca6d95a6c80d82997",
+    "analysis/vgp_10_pilot_acquisition_manifest.tsv": "8575f4daef91b821fcd6bc7a410af62d1b62249b12449503c137b22e23e9b46c",
+    "analysis/vgp_10_pilot_object_inventory.tsv": "c852dea88c3912150ad7a04c95bb4f5c2b05d89df2bbc75e18cfd9247e509832",
+    "analysis/vgp_data_root_config.json": "9e6767d653b0c3dc0b38dd6b8fa05fb0586d5ff626edbb02168df275e2fee549",
+    "analysis/vgp_data_root_migration_v1.json": "0e91524543eedf05e59337ecfe140394369479e3b6e31c1e3da71a15809b6298"
+  },
+  "supersedes_policy_not_history": "vgp10-review-20260718-v1 bounded-repair refusal policy"
+}

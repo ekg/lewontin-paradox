@@ -47,7 +47,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CACHE_ROOT = PROJECT_ROOT / "analysis" / "vgp_resolution_cache"
 PRIOR_ROOT = CACHE_ROOT / "prior_refusal"
 DEFAULT_CATALOG = Path(
-    "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/"
+    "/moosefs/erikg/vgp/manifests/"
     "VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv"
 )
 DEFAULT_MANIFEST = PROJECT_ROOT / "analysis" / "vgp_pilot_manifest.tsv"

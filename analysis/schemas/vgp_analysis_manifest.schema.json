@@ -53,7 +53,7 @@
     },
     "outputs": {"type": "object", "required": ["core", "annotation", "psmc", "direct", "population", "phylogenetic", "non_allelic"]},
     "environments": {"type": "object", "required": ["channels", "analysis", "sweepga_build", "sweepga_impg", "psmc"]},
-    "data_root": {"const": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0"},
+    "data_root": {"const": "/moosefs/erikg/vgp"},
     "slurm": {"type": "object", "required": ["strategy", "initial_mapping_concurrency", "scientific_eligibility_resource_cap", "transient_retry_limit", "resource_reestimate_retry_limit", "scientific_failure_relaxation_allowed"]},
     "scale_waves": {"type": "array", "minItems": 8, "items": {"type": "object", "required": ["wave", "scope"]}}
   },

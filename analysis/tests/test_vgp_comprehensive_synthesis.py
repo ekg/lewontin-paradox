@@ -122,7 +122,7 @@ def test_outputs_are_atomic_digest_bound_and_committed_outputs_reproduce(generat
     assert not list(output.glob(".*.partial-*"))
     assert synthesis.validate_outputs(output) == []
 
-    committed = json.loads((ROOT / "analysis/vgp_comprehensive_final_manifest.json").read_text())
+    committed = json.loads(synthesis.FINAL_MANIFEST.read_text())
     assert committed == manifest
     for relative, digest in committed["output_digests"].items():
         assert hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() == digest

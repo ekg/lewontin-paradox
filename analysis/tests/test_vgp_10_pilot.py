@@ -30,6 +30,7 @@ from analysis.vgp_10_pilot import (
     freeze_bootstrap_units,
     impg_commands,
     interval_bp,
+    low_complexity_intervals,
     materialize_mask_consensus_psmc,
     non_acgt_intervals,
     paf_h1_intervals,
@@ -150,6 +151,11 @@ def test_mapping_derives_h1_1to1_complement_and_projects_h2_N_on_both_strands(tm
     malformed.write_text("h2\t20\t2\t12\t+\th1\t30\t5\t15\t10\t10\t60\tcg:Z:9=\n")
     with pytest.raises(PilotError, match="consumption"):
         project_h2_non_acgt_to_h1(parse_paf(malformed), {"h2": "A" * 20})
+
+
+def test_sequence_derived_low_complexity_mask_does_not_require_repeat_report():
+    rows = low_complexity_intervals({"h1": "CG" + "A" * 12 + "GT" * 11 + "ACG" * 8 + "TTGC"})
+    assert rows == [Interval("h1", 2, 60)]
 
 
 def test_exact_impg_index_partition_query_lace_order_and_both_sequences():
@@ -350,7 +356,7 @@ def test_annotation_cds_fourfold_effect_ws_sw_and_gc3_partitions():
     assert all(row["callable_h1_bp"] == 50 for row in rows.values())
 
 
-def test_pair_input_provenance_core_qc_and_selective_validation_policy(tmp_path):
+def test_pair_input_provenance_digests_and_optional_qc_policy(tmp_path):
     import analysis.vgp_10_pilot as pilot
     row = pilot.load_primary_pair("P01")
     h1 = tmp_path / "h1.fa"
@@ -377,16 +383,27 @@ def test_pair_input_provenance_core_qc_and_selective_validation_policy(tmp_path)
         validate_pair_input_manifest(bad)
     bad = copy.deepcopy(value)
     bad["core_qc"]["h2"]["qv"] = 39
-    with pytest.raises(PilotError, match="QV"):
-        validate_pair_input_manifest(bad)
+    result = validate_pair_input_manifest(bad)
+    assert result["confidence_covariates_are_authorization_gates"] is False
+    missing = copy.deepcopy(value)
+    missing.pop("core_qc")
+    missing["read_technology_resolved"] = False
+    missing["long_range_phasing_evidence"] = ""
+    result = validate_pair_input_manifest(missing)
+    assert result["accepted_input_digests"] is True
 
 
 def test_confidence_tiers_track_core_and_selective_evidence_without_universal_gate():
-    hard = {key: True for key in ("exact_pair", "qv_pass", "completeness_pass", "collapse_pass",
-            "mapping_1to1_pass", "callability_pass", "consensus_pass", "reproducibility_pass")}
-    assert confidence_tier(hard) == "B"
-    complete = dict(hard, raw_read_validation=True, kmer_validation=True,
-                    published_estimate_validation=True, long_range_switch_validation=True)
+    hard = {key: True for key in ("exact_pair", "accepted_input_digests",
+            "mutually_comparable_assemblies", "mapping_1to1_pass", "ref_reconstruction_pass",
+            "h2_reconstruction_pass", "mask_accounting_pass", "callability_pass",
+            "consensus_pass", "reproducibility_pass")}
+    assert confidence_tier(hard) == "C"
+    covariates = ("qv_pass", "completeness_pass", "collapse_pass", "repeat_audit",
+                  "exact_read_chemistry", "raw_read_validation", "kmer_validation",
+                  "copy_number_validation", "published_estimate_validation",
+                  "long_range_switch_validation", "independent_ne_validation")
+    complete = dict(hard, **{key: True for key in covariates})
     assert confidence_tier(complete) == "A"
     incomplete = dict(hard)
     incomplete["qv_pass"] = None

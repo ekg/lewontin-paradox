@@ -25,7 +25,7 @@ MANIFEST = ROOT / "analysis/vgp_analysis_manifest.json"
 SCHEMA = ROOT / "analysis/schemas/vgp_analysis_manifest.schema.json"
 PLAN = ROOT / "analysis/vgp_comprehensive_research_plan.md"
 FROZEN_CATALOG = Path(
-    "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/"
+    "/moosefs/erikg/vgp/manifests/"
     "VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv"
 )
 

@@ -31,7 +31,7 @@ from typing import Iterable, Mapping, Sequence
 ROOT = Path(__file__).resolve().parents[1]
 ANALYSIS = ROOT / "analysis"
 CATALOG = Path(
-    "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/"
+    "/moosefs/erikg/vgp/manifests/"
     "VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv"
 )
 CATALOG_COMMIT = "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf"

@@ -37,7 +37,7 @@ OBJECT_OUTPUT = ROOT / "analysis/vgp_10_pilot_object_inventory.tsv"
 DIRECT_OUTPUT = ROOT / "analysis/vgp_direct_control_acquisition_manifest.tsv"
 SUMMARY_OUTPUT = ROOT / "analysis/vgp_10_pilot_acquisition_summary.json"
 HANDOFF_OUTPUT = ROOT / "analysis/vgp_10_pilot_acquisition_handoff.md"
-DEFAULT_DATA_ROOT = Path("/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0")
+DEFAULT_DATA_ROOT = Path("/moosefs/erikg/vgp")
 MANIFEST_VERSION = "vgp-10-pilot-acquisition-v1.0.0"
 NCBI_POLICY = (
     "NCBI molecular data have no NCBI-imposed use restriction; submitter rights "

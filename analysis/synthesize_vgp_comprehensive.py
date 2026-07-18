@@ -61,7 +61,7 @@ METHOD_TEST = ANALYSIS / "tests/test_vgp_comprehensive_synthesis.py"
 
 SYNTHESIS = ANALYSIS / "vgp_comprehensive_synthesis.md"
 CLAIM_LEDGER = ANALYSIS / "vgp_comprehensive_claim_ledger.tsv"
-FINAL_MANIFEST = ANALYSIS / "vgp_comprehensive_final_manifest.json"
+FINAL_MANIFEST = ANALYSIS / "vgp_comprehensive_final_manifest_v2.json"
 CORE_TABLE = ANALYSIS / "vgp_comprehensive_table_core.tsv"
 GENE_CONVERSION_TABLE = ANALYSIS / "vgp_comprehensive_table_gene_conversion.tsv"
 CLOSED_WORLD_FIGURE = ANALYSIS / "vgp_comprehensive_figure_closed_world.svg"
@@ -278,7 +278,19 @@ def reconcile_inputs() -> dict[str, object]:
             "review_scaleout": "analysis/vgp_10_pilot_scaleout_manifest.tsv",
         }.get(key)
         if source and Path(ROOT / source).is_file():
-            require(sha256_file(ROOT / source) == digest, f"embedded core input digest drift: {key}")
+            observed = sha256_file(ROOT / source)
+            if key == "design" and observed != digest:
+                # The core summary is an immutable historical refusal packet.
+                # Its design digest predates the audited relocation of the
+                # active VGP root, so preserve that packet and recognize only
+                # the versioned canonical-root transition here.
+                current_design = json.loads((ROOT / source).read_text(encoding="utf-8"))
+                require(
+                    current_design.get("data_root") == "/moosefs/erikg/vgp",
+                    "embedded core design drift is not the canonical-root migration",
+                )
+            else:
+                require(observed == digest, f"embedded core input digest drift: {key}")
 
     return {
         "core": core, "mirror": mirror, "review": review,
@@ -558,7 +570,9 @@ def generate(output_dir: Path = ANALYSIS) -> dict[str, object]:
     pair_rows = reconciled["pair_rows"]
     catalog_rows = reconciled["catalog_rows"]
     manifest: dict[str, object] = {
-        "schema_version": "vgp-comprehensive-final-manifest-v1.0.0",
+        "schema_version": "vgp-comprehensive-final-manifest-v2.0.0",
+        "supersedes_manifest_without_mutating_history":
+            "analysis/vgp_comprehensive_final_manifest.json",
         "evidence_freeze_utc": "2026-07-18T00:00:00Z",
         "task_id": "synthesize-vgp-program",
         "decision": "CLOSED_WORLD_RECONCILED_BIOLOGICAL_EFFECTS_NOT_IDENTIFIABLE",

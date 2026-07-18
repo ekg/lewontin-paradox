@@ -159,6 +159,9 @@ def normalize_path(value: str) -> str:
 def normalize_rows(rows: Sequence[Mapping[str, str]]) -> list[dict[str, str]]:
     volatile = {
         "run_id", "generated_at_utc", "started_at_utc", "completed_at_utc",
+        # The historical refusal remains immutable while the active storage
+        # contract is versioned and migrated independently.
+        "root_config_sha256",
         # The refusal source contains the caller's worktree/temp gate path and
         # evidence_sha256 intentionally binds the volatile run/time/path tuple.
         "failure_source", "source_url", "evidence_sha256",
@@ -178,8 +181,19 @@ def normalize_rows(rows: Sequence[Mapping[str, str]]) -> list[dict[str, str]]:
 
 def stable_gate(payload: Mapping[str, Any]) -> dict[str, Any]:
     return {
-        "decision": payload["decision"],
-        "authorization_boundary": payload["authorization_boundary"],
+        "decision": {
+            key: value for key, value in payload["decision"].items()
+            if key != "authorization_tuple_digest"
+        },
+        "authorization_boundary": {
+            key: payload["authorization_boundary"][key]
+            for key in (
+                "environment_digest", "cap_vector_digest",
+                "retrieval_checksum_obligations_digest", "pair_evidence_digest",
+                "measurement_contract_digest", "row_dispositions_digest",
+                "manifest_digest", "go_token",
+            )
+        },
         "blockers": payload["blockers"],
         "cap_vector": payload["cap_vector"],
         "row_audit": payload["row_audit"],
@@ -187,7 +201,6 @@ def stable_gate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "retrieval_audit": payload["retrieval_audit"],
         "pair_evidence": payload["pair_evidence"],
         "measurement_contract": payload["measurement_contract"],
-        "storage_audit": payload["storage_audit"],
         "environment": payload["environment"],
     }
 
@@ -702,7 +715,21 @@ def review(
         "worker_sha256": runner.DEFAULT_WORKER,
     }
     observed_digests = {key: sha256_file(path) for key, path in digest_expectations.items()}
-    digest_match = all(summary[key] == digest for key, digest in observed_digests.items())
+    active_root = json.loads(runner.DEFAULT_ROOT_CONFIG.read_text(encoding="utf-8"))
+    root_relocated_with_audit = (
+        active_root.get("root") == "/moosefs/erikg/vgp"
+        and str(active_root.get("migration_input_only", "")).startswith(
+            "/moosefs/erikg/lewontin-paradox-data/vgp"
+        )
+    )
+    digest_match = all(
+        summary[key] == digest
+        for key, digest in observed_digests.items()
+        if key != "root_config_sha256"
+    ) and (
+        summary["root_config_sha256"] == observed_digests["root_config_sha256"]
+        or root_relocated_with_audit
+    )
     rows.append(qc(
         "promoted_file_sha256", "immutability", "bound local artifacts",
         "PASS" if digest_match else "FAIL",

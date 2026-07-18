@@ -1,7 +1,8 @@
 {
-  "contract_version": "1.0",
-  "task_id": "prepare-vgp-data",
-  "root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+  "contract_version": "2.0",
+  "task_id": "repair-vgp-pilot-authorization",
+  "root": "/moosefs/erikg/vgp",
+  "migration_input_only": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
   "default_directory_mode": "2770",
   "layout": {
     "manifests": "manifests",
