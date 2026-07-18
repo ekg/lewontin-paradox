@@ -1,0 +1,154 @@
+{
+  "base_commit": "a89c4a8c49aa476f0db41310a6fee6f8a578fe52",
+  "integration_order": [
+    {
+      "dependencies": ["integrate-repaired-vgp"],
+      "integrated_commit": "089368bba833dc875e5147caf52026cf569145a5",
+      "integrated_parent": "a89c4a8c49aa476f0db41310a6fee6f8a578fe52",
+      "order": 1,
+      "patch_id": "7687c42380ddfada92255ef3d3b6cedc4554929a",
+      "source_branch": "wg/agent-252/quality-vgp-psmc",
+      "source_commits": ["94d99c766d97d62ec575158ce53b197e74e36d5f"],
+      "task": "quality-vgp-psmc"
+    },
+    {
+      "dependencies": ["quality-vgp-psmc"],
+      "integrated_commit": "3f4b093f080d1ff69d56b4e8bf02b4282ea94b29",
+      "integrated_parent": "089368bba833dc875e5147caf52026cf569145a5",
+      "order": 2,
+      "patch_id": "b7676f7cfa55c31688467cd4b25b2848d05e9eb3",
+      "source_branch": "wg/agent-255/design-vgp-comprehensive",
+      "source_commits": ["37db03165121227dc0543929b0865a8a7d76b1e7"],
+      "task": "design-vgp-comprehensive"
+    },
+    {
+      "dependencies": ["design-vgp-comprehensive"],
+      "integrated_commit": "b6203cceec17a49f54669875ac31d4ee7e6f40d5",
+      "integrated_parent": "3f4b093f080d1ff69d56b4e8bf02b4282ea94b29",
+      "order": 3,
+      "patch_id": "34d7ec8f64c5b61fccac62099b9f79a5db8742c7",
+      "source_branch": "wg/agent-259/design-gbgc-evidence",
+      "source_commits": ["d94d52317b0b65eaf1a164aa81ba355bd87178d3"],
+      "task": "design-gbgc-evidence"
+    },
+    {
+      "dependencies": ["design-vgp-comprehensive"],
+      "integrated_commit": "e8d6529cfa016c3af505a2cc04af1fb7b5db501f",
+      "integrated_parent": "b6203cceec17a49f54669875ac31d4ee7e6f40d5",
+      "order": 4,
+      "patch_id": "bc5c306a9ad4f057251d9e68f1e5ff5f75b6efe0",
+      "source_branch": "wg/agent-258/mirror-vgp-freeze1",
+      "source_commits": ["66a3aaeee3f99fd9ef9cb20f31152fea535e9058"],
+      "task": "mirror-vgp-freeze1"
+    },
+    {
+      "dependencies": ["design-vgp-comprehensive"],
+      "integrated_commit": "0cb473331a8736f3043a4ba8b84b5887fd79e98c",
+      "integrated_parent": "e8d6529cfa016c3af505a2cc04af1fb7b5db501f",
+      "order": 5,
+      "patch_id": "2d2be058f572b02446408c2afafe4e89c245c2e8",
+      "source_branch": "wg/agent-263/implement-vgp-10-pilot",
+      "source_commits": ["feede1d4dd7fb4d389e09d3695e95a5d93e52e7a"],
+      "task": "implement-vgp-10-pilot"
+    },
+    {
+      "dependencies": ["design-gbgc-evidence", "mirror-vgp-freeze1"],
+      "integrated_commit": "e60e35aa2da5a72bce37bc46bb89ca0aafdc7d13",
+      "integrated_parent": "0cb473331a8736f3043a4ba8b84b5887fd79e98c",
+      "order": 6,
+      "patch_id": "62e85bbc328e59d525c2d7551792eb3f2905764a",
+      "source_branch": "wg/agent-268/pilot-vgp-phylo-gbgc",
+      "source_commits": [
+        "bd95cb7ad5e0ab539a958f7bcb091cd37d439e90",
+        "5ceb16a71aac288a853aa8041f1d783935b634f6"
+      ],
+      "task": "pilot-vgp-phylo-gbgc"
+    },
+    {
+      "dependencies": ["design-vgp-comprehensive"],
+      "integrated_commit": "b20abfcee603bf243854ecccf8cf8ead7e100867",
+      "integrated_parent": "e60e35aa2da5a72bce37bc46bb89ca0aafdc7d13",
+      "order": 7,
+      "patch_id": "f2a19688fa1f842dc69daf7e714ddc151e361409",
+      "source_branch": "wg/agent-262/acquire-vgp-10-pilot",
+      "source_commits": ["188613371517615b8eac62b736643b02c0b21a3f"],
+      "task": "acquire-vgp-10-pilot"
+    },
+    {
+      "dependencies": ["implement-vgp-10-pilot", "acquire-vgp-10-pilot"],
+      "integrated_commit": "debfd267a764e7bf5cd6c4e270ed73d9e85a9870",
+      "integrated_parent": "b20abfcee603bf243854ecccf8cf8ead7e100867",
+      "order": 8,
+      "patch_id": "8c015f13dca5f40c96739859da0cfa11bae13b3e",
+      "source_branch": "wg/agent-277/run-vgp-10-pilot",
+      "source_commits": [
+        "0eb2cc80a1a4bd2aebf492993f01d6a8cc95fd36",
+        "e6cab17bd66d4ff5970c3a76d055851cda28d1a8"
+      ],
+      "task": "run-vgp-10-pilot"
+    },
+    {
+      "dependencies": ["design-gbgc-evidence", "acquire-vgp-10-pilot"],
+      "integrated_commit": "877ff60e6c1af5474aa3b8e4a6303791f7fba5aa",
+      "integrated_parent": "debfd267a764e7bf5cd6c4e270ed73d9e85a9870",
+      "order": 9,
+      "patch_id": "8570117b58f087f6da4ce0a3f95c01d50ed3a475",
+      "source_branch": "wg/agent-275/pilot-pedigree-gbgc",
+      "source_commits": [
+        "25d30504958653eb6a78c471b36f8f621c31908c",
+        "9ab54a7210b6fb9a1bfd8b68235c2b15acb61ca6"
+      ],
+      "task": "pilot-pedigree-gbgc"
+    },
+    {
+      "dependencies": ["run-vgp-10-pilot"],
+      "integrated_commit": "3371eb7f073d073e9fe0fb422dfe321f4d32e565",
+      "integrated_parent": "877ff60e6c1af5474aa3b8e4a6303791f7fba5aa",
+      "order": 10,
+      "patch_id": "c0e8bb0b6f11bd5a7ad21c842d93e1edee83eb38",
+      "source_branch": "wg/agent-280/review-vgp-10-pilot",
+      "source_commits": ["604ddca09e9e3952cf1298e6cc1b5146fa7f8f55"],
+      "task": "review-vgp-10-pilot"
+    },
+    {
+      "dependencies": ["review-vgp-10-pilot", "mirror-vgp-freeze1"],
+      "integrated_commit": "7fac34c65bdce4c941b5a087b9ede8874065f117",
+      "integrated_parent": "3371eb7f073d073e9fe0fb422dfe321f4d32e565",
+      "order": 11,
+      "patch_id": "54738007d9b49f5f1e0afec8ff7fb878fff10bbd",
+      "source_branch": "wg/agent-286/scale-vgp-core",
+      "source_commits": ["f50c0bacfd9320c044d0f1c81e5b7cc8eae17324"],
+      "task": "scale-vgp-core"
+    },
+    {
+      "dependencies": ["pilot-pedigree-gbgc"],
+      "integrated_commit": "d71ff7f3cc5c36c22e368e6d319a15ea693bc9c5",
+      "integrated_parent": "7fac34c65bdce4c941b5a087b9ede8874065f117",
+      "order": 12,
+      "patch_id": "66ca6ad31f4e29bc1bda303a3993afee5c748d66",
+      "source_branch": "wg/agent-283/repair-stale-vgp",
+      "source_commits": ["8aadd57374d5704ca2cd0596f8627a56c9be5edf"],
+      "task": "repair-stale-vgp"
+    },
+    {
+      "dependencies": [
+        "scale-vgp-core",
+        "pilot-vgp-phylo-gbgc",
+        "pilot-pedigree-gbgc",
+        "repair-stale-vgp"
+      ],
+      "integrated_commit": "f6b337dad2d471003e7714875a0009741f848a7c",
+      "integrated_parent": "d71ff7f3cc5c36c22e368e6d319a15ea693bc9c5",
+      "order": 13,
+      "patch_id": "3fdb78d94d7b29a533f729e4299dbe84ae848378",
+      "source_branch": "wg/agent-289/synthesize-vgp-program",
+      "source_commits": [
+        "2e3de8fc330ab4b6d3ce39a3574c0f2a5aace256",
+        "7cf33828bc9e84d01e81871dd2fbf728d4796163"
+      ],
+      "task": "synthesize-vgp-program"
+    }
+  ],
+  "schema_version": "vgp-comprehensive-integration-manifest-v1",
+  "source_commit_count": 17
+}

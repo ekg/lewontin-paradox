@@ -1,0 +1,105 @@
+{
+  "authorization_policy": {
+    "current_execution_authorization": null,
+    "historical_artifacts_are_authorization": false,
+    "historical_decision_inheritance_forbidden": true,
+    "replacement_contract": "Execution requires a separately versioned current authorization packet bound to immutable inputs and scientific preflight gates. Historical NO_GO, CONDITIONAL_GO, zero-job, and synthesis artifacts are evidence only."
+  },
+  "runs": [
+    {
+      "artifacts": [
+        {
+          "path": "analysis/vgp_pilot_gate.json",
+          "sha256": "0c7b37078ce6997023923fa0fc0572e4cac2362316a9f223531ef257502730a6"
+        },
+        {
+          "path": "analysis/vgp_pilot_run_manifest.tsv",
+          "sha256": "fb84735c8d4f9dda7b7f4a77cff4714802d3d067820a46ffb87f972e12027e75"
+        },
+        {
+          "path": "analysis/vgp_pilot_run_report.md",
+          "sha256": "b33aaf93152673af65b7273ae1090ab953b30940894d3586bec174983ed82d85"
+        }
+      ],
+      "authorization_binding": false,
+      "classification": "historical_evidence_only",
+      "outcome": "NO_GO_ZERO_JOBS",
+      "recorded_at_utc": "2026-07-18T13:10:09Z",
+      "run_id": "vgp-pilot-run-20260718T131009Z-32686",
+      "source_integration_commit": "d71ff7f3cc5c36c22e368e6d319a15ea693bc9c5"
+    },
+    {
+      "artifacts": [
+        {
+          "path": "analysis/vgp_10_pilot_run_summary.json",
+          "sha256": "89d7fedf21a024b4441f061dfed5fd7da0ef07c9ab9a631331a9b1041d3de55b"
+        },
+        {
+          "path": "analysis/vgp_10_pilot_result_manifest.tsv",
+          "sha256": "f7d846a47155c6f4ee19ab67dab45ed808f73a9f9d6d83eb6f35c8098eb5c932"
+        }
+      ],
+      "authorization_binding": false,
+      "classification": "historical_evidence_only",
+      "outcome": "TEN_PREFLIGHT_FAILURES_ZERO_JOBS",
+      "recorded_at_utc": "2026-07-18T12:32:07Z",
+      "run_id": "vgp10-20260718-preflight-v1",
+      "source_integration_commit": "debfd267a764e7bf5cd6c4e270ed73d9e85a9870"
+    },
+    {
+      "artifacts": [
+        {
+          "path": "analysis/vgp_10_pilot_review_decision.json",
+          "sha256": "561a327d2a7d83c004a011d9bac1ec4b45cf44067858a29a3036bb772a57fc7b"
+        },
+        {
+          "path": "analysis/vgp_10_pilot_review_gates.tsv",
+          "sha256": "142672c9440481e4bec226a594080301466a8fba7d6bf853af2f4c4cd1d33b0e"
+        }
+      ],
+      "authorization_binding": false,
+      "classification": "historical_evidence_only",
+      "outcome": "CONDITIONAL_GO_ZERO_CORE_PASSES",
+      "recorded_at_utc": "2026-07-18T12:57:52Z",
+      "run_id": "vgp10-review-20260718-v1",
+      "source_integration_commit": "3371eb7f073d073e9fe0fb422dfe321f4d32e565"
+    },
+    {
+      "artifacts": [
+        {
+          "path": "analysis/vgp_core_scaleout_summary.json",
+          "sha256": "66acc937fe10cb5e1a1698ab77a31bffde2f3ebc845fb4b7dbe8097d19d07f04"
+        },
+        {
+          "path": "analysis/vgp_core_scaleout_manifest.tsv",
+          "sha256": "5bf2f6102cbd66e881d5fcaedfb22bfdff518e3f49c2dfbb01bbd493e0b461f6"
+        }
+      ],
+      "authorization_binding": false,
+      "classification": "historical_evidence_only",
+      "outcome": "NOT_AUTHORIZED_ZERO_JOBS",
+      "recorded_at_utc": "2026-07-18T13:15:23Z",
+      "run_id": "vgp-core-freeze1-scaleout-v1.0.0",
+      "source_integration_commit": "7fac34c65bdce4c941b5a087b9ede8874065f117"
+    },
+    {
+      "artifacts": [
+        {
+          "path": "analysis/vgp_comprehensive_final_manifest.json",
+          "sha256": "9d4f658a45f332f27d792e116544141f7422d9d028b45ad6aee257bff0bd7255"
+        },
+        {
+          "path": "analysis/vgp_comprehensive_synthesis.md",
+          "sha256": "bd5c061feef19b5928b6adbf208a18f13c7d29c1076d3d83aed7582145c97948"
+        }
+      ],
+      "authorization_binding": false,
+      "classification": "historical_evidence_synthesis_only",
+      "outcome": "ZERO_BIOLOGICAL_ESTIMATES_SYNTHESIZED",
+      "recorded_at_utc": "2026-07-18T13:32:43Z",
+      "run_id": "vgp-comprehensive-synthesis-20260718",
+      "source_integration_commit": "f6b337dad2d471003e7714875a0009741f848a7c"
+    }
+  ],
+  "schema_version": "vgp-historical-run-registry-v1"
+}

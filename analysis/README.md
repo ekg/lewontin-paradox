@@ -3,6 +3,22 @@
 The formal theory is in `../lean/`; the manuscript is `../manuscript.typ`.
 This directory holds the **empirical** Tier-3 work and its supporting plans.
 
+## VGP integration and authorization lineage
+
+The comprehensive VGP branch/commit audit is recorded in
+`vgp_comprehensive_integration_audit.md` and its machine-readable companion
+`vgp_comprehensive_integration_manifest.json`. Run
+`python3 analysis/validate_vgp_comprehensive_integration.py` to verify the
+exact 10-primary/6-alternate rosters, required SweepGA/IMPG/PSMC/Slurm/mirror
+tooling, integration order, and historical artifact digests.
+
+Prior `NO_GO`, `CONDITIONAL_GO`, zero-job, zero-core-pass, and zero-estimate
+outputs are timestamped in `vgp_historical_run_registry.json`. They are
+immutable historical evidence, not current execution authorization and not an
+inheritable authorization policy. A new run must bind a separate versioned
+current authorization packet to its immutable inputs and scientific preflight
+gates.
+
 ## Plans & surveys
 
 | file | what |
