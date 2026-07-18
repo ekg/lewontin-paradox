@@ -1,0 +1,43 @@
+{
+  "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/md5checksums.txt",
+  "request": {
+    "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/md5checksums.txt",
+    "method": "GET",
+    "parameters": {
+      "accession": "GCF_036365525.1",
+      "object_type": "md5_catalog"
+    },
+    "source": "NCBI genomes FTP",
+    "source_version": "GCF_036365525.1"
+  },
+  "request_key": "103e116185cc2248ce29a04c1be5df004f77cf854a5442f9c53c868e6e0b7c61",
+  "response_headers": {
+    "accept-ranges": "bytes",
+    "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+    "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+    "access-control-allow-origin": "*",
+    "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+    "cache-control": "public, max-age=86400",
+    "connection": "close",
+    "content-length": "41012",
+    "content-type": "text/plain; charset=utf-8",
+    "date": "Sat, 18 Jul 2026 07:58:14 GMT",
+    "expires": "Sat, 25 Jul 2026 07:58:14 GMT",
+    "last-modified": "Sun, 27 Oct 2024 23:54:50 GMT",
+    "server": "Apache",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "vary": "Accept-Encoding"
+  },
+  "response_path": "analysis/vgp_resolution_cache/responses/103e116185cc2248ce29a04c1be5df004f77cf854a5442f9c53c868e6e0b7c61.bin",
+  "response_sha256": "87f910284c64f8e8f04e7eb6e3079ac124da12769403bdde226352aefe47e28f",
+  "response_size_bytes": 41012,
+  "retrieved_at_utc": "2026-07-18T07:58:06Z",
+  "software_environment": {
+    "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "implementation": "CPython",
+    "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+    "python": "3.7.3",
+    "software": "vgp-candidate-resolver/2.0"
+  }
+}

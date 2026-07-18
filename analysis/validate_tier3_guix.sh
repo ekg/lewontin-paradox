@@ -43,7 +43,7 @@ from importlib.metadata import version
 import Bio, numpy, pandas, pyfaidx, pysam, scipy
 print("python scientific versions:", Bio.__version__, version("jsonschema"), numpy.__version__, pandas.__version__, pyfaidx.__version__, pysam.__version__, scipy.__version__)
 PY
-        python3 -m pytest -q analysis/tests/test_common.py analysis/tests/test_manifest.py analysis/tests/test_freeze_vgp_manifest.py analysis/tests/test_vgp_pilot_ne_inventory.py
+        python3 -m pytest -q analysis/tests/test_common.py analysis/tests/test_manifest.py analysis/tests/test_freeze_vgp_manifest.py analysis/tests/test_resolve_vgp_candidates.py analysis/tests/test_vgp_pilot_ne_inventory.py
         python3 analysis/validate_vgp_pilot_ne_inventory.py
         wfmash --version
         bcftools --version

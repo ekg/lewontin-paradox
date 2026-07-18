@@ -1,0 +1,54 @@
+{
+  "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1,GCF_028858725.1,GCF_035149785.1,GCF_036321535.1,GCF_036365525.1,GCF_040954835.1/dataset_report",
+  "request": {
+    "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1,GCF_028858725.1,GCF_035149785.1,GCF_036321535.1,GCF_036365525.1,GCF_040954835.1/dataset_report",
+    "method": "GET",
+    "parameters": {
+      "accessions": [
+        "GCF_027789765.1",
+        "GCF_028858725.1",
+        "GCF_035149785.1",
+        "GCF_036321535.1",
+        "GCF_036365525.1",
+        "GCF_040954835.1"
+      ],
+      "report_type": "dataset_report"
+    },
+    "source": "NCBI Datasets",
+    "source_version": "18.33.1"
+  },
+  "request_key": "acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a",
+  "response_headers": {
+    "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+    "alt-svc": "clear",
+    "connection": "close",
+    "content-security-policy": "upgrade-insecure-requests",
+    "content-type": "application/json",
+    "date": "Sat, 18 Jul 2026 07:58:01 GMT",
+    "grpc-metadata-via": "h2 linkerd",
+    "ncbi-phid": "1D33E36DD8BFFC25000041485DA1543D.1.1",
+    "server": "Finatra",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "via": "1.1 google",
+    "x-datasets-version": "18.33.1",
+    "x-ncbi-total-count": "6",
+    "x-ratelimit-limit": "5",
+    "x-ratelimit-remaining": "4",
+    "x-ua-compatible": "IE=Edge",
+    "x-xss-protection": "1; mode=block"
+  },
+  "response_path": "analysis/vgp_resolution_cache/responses/acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a.bin",
+  "response_sha256": "c51639e05e73c97abbfd7a392b37b0a03a434f9bb9ddb3e834e2d9c77a19b481",
+  "response_size_bytes": 33774,
+  "retrieved_at_utc": "2026-07-18T07:57:54Z",
+  "software_environment": {
+    "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "implementation": "CPython",
+    "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+    "python": "3.7.3",
+    "software": "vgp-candidate-resolver/2.0"
+  }
+}

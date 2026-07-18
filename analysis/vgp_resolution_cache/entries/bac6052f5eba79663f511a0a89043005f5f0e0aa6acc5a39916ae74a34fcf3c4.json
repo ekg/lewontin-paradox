@@ -1,0 +1,53 @@
+{
+  "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_036365525.1/sequence_reports",
+  "request": {
+    "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_036365525.1/sequence_reports",
+    "method": "GET",
+    "parameters": {
+      "_query": {
+        "page_size": 10000
+      },
+      "accessions": [
+        "GCF_036365525.1"
+      ],
+      "batch_endpoint_available": false,
+      "report_type": "sequence_reports"
+    },
+    "source": "NCBI Datasets",
+    "source_version": "18.33.1"
+  },
+  "request_key": "bac6052f5eba79663f511a0a89043005f5f0e0aa6acc5a39916ae74a34fcf3c4",
+  "response_headers": {
+    "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+    "alt-svc": "clear",
+    "connection": "close",
+    "content-security-policy": "upgrade-insecure-requests",
+    "content-type": "application/json",
+    "date": "Sat, 18 Jul 2026 07:58:12 GMT",
+    "grpc-metadata-via": "h2 linkerd",
+    "ncbi-phid": "1D342B39E16A63E5000049482F6EBF55.1.1",
+    "server": "Finatra",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "via": "1.1 google",
+    "x-datasets-version": "18.33.1",
+    "x-ncbi-total-count": "2306",
+    "x-ratelimit-limit": "5",
+    "x-ratelimit-remaining": "4",
+    "x-ua-compatible": "IE=Edge",
+    "x-xss-protection": "1; mode=block"
+  },
+  "response_path": "analysis/vgp_resolution_cache/responses/bac6052f5eba79663f511a0a89043005f5f0e0aa6acc5a39916ae74a34fcf3c4.bin",
+  "response_sha256": "6bc132addb5aa03cf30707ac243832c9d995ca2f5b9683ccbc1b4b966c9a63b8",
+  "response_size_bytes": 744419,
+  "retrieved_at_utc": "2026-07-18T07:58:05Z",
+  "software_environment": {
+    "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "implementation": "CPython",
+    "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+    "python": "3.7.3",
+    "software": "vgp-candidate-resolver/2.0"
+  }
+}

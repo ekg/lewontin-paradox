@@ -24,7 +24,10 @@ def test_run_writes_refusal_manifest_and_report_for_current_nogo_gate(tmp_path):
         output_report_path=report_out,
     )
     assert result["status"] == "refused_preflight"
-    assert result["failure_code"] == "GATE_NO_GO"
+    # The repaired manifest intentionally does not rewrite the integrated
+    # refusal gate.  Acquisition must therefore fail even earlier on the bound
+    # manifest digest until the downstream independent regate task runs.
+    assert result["failure_code"] == "MANIFEST_DIGEST_MISMATCH"
     rows = _read_manifest(manifest_out)
     assert rows[0]["record_type"] == "run_summary"
     assert rows[0]["status"] == "refused_preflight"

@@ -1,0 +1,43 @@
+{
+  "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/md5checksums.txt",
+  "request": {
+    "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/md5checksums.txt",
+    "method": "GET",
+    "parameters": {
+      "accession": "GCF_028858725.1",
+      "object_type": "md5_catalog"
+    },
+    "source": "NCBI genomes FTP",
+    "source_version": "GCF_028858725.1"
+  },
+  "request_key": "d515763c71e9143481baf0c8ab872eff83a79ea25421a891b4c31f8bca6906df",
+  "response_headers": {
+    "accept-ranges": "bytes",
+    "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+    "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+    "access-control-allow-origin": "*",
+    "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+    "cache-control": "public, max-age=86400",
+    "connection": "close",
+    "content-length": "29501",
+    "content-type": "text/plain; charset=utf-8",
+    "date": "Sat, 18 Jul 2026 07:58:07 GMT",
+    "expires": "Sat, 25 Jul 2026 07:58:07 GMT",
+    "last-modified": "Wed, 13 May 2026 19:57:16 GMT",
+    "server": "Apache",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "vary": "Accept-Encoding"
+  },
+  "response_path": "analysis/vgp_resolution_cache/responses/d515763c71e9143481baf0c8ab872eff83a79ea25421a891b4c31f8bca6906df.bin",
+  "response_sha256": "e4541baa59a7a607976ef1cb5f3284827ff3f67450d2fc970a0ad2af89ad9224",
+  "response_size_bytes": 29501,
+  "retrieved_at_utc": "2026-07-18T07:57:59Z",
+  "software_environment": {
+    "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "implementation": "CPython",
+    "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+    "python": "3.7.3",
+    "software": "vgp-candidate-resolver/2.0"
+  }
+}

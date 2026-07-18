@@ -44,7 +44,7 @@ def test_build_gate_recomputes_current_artifacts_and_emits_nogo(tmp_path):
     assert gate_out.is_file()
     assert review_out.is_file()
     assert built["decision"]["status"] == "NO_GO"
-    assert built["reproduction"]["manifest_candidate_count"] == 74
+    assert built["reproduction"]["manifest_candidate_count"] == 6
     assert built["reproduction"]["selected_row_count"] == 0
     codes = {item["code"] for item in built["blockers"]}
     assert "NO_SELECTED_ROWS" in codes
@@ -80,7 +80,10 @@ def test_authorize_rejects_mutated_manifest_and_changed_root(tmp_path):
 
     mutated_manifest = tmp_path / "mutated_manifest.tsv"
     manifest_text = (ROOT / "analysis/vgp_pilot_manifest.tsv").read_text(encoding="utf-8")
-    mutated_manifest.write_text(manifest_text.replace("rejected_unresolved", "rejected_CHANGED", 1), encoding="utf-8")
+    mutated_manifest.write_text(
+        manifest_text.replace("blocked_stricter_cap", "blocked_CHANGED", 1),
+        encoding="utf-8",
+    )
     with pytest.raises(Tier3ValidationError, match="manifest digest mismatch"):
         gate.authorize_gate_action(
             gate_out,

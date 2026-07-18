@@ -41,14 +41,14 @@ class SynthesizeVgpPilotTest(unittest.TestCase):
                 next_decision_out=next_decision_out,
             )
 
-            self.assertEqual(result["manifest_rows"], 74)
-            self.assertEqual(result["paper_rows"], 74)
+            self.assertEqual(result["manifest_rows"], 6)
+            self.assertEqual(result["paper_rows"], 6)
             self.assertEqual(result["selected_count"], 0)
             self.assertEqual(result["matched_ne_rows"], 0)
             self.assertEqual(result["matched_availability_rows"], 0)
 
             paper_rows = _read_tsv(paper_table_out)
-            self.assertEqual(len(paper_rows), 74)
+            self.assertEqual(len(paper_rows), 6)
             self.assertEqual({row["ne_source_rows"] for row in paper_rows}, {"0"})
             self.assertEqual({row["population_availability_rows"] for row in paper_rows}, {"0"})
             self.assertEqual(

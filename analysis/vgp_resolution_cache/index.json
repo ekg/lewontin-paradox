@@ -1,0 +1,1340 @@
+{
+  "authorization_boundary": {
+    "biological_payloads_downloaded": 0,
+    "decision": "NO_GO_QUOTA_UNAVAILABLE",
+    "demographic_inference_performed": false,
+    "full_catalog_acquisition_authorized": false,
+    "jobs_submitted": 0,
+    "raw_population_bulk_download_authorized": false
+  },
+  "catalog_source": {
+    "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv",
+    "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4",
+    "source_commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "source_version": "VGPPhase1-freeze-1.0"
+  },
+  "catalog_statistics": {
+    "data_row_excess_over_unique_species": 2,
+    "data_rows": 716,
+    "duplicated_species": [
+      {
+        "multiplicity": 2,
+        "scientific_name": "Lophostoma evotis"
+      },
+      {
+        "multiplicity": 2,
+        "scientific_name": "Micronycteris microtis"
+      }
+    ],
+    "header_lines": 1,
+    "physical_lines": 717,
+    "unique_species": 714
+  },
+  "generated_at_utc": "2026-07-18T08:09:03Z",
+  "lookup_policy": {
+    "bounded_exponential_backoff_seconds": 30.0,
+    "checkpoint_path": "analysis/vgp_resolution_cache/checkpoint.json",
+    "immutable_cache_key": "sha256(canonical normalized request + source/version)",
+    "jitter": "uniform_bounded",
+    "maximum_attempts": 6,
+    "ncbi_batch_endpoints_used": [
+      "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1,GCF_028858725.1,GCF_035149785.1,GCF_036321535.1,GCF_036365525.1,GCF_040954835.1/dataset_report",
+      "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1,GCF_028858725.1,GCF_035149785.1,GCF_036321535.1,GCF_036365525.1,GCF_040954835.1/download_summary"
+    ],
+    "rate_limit_minimum_interval_seconds": 0.34,
+    "retry_after_honored": true,
+    "sequence_report_batch_endpoint_available": false
+  },
+  "outputs": {
+    "manifest": {
+      "path": "analysis/vgp_pilot_manifest.tsv",
+      "sha256": "b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988"
+    },
+    "prior_refusal_budget_sha256": "f0be4a495d2385536daadf23811911990a390cbdbdfbf1d7c8e904097b355e40",
+    "prior_refusal_manifest_sha256": "f27b81f369af18caf97a1ccee1b14d8a8b050d665832e6e99f188041275f49ce",
+    "prior_refusal_rejections_sha256": "98e0378d95159201218c77e37cf9bb5d3d1a9df83d8bacea9c8c23d1df375b6f",
+    "rejections": {
+      "path": "analysis/vgp_pilot_rejections.tsv",
+      "sha256": "e84667ee0be6ba1edf9909ddf66fa74b498d9aaec9014f06ce3a0fb63e6fb052"
+    },
+    "resolution_report": {
+      "path": "analysis/vgp_pilot_resolution_report.md",
+      "sha256": "16e4ec6c95d2e7c6fbad228cbeafbda84b335f1142f2e27f2fd9bc8be12e13f1"
+    },
+    "size_budget": {
+      "path": "analysis/vgp_pilot_size_budget.tsv",
+      "sha256": "aabd5e8dcf9039f77452d4a03e831dd1989fa99bcca241d2f5229b7655db6c9b"
+    }
+  },
+  "post_alignment_measurement_contract": {
+    "contract_id": "vgp_post_alignment_denominators_v1",
+    "executable_command": "python3 analysis/resolve_vgp_candidates.py measure --metrics-json METRICS.json --output-json ACCEPTANCE.json",
+    "failure_disposition": "exclude_downstream_result",
+    "inputs": {
+      "callable_bases": "integer bases passing the pinned alignment/callability mask",
+      "callable_fraction": "callable_bases divided by exact H1 assembly length",
+      "queryable_gene_bases": "union of queryable protein-coding CDS bases",
+      "queryable_gene_count": "protein-coding genes with at least one queryable CDS base"
+    },
+    "minimum_thresholds": {
+      "callable_bases": 10000000,
+      "callable_fraction": 0.5,
+      "queryable_gene_bases": 1000000,
+      "queryable_gene_count": 1000
+    },
+    "phase": "post_alignment_pre_result_acceptance",
+    "pre_download_prerequisite": false
+  },
+  "prioritized_resolution": {
+    "candidate_ids": [
+      "camelus_dromedarius_gca_036321535_1",
+      "colius_striatus_gca_028858725_2",
+      "candoia_aspera_gca_035149785_1",
+      "dendropsophus_ebraccatus_gca_027789765_1",
+      "lepisosteus_oculatus_gca_040954835_1",
+      "heterodontus_francisci_gca_036365525_1"
+    ],
+    "clade_strategy": "one mammal, bird, reptile, amphibian, actinopterygian, and chondrichthyan",
+    "metadata_eligible_candidate_ids": [
+      "camelus_dromedarius_gca_036321535_1",
+      "colius_striatus_gca_028858725_2",
+      "candoia_aspera_gca_035149785_1",
+      "dendropsophus_ebraccatus_gca_027789765_1",
+      "lepisosteus_oculatus_gca_040954835_1",
+      "heterodontus_francisci_gca_036365525_1"
+    ],
+    "selected_candidate_ids": []
+  },
+  "remaining_obligations": {
+    "acquisition": "For any later independently gated row: stage each full exact payload, verify advertised size, verify official MD5 when present, compute local SHA-256, reverify it before atomic read-only promotion. No acquisition is authorized now.",
+    "run": "Measure callable bases/fraction and queryable protein-coding gene count/bases after alignment; exclude absent or sub-threshold results. No run is authorized now."
+  },
+  "resolver_software": {
+    "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "implementation": "CPython",
+    "platform": "Linux-4.19.0-27-amd64-x86_64-with-glibc2.35",
+    "python": "3.10.7",
+    "software": "vgp-candidate-resolver/2.0"
+  },
+  "resource_budget": {
+    "caps": {
+      "compressed_inputs_gib": 120.0,
+      "concurrent_species": 2,
+      "core_hours": 1500.0,
+      "memory_per_job_gib": 256.0,
+      "scratch_gib": 750.0,
+      "species": 6
+    },
+    "numeric_caps_pass": true,
+    "overall_cap_vector_pass": false,
+    "proposed_species_count": 6,
+    "scratch_aggregation": "sum_of_two_largest_per_species_high_estimates_for_concurrency_2",
+    "selected_species_count": 0,
+    "stricter_integrated_quota_status": "unavailable"
+  },
+  "responses": [
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/md5checksums.txt",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/md5checksums.txt",
+        "method": "GET",
+        "parameters": {
+          "accession": "GCF_036365525.1",
+          "object_type": "md5_catalog"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_036365525.1"
+      },
+      "request_key": "103e116185cc2248ce29a04c1be5df004f77cf854a5442f9c53c868e6e0b7c61",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "41012",
+        "content-type": "text/plain; charset=utf-8",
+        "date": "Sat, 18 Jul 2026 07:58:14 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:14 GMT",
+        "last-modified": "Sun, 27 Oct 2024 23:54:50 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/103e116185cc2248ce29a04c1be5df004f77cf854a5442f9c53c868e6e0b7c61.bin",
+      "response_sha256": "87f910284c64f8e8f04e7eb6e3079ac124da12769403bdde226352aefe47e28f",
+      "response_size_bytes": 41012,
+      "retrieved_at_utc": "2026-07-18T07:58:06Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_035149785.1/sequence_reports",
+      "request": {
+        "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_035149785.1/sequence_reports",
+        "method": "GET",
+        "parameters": {
+          "_query": {
+            "page_size": 10000
+          },
+          "accessions": [
+            "GCF_035149785.1"
+          ],
+          "batch_endpoint_available": false,
+          "report_type": "sequence_reports"
+        },
+        "source": "NCBI Datasets",
+        "source_version": "18.33.1"
+      },
+      "request_key": "211798cc8fd4fd031eb498d5896cb60d7c5846b51ba7d0526616679047cfe0c2",
+      "response_headers": {
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json",
+        "date": "Sat, 18 Jul 2026 07:58:08 GMT",
+        "grpc-metadata-via": "h2 linkerd",
+        "ncbi-phid": "1D33E36DD8BFFC2500003C4869D6327A.1.1",
+        "server": "Finatra",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-datasets-version": "18.33.1",
+        "x-ncbi-total-count": "149",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/211798cc8fd4fd031eb498d5896cb60d7c5846b51ba7d0526616679047cfe0c2.bin",
+      "response_sha256": "7b0d32dd94a939f9d37818084e1a005fb9609da321547d247fd3a0f9a44dcaa7",
+      "response_size_bytes": 47953,
+      "retrieved_at_utc": "2026-07-18T07:58:01Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/GCF_036365525.1_sHetFra1.hap1_genomic.fna.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/GCF_036365525.1_sHetFra1.hap1_genomic.fna.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_036365525.1",
+          "object_type": "genomic_fasta"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_036365525.1"
+      },
+      "request_key": "214aaa5577ce6b9a3c8981d5326f38a61e8e6372510bc3b9f88a96b4179591e7",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "1540987937",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:14 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:14 GMT",
+        "last-modified": "Sat, 31 Aug 2024 01:24:54 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/214aaa5577ce6b9a3c8981d5326f38a61e8e6372510bc3b9f88a96b4179591e7.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:06Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/027/789/765/GCF_027789765.1_aDenEbr1.pat/GCF_027789765.1_aDenEbr1.pat_genomic.gff.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/027/789/765/GCF_027789765.1_aDenEbr1.pat/GCF_027789765.1_aDenEbr1.pat_genomic.gff.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_027789765.1",
+          "object_type": "genome_gff"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_027789765.1"
+      },
+      "request_key": "2737f5f894ae3961b47753dd040976302ebddd9e15839edfc87403c4ef2b91e0",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "14541385",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:06 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:06 GMT",
+        "last-modified": "Wed, 20 Nov 2024 21:51:34 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/2737f5f894ae3961b47753dd040976302ebddd9e15839edfc87403c4ef2b91e0.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:57:58Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/027/789/765/GCF_027789765.1_aDenEbr1.pat/md5checksums.txt",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/027/789/765/GCF_027789765.1_aDenEbr1.pat/md5checksums.txt",
+        "method": "GET",
+        "parameters": {
+          "accession": "GCF_027789765.1",
+          "object_type": "md5_catalog"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_027789765.1"
+      },
+      "request_key": "2b768c5eb9c63b6604bcc7ef50c41666fa461c29471f611b20bd546f27c4da84",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "14949",
+        "content-type": "text/plain; charset=utf-8",
+        "date": "Sat, 18 Jul 2026 07:58:05 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:05 GMT",
+        "last-modified": "Sat, 23 Nov 2024 18:33:54 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/2b768c5eb9c63b6604bcc7ef50c41666fa461c29471f611b20bd546f27c4da84.bin",
+      "response_sha256": "d424f3e6fb0af2bb3801077c97e5fbb3b6b805879d73b66a71b088deb9e31cbe",
+      "response_size_bytes": 14949,
+      "retrieved_at_utc": "2026-07-18T07:57:57Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/321/535/GCF_036321535.1_mCamDro1.pat/md5checksums.txt",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/321/535/GCF_036321535.1_mCamDro1.pat/md5checksums.txt",
+        "method": "GET",
+        "parameters": {
+          "accession": "GCF_036321535.1",
+          "object_type": "md5_catalog"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_036321535.1"
+      },
+      "request_key": "357a09301e2e1146064386c3e7697f75c393021c2213da1c7237023cdcf297e4",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "48868",
+        "content-type": "text/plain; charset=utf-8",
+        "date": "Sat, 18 Jul 2026 07:58:11 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:11 GMT",
+        "last-modified": "Fri, 12 Jun 2026 09:12:38 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/357a09301e2e1146064386c3e7697f75c393021c2213da1c7237023cdcf297e4.bin",
+      "response_sha256": "29fed6c8c2e3ded691c9da441b984bb54776d7ff3184f3bf57e3f7fd0234ad60",
+      "response_size_bytes": 48868,
+      "retrieved_at_utc": "2026-07-18T07:58:03Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/035/149/785/GCF_035149785.1_rCanAsp1.hap2/GCF_035149785.1_rCanAsp1.hap2_genomic.fna.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/035/149/785/GCF_035149785.1_rCanAsp1.hap2/GCF_035149785.1_rCanAsp1.hap2_genomic.fna.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_035149785.1",
+          "object_type": "genomic_fasta"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_035149785.1"
+      },
+      "request_key": "3b2798e0d4c972a64d03fc0fafe32ce015343c285c69789820f37b737bad6001",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "483728267",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:10 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:10 GMT",
+        "last-modified": "Fri, 23 Feb 2024 19:31:54 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/3b2798e0d4c972a64d03fc0fafe32ce015343c285c69789820f37b737bad6001.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:02Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/GCF_028858725.1_bColStr4.1.hap1_genomic.gff.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/GCF_028858725.1_bColStr4.1.hap1_genomic.gff.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_028858725.1",
+          "object_type": "genome_gff"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_028858725.1"
+      },
+      "request_key": "3f9b88383a1e32c1dfe9a016a03d42c6cd02824056f1dfead1ec46440cfed153",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "11168255",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:08 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:08 GMT",
+        "last-modified": "Wed, 03 Jan 2024 03:10:08 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/3f9b88383a1e32c1dfe9a016a03d42c6cd02824056f1dfead1ec46440cfed153.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:00Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_036321535.1/sequence_reports",
+      "request": {
+        "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_036321535.1/sequence_reports",
+        "method": "GET",
+        "parameters": {
+          "_query": {
+            "page_size": 10000
+          },
+          "accessions": [
+            "GCF_036321535.1"
+          ],
+          "batch_endpoint_available": false,
+          "report_type": "sequence_reports"
+        },
+        "source": "NCBI Datasets",
+        "source_version": "18.33.1"
+      },
+      "request_key": "5373a2c941b7d12ba8c75785da5c28045c97387583de6559e2e982a7d361c6e4",
+      "response_headers": {
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json",
+        "date": "Sat, 18 Jul 2026 07:58:11 GMT",
+        "grpc-metadata-via": "h2 linkerd",
+        "ncbi-phid": "1D32F1EC5D2E8EF50000633879AF4DEC.1.1",
+        "server": "Finatra",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-datasets-version": "18.33.1",
+        "x-ncbi-total-count": "171",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/5373a2c941b7d12ba8c75785da5c28045c97387583de6559e2e982a7d361c6e4.bin",
+      "response_sha256": "4816c6d0c4b97c6274acf4fc9e8017894271ad87f8b0a5116423371417c1d9fe",
+      "response_size_bytes": 55857,
+      "retrieved_at_utc": "2026-07-18T07:58:03Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/GCF_036365525.1_sHetFra1.hap1_genomic.gff.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/GCF_036365525.1_sHetFra1.hap1_genomic.gff.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_036365525.1",
+          "object_type": "genome_gff"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_036365525.1"
+      },
+      "request_key": "605d9ccb2bff48e9f195c775962d25746d1c4483217e1cc568ec391aad4dce13",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "16366440",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:15 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:15 GMT",
+        "last-modified": "Sat, 31 Aug 2024 01:25:17 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/605d9ccb2bff48e9f195c775962d25746d1c4483217e1cc568ec391aad4dce13.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:07Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/040/954/835/GCF_040954835.1_fLepOcu1.hap2/md5checksums.txt",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/040/954/835/GCF_040954835.1_fLepOcu1.hap2/md5checksums.txt",
+        "method": "GET",
+        "parameters": {
+          "accession": "GCF_040954835.1",
+          "object_type": "md5_catalog"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_040954835.1"
+      },
+      "request_key": "71c8fe900fa6242cec0830910015e3835284d9f7b19e43db7453aca4b0de973c",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "29200",
+        "content-type": "text/plain; charset=utf-8",
+        "date": "Sat, 18 Jul 2026 07:58:16 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:16 GMT",
+        "last-modified": "Tue, 22 Oct 2024 05:08:54 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/71c8fe900fa6242cec0830910015e3835284d9f7b19e43db7453aca4b0de973c.bin",
+      "response_sha256": "201e911352f95e828733736a33ccbb31283d4d64d8d546b289df6daae6ac75cb",
+      "response_size_bytes": 29200,
+      "retrieved_at_utc": "2026-07-18T07:58:08Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/321/535/GCF_036321535.1_mCamDro1.pat/GCF_036321535.1_mCamDro1.pat_genomic.fna.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/321/535/GCF_036321535.1_mCamDro1.pat/GCF_036321535.1_mCamDro1.pat_genomic.fna.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_036321535.1",
+          "object_type": "genomic_fasta"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_036321535.1"
+      },
+      "request_key": "833a9dd05aa07fcfa734bfe53a1498845bec28337533939c47446a3582dd2c6b",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "679861027",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:12 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:12 GMT",
+        "last-modified": "Tue, 16 Apr 2024 02:25:58 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/833a9dd05aa07fcfa734bfe53a1498845bec28337533939c47446a3582dd2c6b.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:04Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1/sequence_reports",
+      "request": {
+        "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1/sequence_reports",
+        "method": "GET",
+        "parameters": {
+          "_query": {
+            "page_size": 10000
+          },
+          "accessions": [
+            "GCF_027789765.1"
+          ],
+          "batch_endpoint_available": false,
+          "report_type": "sequence_reports"
+        },
+        "source": "NCBI Datasets",
+        "source_version": "18.33.1"
+      },
+      "request_key": "86eb689034ca6b7eadd5149a70b16975ffd0e87b4bf85499793f79c9f6a633e7",
+      "response_headers": {
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json",
+        "date": "Sat, 18 Jul 2026 07:58:04 GMT",
+        "grpc-metadata-via": "h2 linkerd",
+        "ncbi-phid": "1D33E36DD8BFFC2500005648617CB204.1.1",
+        "server": "Finatra",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-datasets-version": "18.33.1",
+        "x-ncbi-total-count": "2200",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/86eb689034ca6b7eadd5149a70b16975ffd0e87b4bf85499793f79c9f6a633e7.bin",
+      "response_sha256": "74b524e8711a259e89f93177a54e214dc3e05174ea64df2edad2831966e66262",
+      "response_size_bytes": 716944,
+      "retrieved_at_utc": "2026-07-18T07:57:56Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/040/954/835/GCF_040954835.1_fLepOcu1.hap2/GCF_040954835.1_fLepOcu1.hap2_genomic.gff.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/040/954/835/GCF_040954835.1_fLepOcu1.hap2/GCF_040954835.1_fLepOcu1.hap2_genomic.gff.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_040954835.1",
+          "object_type": "genome_gff"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_040954835.1"
+      },
+      "request_key": "a14c6db7db250ccbe11d14c2ec600b54aab4424206d7a4555e9a1ca091f10344",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "17724951",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:17 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:17 GMT",
+        "last-modified": "Fri, 18 Oct 2024 23:56:20 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/a14c6db7db250ccbe11d14c2ec600b54aab4424206d7a4555e9a1ca091f10344.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:09Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/035/149/785/GCF_035149785.1_rCanAsp1.hap2/md5checksums.txt",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/035/149/785/GCF_035149785.1_rCanAsp1.hap2/md5checksums.txt",
+        "method": "GET",
+        "parameters": {
+          "accession": "GCF_035149785.1",
+          "object_type": "md5_catalog"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_035149785.1"
+      },
+      "request_key": "a209837cc42988db9e11e3a3cee10b370297345b9ce9ad1f721250e1b2b71331",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "21131",
+        "content-type": "text/plain; charset=utf-8",
+        "date": "Sat, 18 Jul 2026 07:58:09 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:09 GMT",
+        "last-modified": "Sun, 19 Apr 2026 01:28:00 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/a209837cc42988db9e11e3a3cee10b370297345b9ce9ad1f721250e1b2b71331.bin",
+      "response_sha256": "e3f330b8c8f42bc9effda5b0d7bdbbda2dc0e26ba51beca657fa47866230f112",
+      "response_size_bytes": 21131,
+      "retrieved_at_utc": "2026-07-18T07:58:01Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1,GCF_028858725.1,GCF_035149785.1,GCF_036321535.1,GCF_036365525.1,GCF_040954835.1/download_summary",
+      "request": {
+        "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1,GCF_028858725.1,GCF_035149785.1,GCF_036321535.1,GCF_036365525.1,GCF_040954835.1/download_summary",
+        "method": "GET",
+        "parameters": {
+          "_query": {
+            "include_annotation_type": "GENOME_GFF"
+          },
+          "accessions": [
+            "GCF_027789765.1",
+            "GCF_028858725.1",
+            "GCF_035149785.1",
+            "GCF_036321535.1",
+            "GCF_036365525.1",
+            "GCF_040954835.1"
+          ],
+          "report_type": "download_summary"
+        },
+        "source": "NCBI Datasets",
+        "source_version": "18.33.1"
+      },
+      "request_key": "a648ed5fc7c368b934a50744e84196ef308d157f1e493b34628300c30f9eef79",
+      "response_headers": {
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "connection": "close",
+        "content-length": "1480",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json",
+        "date": "Sat, 18 Jul 2026 07:58:03 GMT",
+        "grpc-metadata-via": "h2 linkerd",
+        "ncbi-phid": "1D342B39E16A63E50000304826E5E87D.1.1",
+        "server": "Finatra",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-datasets-version": "18.33.1",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "3",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/a648ed5fc7c368b934a50744e84196ef308d157f1e493b34628300c30f9eef79.bin",
+      "response_sha256": "098dc539ebcabafcb1179552e5c5cd3c459cac79d8ed540324a2cf5b29d7d1b5",
+      "response_size_bytes": 1480,
+      "retrieved_at_utc": "2026-07-18T07:57:55Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1,GCF_028858725.1,GCF_035149785.1,GCF_036321535.1,GCF_036365525.1,GCF_040954835.1/dataset_report",
+      "request": {
+        "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_027789765.1,GCF_028858725.1,GCF_035149785.1,GCF_036321535.1,GCF_036365525.1,GCF_040954835.1/dataset_report",
+        "method": "GET",
+        "parameters": {
+          "accessions": [
+            "GCF_027789765.1",
+            "GCF_028858725.1",
+            "GCF_035149785.1",
+            "GCF_036321535.1",
+            "GCF_036365525.1",
+            "GCF_040954835.1"
+          ],
+          "report_type": "dataset_report"
+        },
+        "source": "NCBI Datasets",
+        "source_version": "18.33.1"
+      },
+      "request_key": "acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a",
+      "response_headers": {
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json",
+        "date": "Sat, 18 Jul 2026 07:58:01 GMT",
+        "grpc-metadata-via": "h2 linkerd",
+        "ncbi-phid": "1D33E36DD8BFFC25000041485DA1543D.1.1",
+        "server": "Finatra",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-datasets-version": "18.33.1",
+        "x-ncbi-total-count": "6",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a.bin",
+      "response_sha256": "c51639e05e73c97abbfd7a392b37b0a03a434f9bb9ddb3e834e2d9c77a19b481",
+      "response_size_bytes": 33774,
+      "retrieved_at_utc": "2026-07-18T07:57:54Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_040954835.1/sequence_reports",
+      "request": {
+        "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_040954835.1/sequence_reports",
+        "method": "GET",
+        "parameters": {
+          "_query": {
+            "page_size": 10000
+          },
+          "accessions": [
+            "GCF_040954835.1"
+          ],
+          "batch_endpoint_available": false,
+          "report_type": "sequence_reports"
+        },
+        "source": "NCBI Datasets",
+        "source_version": "18.33.1"
+      },
+      "request_key": "b02baaddc6955124f0b6f02b77cad5f31d1d54c94729456e083ef33e7d75c13e",
+      "response_headers": {
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json",
+        "date": "Sat, 18 Jul 2026 07:58:15 GMT",
+        "grpc-metadata-via": "h2 linkerd",
+        "ncbi-phid": "1D32F1EC5D2E8EF500003B38801A7311.1.1",
+        "server": "Finatra",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-datasets-version": "18.33.1",
+        "x-ncbi-total-count": "816",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/b02baaddc6955124f0b6f02b77cad5f31d1d54c94729456e083ef33e7d75c13e.bin",
+      "response_sha256": "5c95ae8541f9b872d5d2f9c4d1ff519b806cd014bd8ccebb62156b0476be7117",
+      "response_size_bytes": 262979,
+      "retrieved_at_utc": "2026-07-18T07:58:07Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/040/954/835/GCF_040954835.1_fLepOcu1.hap2/GCF_040954835.1_fLepOcu1.hap2_genomic.fna.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/040/954/835/GCF_040954835.1_fLepOcu1.hap2/GCF_040954835.1_fLepOcu1.hap2_genomic.fna.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_040954835.1",
+          "object_type": "genomic_fasta"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_040954835.1"
+      },
+      "request_key": "b0b8b3959ba817503d21becbf92d2ca0bbb945720998dd169784e691f1527251",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "337740037",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:17 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:17 GMT",
+        "last-modified": "Fri, 18 Oct 2024 23:56:12 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/b0b8b3959ba817503d21becbf92d2ca0bbb945720998dd169784e691f1527251.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:08Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_036365525.1/sequence_reports",
+      "request": {
+        "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_036365525.1/sequence_reports",
+        "method": "GET",
+        "parameters": {
+          "_query": {
+            "page_size": 10000
+          },
+          "accessions": [
+            "GCF_036365525.1"
+          ],
+          "batch_endpoint_available": false,
+          "report_type": "sequence_reports"
+        },
+        "source": "NCBI Datasets",
+        "source_version": "18.33.1"
+      },
+      "request_key": "bac6052f5eba79663f511a0a89043005f5f0e0aa6acc5a39916ae74a34fcf3c4",
+      "response_headers": {
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json",
+        "date": "Sat, 18 Jul 2026 07:58:12 GMT",
+        "grpc-metadata-via": "h2 linkerd",
+        "ncbi-phid": "1D342B39E16A63E5000049482F6EBF55.1.1",
+        "server": "Finatra",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-datasets-version": "18.33.1",
+        "x-ncbi-total-count": "2306",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/bac6052f5eba79663f511a0a89043005f5f0e0aa6acc5a39916ae74a34fcf3c4.bin",
+      "response_sha256": "6bc132addb5aa03cf30707ac243832c9d995ca2f5b9683ccbc1b4b966c9a63b8",
+      "response_size_bytes": 744419,
+      "retrieved_at_utc": "2026-07-18T07:58:05Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/035/149/785/GCF_035149785.1_rCanAsp1.hap2/GCF_035149785.1_rCanAsp1.hap2_genomic.gff.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/035/149/785/GCF_035149785.1_rCanAsp1.hap2/GCF_035149785.1_rCanAsp1.hap2_genomic.gff.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_035149785.1",
+          "object_type": "genome_gff"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_035149785.1"
+      },
+      "request_key": "c82c8e25cf9b890b59601bac4727761e4e817a7852296e6f5c1fac373ac51f9e",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "9426436",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:10 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:10 GMT",
+        "last-modified": "Fri, 23 Feb 2024 19:31:57 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/c82c8e25cf9b890b59601bac4727761e4e817a7852296e6f5c1fac373ac51f9e.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:02Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/GCF_028858725.1_bColStr4.1.hap1_genomic.fna.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/GCF_028858725.1_bColStr4.1.hap1_genomic.fna.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_028858725.1",
+          "object_type": "genomic_fasta"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_028858725.1"
+      },
+      "request_key": "c9d0524f3dda0c7214b96efb09e486a77564671a38420c2924d81d21a91dc704",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "371555486",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:08 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:08 GMT",
+        "last-modified": "Wed, 03 Jan 2024 03:09:59 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/c9d0524f3dda0c7214b96efb09e486a77564671a38420c2924d81d21a91dc704.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:57:59Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/321/535/GCF_036321535.1_mCamDro1.pat/GCF_036321535.1_mCamDro1.pat_genomic.gff.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/321/535/GCF_036321535.1_mCamDro1.pat/GCF_036321535.1_mCamDro1.pat_genomic.gff.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_036321535.1",
+          "object_type": "genome_gff"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_036321535.1"
+      },
+      "request_key": "d053c05db5f4f1121e77727e51db07a65a7ebe21d88a08b30009ba513ece7131",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "17510754",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:13 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:13 GMT",
+        "last-modified": "Tue, 16 Apr 2024 02:26:04 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/d053c05db5f4f1121e77727e51db07a65a7ebe21d88a08b30009ba513ece7131.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:58:04Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/md5checksums.txt",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/md5checksums.txt",
+        "method": "GET",
+        "parameters": {
+          "accession": "GCF_028858725.1",
+          "object_type": "md5_catalog"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_028858725.1"
+      },
+      "request_key": "d515763c71e9143481baf0c8ab872eff83a79ea25421a891b4c31f8bca6906df",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "29501",
+        "content-type": "text/plain; charset=utf-8",
+        "date": "Sat, 18 Jul 2026 07:58:07 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:07 GMT",
+        "last-modified": "Wed, 13 May 2026 19:57:16 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "vary": "Accept-Encoding"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/d515763c71e9143481baf0c8ab872eff83a79ea25421a891b4c31f8bca6906df.bin",
+      "response_sha256": "e4541baa59a7a607976ef1cb5f3284827ff3f67450d2fc970a0ad2af89ad9224",
+      "response_size_bytes": 29501,
+      "retrieved_at_utc": "2026-07-18T07:57:59Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/027/789/765/GCF_027789765.1_aDenEbr1.pat/GCF_027789765.1_aDenEbr1.pat_genomic.fna.gz",
+      "request": {
+        "endpoint": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/027/789/765/GCF_027789765.1_aDenEbr1.pat/GCF_027789765.1_aDenEbr1.pat_genomic.fna.gz",
+        "method": "HEAD",
+        "parameters": {
+          "accession": "GCF_027789765.1",
+          "object_type": "genomic_fasta"
+        },
+        "source": "NCBI genomes FTP",
+        "source_version": "GCF_027789765.1"
+      },
+      "request_key": "e279e8b4d476a324c6cf070c61df0e46069241fa091de9f628f1ba4df24ad143",
+      "response_headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-headers": "RANGE, Cache-control, If-None-Match, Content-Type",
+        "access-control-allow-methods": "GET,POST,PUT,OPTIONS",
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "Content-Length, Content-Range, Content-Type",
+        "cache-control": "public, max-age=86400",
+        "connection": "close",
+        "content-length": "649729440",
+        "content-type": "application/x-gzip",
+        "date": "Sat, 18 Jul 2026 07:58:06 GMT",
+        "expires": "Sat, 25 Jul 2026 07:58:06 GMT",
+        "last-modified": "Wed, 20 Nov 2024 21:51:25 GMT",
+        "server": "Apache",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/e279e8b4d476a324c6cf070c61df0e46069241fa091de9f628f1ba4df24ad143.bin",
+      "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "response_size_bytes": 0,
+      "retrieved_at_utc": "2026-07-18T07:57:57Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    },
+    {
+      "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_028858725.1/sequence_reports",
+      "request": {
+        "endpoint": "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/accession/GCF_028858725.1/sequence_reports",
+        "method": "GET",
+        "parameters": {
+          "_query": {
+            "page_size": 10000
+          },
+          "accessions": [
+            "GCF_028858725.1"
+          ],
+          "batch_endpoint_available": false,
+          "report_type": "sequence_reports"
+        },
+        "source": "NCBI Datasets",
+        "source_version": "18.33.1"
+      },
+      "request_key": "ef23c0429fec1a58a1afd94aa6de09af3022343ff6dccad0202ff2bc07a285c7",
+      "response_headers": {
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json",
+        "date": "Sat, 18 Jul 2026 07:58:06 GMT",
+        "grpc-metadata-via": "h2 linkerd",
+        "ncbi-phid": "1D32F1EC5D2E8EF500002F3875318541.1.1",
+        "server": "Finatra",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-datasets-version": "18.33.1",
+        "x-ncbi-total-count": "191",
+        "x-ratelimit-limit": "5",
+        "x-ratelimit-remaining": "4",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_resolution_cache/responses/ef23c0429fec1a58a1afd94aa6de09af3022343ff6dccad0202ff2bc07a285c7.bin",
+      "response_sha256": "ee5aef933207a2f7f1d0eb35eeb7821ea65c95e7be6d37f55e05d63af276f1b6",
+      "response_size_bytes": 61594,
+      "retrieved_at_utc": "2026-07-18T07:57:58Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-debian-10.13",
+        "python": "3.7.3",
+        "software": "vgp-candidate-resolver/2.0"
+      }
+    }
+  ],
+  "schema_version": 2,
+  "selection_comparison": {
+    "interpretation": "metadata repair resolved six exact native-H1 composition candidates, but the integrated per-user quota interface remains unavailable; free space does not override that stricter cap, so zero rows are selected",
+    "old_rejected_count": 74,
+    "old_selected_count": 0,
+    "repaired_rejected_count": 74,
+    "repaired_selected_count": 0,
+    "zero_selection_irreducible_blockers": [
+      "QUOTA_UNAVAILABLE"
+    ]
+  },
+  "task_id": "repair-vgp-candidate"
+}

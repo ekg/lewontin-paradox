@@ -28,7 +28,9 @@ def test_run_writes_refusal_outputs_for_current_nogo_gate(tmp_path):
         output_results_path=results,
     )
     assert result["status"] == "refused_preflight"
-    assert result["failure_code"] == "GATE_NO_GO"
+    # Preserve the integrated refusal gate rather than rebinding it in the
+    # resolver task; compute rejects the repaired manifest digest until regate.
+    assert result["failure_code"] == "MANIFEST_DIGEST_MISMATCH"
 
     manifest_rows = _read_tsv(run_manifest)
     assert manifest_rows[0]["record_type"] == "run_summary"
@@ -70,7 +72,7 @@ def test_run_writes_refusal_outputs_for_current_nogo_gate(tmp_path):
             "io_read_gb": "0",
             "io_write_gb": "0",
             "metadata_operations": "0",
-            "failure_code": "GATE_NO_GO",
+            "failure_code": "MANIFEST_DIGEST_MISMATCH",
             "notes": "gate refusal prevented sbatch submission and sacct telemetry collection",
         }
     ]
@@ -78,7 +80,7 @@ def test_run_writes_refusal_outputs_for_current_nogo_gate(tmp_path):
     result_rows = _read_tsv(results)
     assert result_rows[0]["metric"] == "validated_species_count"
     assert result_rows[0]["value"] == "0"
-    assert result_rows[0]["failure_code"] == "GATE_NO_GO"
+    assert result_rows[0]["failure_code"] == "MANIFEST_DIGEST_MISMATCH"
     assert {row["failure_code"] for row in result_rows[1:]} >= {
         "NO_SELECTED_ROWS",
         "ZERO_COMPOSITION_ELIGIBLE_ROWS",

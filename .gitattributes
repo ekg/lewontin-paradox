@@ -1,0 +1,2 @@
+# These are byte-for-byte snapshots of the integrated refusal evidence.
+analysis/vgp_resolution_cache/prior_refusal/*.tsv -diff
