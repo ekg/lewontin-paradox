@@ -1,0 +1,209 @@
+{
+  "alternate_activations": 0,
+  "alternates_reviewed": 6,
+  "authorization": "BOUNDED_REPAIR_AND_TEN_SLOT_REPILOT_ONLY",
+  "branches": {
+    "core_diversity_psmc": {
+      "decision": "CONDITIONAL_GO",
+      "evidence_status": "TECHNICAL_PREFLIGHT_FAILURE_REPAIRABLE",
+      "reason": "0/10 passed mandatory assembly QC, callable, consensus, bootstrap, and resource-model gates; identities and immutable core checksums passed.",
+      "scaleout_authorized": false
+    },
+    "direct_conversion": {
+      "decision": "CONDITIONAL_GO",
+      "evidence_status": "SEPARATE_PILOT_IN_PROGRESS_NO_IMMUTABLE_RESULT_REVIEWED",
+      "reason": "H1/H2 differences are not transmitted conversion events; await the separately authorized pedigree/gamete pilot review.",
+      "scaleout_authorized": false
+    },
+    "exact_annotation_partitions": {
+      "decision": "CONDITIONAL_GO",
+      "evidence_status": "NOT_REACHED_CORE_PREFLIGHT_FAILED",
+      "reason": "Run only after a core pass and exact annotation accession/version plus sequence-dictionary or validated-liftover binding; annotation absence remains non-vetoing for core.",
+      "scaleout_authorized": false
+    },
+    "non_allelic_conversion": {
+      "decision": "NOT_RUN/DESIGN_ONLY",
+      "evidence_status": "NO_EXECUTION_TASK",
+      "reason": "No copy-resolved non-allelic execution evidence exists in the current graph.",
+      "scaleout_authorized": false
+    },
+    "phylogenetic_substitution_bias": {
+      "decision": "CONDITIONAL_GO",
+      "evidence_status": "NOT_EXECUTED_INPUT_GATE",
+      "reason": "The separately authorized H01/H02 pilot produced a pinned metadata preflight but zero verified sequences, callable alignments, substitutions, or biological estimates.",
+      "scaleout_authorized": false
+    },
+    "population_gbgc": {
+      "decision": "NOT_RUN/DESIGN_ONLY",
+      "evidence_status": "NO_EXECUTION_TASK",
+      "reason": "No multi-individual population-frequency execution evidence exists in the current graph.",
+      "scaleout_authorized": false
+    }
+  },
+  "classification_counts": {
+    "biological_not_estimable": 10,
+    "biological_outlier": 0,
+    "low_confidence_usable_core": 0,
+    "technical_failure": 10
+  },
+  "full_biological_scaleout_authorized": false,
+  "gate_summary": {
+    "fail": 13,
+    "not_reached": 28,
+    "pass": 15,
+    "total": 56
+  },
+  "independent_validation": {
+    "biological_quantities_compared": 16,
+    "biological_recomputation_status": "NOT_ELIGIBLE_PREFLIGHT_FAILED",
+    "checksum_or_size_failures": 0,
+    "comparison_status": "MATCH_EXPLICIT_NONMATERIALIZATION",
+    "immutable_objects_revalidated": 20,
+    "logical_bytes_rehashed": 584456946,
+    "review_id": "vgp10-review-20260718-v1",
+    "slurm_jobs_submitted": 0,
+    "subset": [
+      "P07",
+      "P08"
+    ],
+    "subset_basis": "predeclared full independent sentinels in vgp_analysis_manifest.json"
+  },
+  "interpretation_guards": {
+    "absent_independent_ne_vetoes_core": false,
+    "annotation_absence_vetoes_core": false,
+    "failed_assemblies_imply_low_diversity": false,
+    "same_pair_psmc_is_independent_validation": false
+  },
+  "ledger": {
+    "alternate_slots": 6,
+    "artifact_files": 90,
+    "artifact_packets": 10,
+    "primary_slots": 10,
+    "reason_counts": {
+      "MISSING_EXACT_FINAL_SEQUENCE_QV": 10,
+      "MISSING_H1_BUSCO": 2,
+      "MISSING_H2_BUSCO": 10,
+      "MISSING_KMER_COPY_NUMBER_AUDIT": 10,
+      "MISSING_REPEAT_OR_LOW_COMPLEXITY_MASK": 10,
+      "UNRESOLVED_EXACT_READ_CHEMISTRY": 1
+    }
+  },
+  "primary_passes": 0,
+  "primary_required": 8,
+  "primary_slots_reviewed": 10,
+  "program_decision": "CONDITIONAL_GO",
+  "repair_requirements": [
+    "Measure exact-final QV for both haplotypes in all ten primaries.",
+    "Measure BUSCO completeness, missingness, and duplication on both haplotypes; add H1 measurements for P07/P08.",
+    "Complete manifest-bound k-mer/copy-number collapse audits and exact repeat/low-complexity masks for all ten.",
+    "Resolve P09 exact read chemistry.",
+    "Run the unchanged gates in a newly versioned ten-slot re-pilot with no outcome-driven relaxation.",
+    "Capture positive observed telemetry for wall time, CPU-hours, peak RSS, scratch, reads, and writes and meet median/p95 APE <=25%/50%.",
+    "Require >=8/10 callable+consensus passers with all six clades, both generations, no systematic technology-stratum failure, and per-passing-unit PSMC >=100 attempts and >=95% finite success."
+  ],
+  "resource_assessment": {
+    "durable_object_contract_upper_bound": {
+      "bytes": "see low/base/high persistent input and output envelope",
+      "maximum_objects_including_optional_annotation": 32220,
+      "minimum_input_core_psmc_objects": 29356,
+      "operational_inodes": "see low/base/high inode envelope",
+      "optional_annotation_objects": 2864
+    },
+    "headroom": {
+      "high_inodes_with_25pct_headroom": 4475000,
+      "high_storage_gb_with_25pct_headroom": 21480.0,
+      "mapping_memory_stop_gib_per_job_if_authorized": 144,
+      "per_job_stop_multiple_of_reviewed_high_estimate": 1.5,
+      "storage_and_inode_multiplier": 1.25
+    },
+    "limitations": [
+      "The pilot observed only login-node immutable-object preflight; it observed no mapping, IMPG, mask, consensus, PSMC, bootstrap, scratch, or cluster I/O.",
+      "The biological envelope is a transparent 716/40 scaling of the preregistered Tier3A planning envelope, itself informed by three earlier calibration tuples; it is not a fitted pilot model.",
+      "PSMC and 200-bootstrap runtime are not represented in that prior Tier3A envelope, so total biological core-hours and wall time remain lower bounds and cannot authorize scale-out.",
+      "Eligibility among 716 catalog rows is unresolved; 716 is an upper-bound sensitivity, not an expected completed-pair count."
+    ],
+    "observed_preflight": {
+      "core_objects": 100,
+      "cpu_seconds": 9.402994,
+      "elapsed_seconds": 10.111913,
+      "filesystem_read_bytes": 466944,
+      "filesystem_write_bytes": 0,
+      "logical_bytes": 12567760437,
+      "logical_write_bytes": 20793,
+      "metadata_operations": 300,
+      "pairs": 10,
+      "peak_rss_kib": 41712,
+      "per_pair_elapsed_median_seconds": 0.85544,
+      "per_pair_elapsed_p95_seconds": 2.03014,
+      "scratch_high_water_bytes": 0
+    },
+    "resource_model_gate": {
+      "median_ape": null,
+      "p95_ape": null,
+      "status": "FAIL_NOT_ESTIMABLE_ZERO_CLUSTER_JOBS"
+    },
+    "upper_bound_716_pair_biological_planning_envelope": {
+      "base": {
+        "concurrency": 10,
+        "core_hours": 1575.2,
+        "inodes": 1074000.0,
+        "input_gb": 2864.0,
+        "memory_gib_per_job": 64,
+        "metadata_ops": 14320000.0,
+        "output_gb": 358.0,
+        "read_gb": 2237.5,
+        "scratch_gb_aggregate": 75,
+        "scratch_gb_per_job": 7.5,
+        "wall_hours": 19.69,
+        "write_gb": 3222.0
+      },
+      "high": {
+        "concurrency": 10,
+        "core_hours": 24845.2,
+        "inodes": 3580000.0,
+        "input_gb": 14320.0,
+        "memory_gib_per_job": 96,
+        "metadata_ops": 53700000.0,
+        "output_gb": 2864.0,
+        "read_gb": 13425.0,
+        "scratch_gb_aggregate": 375,
+        "scratch_gb_per_job": 37.5,
+        "wall_hours": 310.565,
+        "write_gb": 17900.0
+      },
+      "low": {
+        "concurrency": 4,
+        "core_hours": 322.2,
+        "inodes": 537000.0,
+        "input_gb": 1145.6,
+        "memory_gib_per_job": 32,
+        "metadata_ops": 3580000.0,
+        "output_gb": 107.4,
+        "read_gb": 895.0,
+        "scratch_gb_aggregate": 12,
+        "scratch_gb_per_job": 3,
+        "wall_hours": 10.024,
+        "write_gb": 1432.0
+      }
+    },
+    "upper_bound_716_pair_preflight_extrapolation": {
+      "cpu_hours": 0.187,
+      "input_objects": 7160,
+      "logical_bytes": 899851647289,
+      "memory_mib_per_process_observed": 40.734,
+      "minimum_storage_headroom_fraction": 0.25,
+      "serial_wall_hours": 0.201
+    }
+  },
+  "review_id": "vgp10-review-20260718-v1",
+  "reviewed_run_id": "vgp10-20260718-preflight-v1",
+  "schema_version": "vgp-10-pilot-independent-review-v1.0.0",
+  "scientific_thresholds_relaxed": false,
+  "slurm_jobs_submitted_by_review": 0,
+  "source_digests": {
+    "analysis/guix/vgp_10_pilot/realization.json": "c37690b52536a5573c9a172375464247f826e4f904443d2181c00c725f897a12",
+    "analysis/vgp_10_pair_manifest.tsv": "bf6c9ff647aed332bfc002bf803e8307203b51432343f2eca6d95a6c80d82997",
+    "analysis/vgp_10_pilot_acquisition_manifest.tsv": "8575f4daef91b821fcd6bc7a410af62d1b62249b12449503c137b22e23e9b46c",
+    "analysis/vgp_10_pilot_object_inventory.tsv": "c852dea88c3912150ad7a04c95bb4f5c2b05d89df2bbc75e18cfd9247e509832"
+  }
+}

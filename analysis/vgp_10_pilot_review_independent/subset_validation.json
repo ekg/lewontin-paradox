@@ -1,0 +1,15 @@
+{
+  "biological_quantities_compared": 16,
+  "biological_recomputation_status": "NOT_ELIGIBLE_PREFLIGHT_FAILED",
+  "checksum_or_size_failures": 0,
+  "comparison_status": "MATCH_EXPLICIT_NONMATERIALIZATION",
+  "immutable_objects_revalidated": 20,
+  "logical_bytes_rehashed": 584456946,
+  "review_id": "vgp10-review-20260718-v1",
+  "slurm_jobs_submitted": 0,
+  "subset": [
+    "P07",
+    "P08"
+  ],
+  "subset_basis": "predeclared full independent sentinels in vgp_analysis_manifest.json"
+}

@@ -1,0 +1,57 @@
+gate_id	scope	gate	threshold	observed	status	evidence	decision_consequence
+H01	all_primary	pair/individual identity resolved	unresolved=0	0	PASS	result manifest + frozen design/acquisition field equality	none
+H02	all_primary	exact accession.version identity resolved	unresolved=0	0	PASS	result manifest + frozen design/acquisition field equality	none
+H02A	all_primary	taxid/BioSample/individual/haplotype-role fields resolved	unresolved=0	0	PASS	frozen design/acquisition closed-world equality	none
+H03	all_primary	immutable checksum drift	events=0	0	PASS	100 production objects; independent P07/P08 live rehash	none
+H04	retained_mapping	retained query multiplicity >1	count=0	no retained mapping	NOT_REACHED	mapping refused at preflight	cannot support GO
+H05	retained_mapping	retained target multiplicity >1	count=0	no retained mapping	NOT_REACHED	mapping refused at preflight	cannot support GO
+H05A	retained_mapping	retained non-1:1 bases	bp=0	no retained mapping	NOT_REACHED	mapping refused at preflight	cannot support GO
+H06	callable_mask	unexplained mask accounting	discrepancy_bp=0	not measured	NOT_REACHED	mask not materialized	cannot support GO
+H07	normalized_variants	H1 REF reconstruction	failures=0	not measured	NOT_REACHED	variants not materialized	cannot support GO
+H08	normalized_variants	H2 alternate reconstruction	failures=0	not measured	NOT_REACHED	variants not materialized	cannot support GO
+H08A	diploid_consensus	non-callable bases encoded homozygous reference	bp=0	not measured	NOT_REACHED	consensus not materialized	cannot support GO
+H08B	annotation_outputs	annotation sequence-dictionary mismatch retained	count=0	no annotation output	NOT_REACHED	P03/P04 mismatch excluded before output; all annotation branches not reached	cannot support annotation GO
+H09	psmc	unscaled/scaled PSMC separation	conflations=0	no PSMC outputs	NOT_REACHED	scenario branch not run	cannot support GO
+A01	assembly	exact-final-sequence QV each haplotype	QV>=40 each	0/10 measured	FAIL	10/10 missing	repair required
+A02	assembly	H1/H2 BUSCO completeness and missingness	complete>=0.90 and missing<=0.05 each	H1 missing 2/10; H2 missing 10/10	FAIL	QC ledger	repair required
+A02A	assembly	H1/H2 BUSCO completeness difference	absolute difference<=0.05	0/10 pair differences measurable	FAIL	H2 BUSCO absent for every pair	repair required
+A02B	assembly	H1/H2 BUSCO duplication	duplicated<=0.05 each	0/10 both-haplotype audits measurable	FAIL	H2 BUSCO absent for every pair	repair required
+A03	assembly	copy-number/k-mer collapse audit	passing both haplotypes	0/10 measured	FAIL	10/10 missing	repair required
+A04	assembly	repeat/low-complexity mask	exact manifest-bound mask	0/10 measured	FAIL	10/10 missing	repair required
+A05	assembly	exact read chemistry	resolved	9/10 resolved	FAIL	P09 unresolved	P09-specific repair
+A06	assembly	minimum haplotype span	>=250,000,000 bp each	20/20 pass	PASS	frozen exact assembly reports	does not override missing QC
+A07	assembly	minimum contig N50	>=1,000,000 bp each	20/20 pass	PASS	frozen exact assembly reports	does not override missing QC
+A08	assembly	H1/H2 length ratio	0.80..1.25	10/10 pass; 0.941..1.157	PASS	frozen exact assembly reports	does not override missing QC
+C01	callability	primary callable fraction	>=0.60	0/10 measured	NOT_REACHED	masks not materialized	cannot support GO
+C01A	callability	sensitivity callable fraction	>=0.50	0/10 measured	NOT_REACHED	masks not materialized	cannot support GO
+C01B	callability	minimum callable bases	>=100,000,000 bp	0/10 measured	NOT_REACHED	masks not materialized	cannot support GO
+C01C	callability	well-callable windows	>=50 1-Mb windows at >=80% callable	0/10 measured	NOT_REACHED	windows not materialized	cannot support GO
+C01D	callability	ordered disjoint reason assignment	13 predeclared reasons; exact complement	0/10 measured	NOT_REACHED	reason masks not materialized	cannot support GO
+C01E	callability	universe reconciliation	callable + reasons = universe exactly	0/10 measured	NOT_REACHED	reason masks not materialized	cannot support GO
+C02	consensus	masked and heterozygous encoding	masked=N; heterozygous SNP=IUPAC	0/10 produced	NOT_REACHED	consensus not materialized	cannot support GO
+C03	consensus	primary indel flank mask	10 bp	0/10 produced	NOT_REACHED	consensus not materialized	cannot support GO
+C04	consensus	indel flank sensitivities	0 bp and 50 bp	0/10 produced	NOT_REACHED	consensus not materialized	cannot support GO
+C05	normalized_variants	exact-reference normalization and duplicate removal	exact H1; exact duplicates removed	0/10 produced	NOT_REACHED	variants not materialized	cannot support GO
+B00	passing_psmc_unit	pre-registered primary bootstrap attempts	exactly 200	no passing PSMC unit	NOT_REACHED	0 attempts	cannot support GO
+B01	passing_psmc_unit	minimum bootstrap attempts	>=100	no passing PSMC unit	NOT_REACHED	0 attempts; not a violation assigned to a passing unit	cannot support GO
+B02	passing_psmc_unit	finite bootstrap fraction	>=0.95	no passing PSMC unit	NOT_REACHED	0/0, explicitly not applicable	cannot support GO
+B02A	passing_psmc_unit	finite primary bootstrap successes	>=190/200	no passing PSMC unit	NOT_REACHED	0/0, explicitly not applicable	cannot support GO
+B03	passing_psmc_unit	boundary-aware block construction	5-Mb primary; 1/10-Mb sensitivities; never cross contig/mask boundary	no bootstrap units	NOT_REACHED	callable mask absent	cannot support GO
+B04	diversity	heterozygosity bootstrap replicates	10,000	0/10 attempted	NOT_REACHED	diversity not materialized	cannot support GO
+D01	reproducibility	P07/P08 full independent biological recomputation	2 sentinels; digest mismatches=0	20 inputs rehashed; biological outputs ineligible	NOT_REACHED	independent review root	re-pilot must complete biological comparison
+D02	reproducibility	other-pair deterministic shard comparison	1 shard each; digest mismatches=0	0/8 biological shards eligible	NOT_REACHED	all stopped at preflight	re-pilot must complete biological comparison
+P00	program	primary slots adjudicated	exactly 10	10	PASS	closed result ledger	none
+P01	program	primary callable+consensus passes	>=8/10	0/10	FAIL	all primaries failed preflight	core GO prohibited
+P02	program	required major clades among passers	6/6	0/6	FAIL	no passers	core GO prohibited
+P03	program	assembly generations among passers	2/2	0/2	FAIL	no passers	core GO prohibited
+P04	program	no technology-stratum systematic failure	failure fraction <0.50	1.00 in both early CLR and later HiFi strata	FAIL	shared missing-QC packet; not evidence that either technology is biologically invalid	core GO prohibited
+P05	program	zero hard-gate violations	0	measured identity/checksum violations=0; downstream hard gates not reached	NOT_REACHED	positive downstream hard-gate evidence absent	core GO prohibited
+R01	resource_model	median absolute percentage error	<=0.25	not estimable	FAIL_NOT_ESTIMABLE	zero biological jobs with positive predictions/observations	core GO prohibited
+R02	resource_model	95th percentile absolute percentage error	<=0.50	not estimable	FAIL_NOT_ESTIMABLE	zero biological jobs with positive predictions/observations	core GO prohibited
+R03	resource_model	storage headroom	>=0.25	0.25 retained in corrected envelope	PASS	resource manifest	planning only; does not rescue APE failure
+R04	resource_model	per-job stop multiple	1.5x reviewed high estimate	1.5x retained; no job invoked	PASS	resource manifest	planning only; not a global ceiling
+L01	ledger	all primary slots reconciled	10/10	10/10	PASS	no drop/replacement	none
+L02	ledger	all alternates reconciled	6/6	6/6 standby; 0 activated	PASS	no amendment	none
+L03	ledger	failure/warning reason totals	exact	43 reason instances across 6 codes	PASS	result/QC/failure/summary equality	none
+N01	interpretation	annotation absence cannot veto core	zero annotation-driven core failures	0	PASS	P03/P04 annotation mismatch remained branch-local	none
+N02	interpretation	same-pair PSMC is not independent validation	no independent claim	no PSMC result and no claim	PASS	decision/report wording	none
