@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img">
+<title>Four distinct gene-conversion evidence branches</title>
+<desc>Direct and historical pilots stopped at input gates; population and non-allelic branches remain design only.</desc>
+<rect width="1200" height="680" fill="#ffffff"/><text x="60" y="65" font-family="sans-serif" font-size="30" font-weight="bold">Gene-conversion evidence: estimands must not be exchanged</text>
+<rect x="60" y="120" width="1080" height="95" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="90" y="154" font-family="sans-serif" font-size="22" font-weight="bold">Direct pedigree/gamete</text>
+<text x="1110" y="154" text-anchor="end" font-family="sans-serif" font-size="18" font-weight="bold" fill="#b91c1c">PREFLIGHT INPUT GATE</text>
+<text x="90" y="190" font-family="sans-serif" font-size="18">58 published candidates excluded; rate not estimable</text>
+<rect x="60" y="245" width="1080" height="95" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+<text x="90" y="279" font-family="sans-serif" font-size="22" font-weight="bold">Population AFS gBGC</text>
+<text x="1110" y="279" text-anchor="end" font-family="sans-serif" font-size="18" font-weight="bold" fill="#475569">NOT_RUN / DESIGN_ONLY</text>
+<text x="90" y="315" font-family="sans-serif" font-size="18">No population execution manifest; no B estimate</text>
+<rect x="60" y="370" width="1080" height="95" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="90" y="404" font-family="sans-serif" font-size="22" font-weight="bold">Historical phylogenetic</text>
+<text x="1110" y="404" text-anchor="end" font-family="sans-serif" font-size="18" font-weight="bold" fill="#b91c1c">PREFLIGHT INPUT GATE</text>
+<text x="90" y="440" font-family="sans-serif" font-size="18">0 verified sequence bytes; no substitution estimate</text>
+<rect x="60" y="495" width="1080" height="95" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+<text x="90" y="529" font-family="sans-serif" font-size="22" font-weight="bold">Non-allelic paralogs</text>
+<text x="1110" y="529" text-anchor="end" font-family="sans-serif" font-size="18" font-weight="bold" fill="#475569">NOT_RUN / DESIGN_ONLY</text>
+<text x="90" y="565" font-family="sans-serif" font-size="18">No copy-resolved execution manifest; no tract claim</text>
+<text x="600" y="640" text-anchor="middle" font-family="sans-serif" font-size="17">H1/H2 WS/SW states support none of these directional, population, historical, or copy-aware claims.</text>
+</svg>
