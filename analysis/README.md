@@ -34,6 +34,33 @@ project-named root is migration input only; verified objects were hard-linked
 into the canonical CAS without redownload as recorded in
 `vgp_data_root_migration_v1.json`.
 
+The independent raw-read validation subset is frozen in
+`vgp_validation_read_plan_v1.json`: P07 is the small later-generation fish,
+P09 is the very large/repeat-sensitive shark, and P04 is the early CLR/
+TrioCanu bird. Every object repeats the exact BioSample, individual, run,
+experiment, platform/library, and both assembly accession.versions. ENA MD5
+and byte counts are verified before a local SHA-256 CAS promotion; the
+post-promotion object is rehashed and exposed read-only under the configured
+accession view (or `raw_reads` view when a future contract defines one).
+`vgp_validation_reads_manifest_v1.json` accounts for every
+planned, transferred, verified, reused, missing, pending, and quarantined
+object and byte. It is also atomically copied to the configured canonical
+`pilot_manifests` directory so downstream projects do not depend on this
+checkout.
+
+Acquisition is intentionally separate from the assembly-derived pilot run and
+is safe to resume. On this cluster, use the host Python so HTTPS uses the site
+trust configuration (the pure Guix Python correctly refuses the site's
+self-signed TLS chain):
+
+```sh
+python3 analysis/acquire_vgp_validation_reads.py
+```
+
+Interrupted payloads remain only in the configured canonical staging tree;
+content mismatches move atomically to the configured quarantine tree and are
+never exposed through a read view.
+
 ## Plans & surveys
 
 | file | what |
