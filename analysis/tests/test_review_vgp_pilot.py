@@ -40,8 +40,18 @@ def test_review_recomputes_current_refusal_artifacts(tmp_path):
     assert decisions["run_manifest_recompute"] == "PASS"
     assert decisions["telemetry_recompute"] == "PASS"
     assert decisions["results_recompute"] == "PASS"
+    # A refusal is a five-ledger contract.  The exclusions and refusal
+    # evidence (including its self-digest) must reproduce alongside the three
+    # historical primary outputs; otherwise a stale refusal boundary can be
+    # silently accepted by this review.
+    assert decisions["exclusions_recompute"] == "PASS"
+    assert decisions["refusals_recompute"] == "PASS"
+    assert decisions["refusal_evidence_sha256"] == "PASS"
     assert decisions["source_catalog_counts"] == "PASS"
     assert decisions["selected_manifest_rows"] == "FAIL"
+    assert decisions["composition_ready_rows"] == "PASS"
+    assert decisions["diversity_ready_rows"] == "FAIL"
+    assert decisions["scientific_validity"] == "PASS"
     assert decisions["quota_interface"] == "FAIL"
     assert decisions["slurm_terminal_state"] == "PASS"
     assert decisions["network_in_arrays"] == "PASS"
@@ -57,3 +67,41 @@ def test_review_recomputes_current_refusal_artifacts(tmp_path):
     review_text = review_out.read_text(encoding="utf-8")
     assert "Overall decision: `FAIL`" in review_text
     assert "No Slurm array job ID" in review_text
+
+
+def test_review_fails_closed_on_refusal_ledger_or_digest_drift(tmp_path):
+    exclusions = _read_tsv(ROOT / "analysis/vgp_pilot_exclusions.tsv")
+    exclusions[0]["status"] = "included"
+    altered_exclusions = tmp_path / "altered-exclusions.tsv"
+    review.write_tsv(altered_exclusions, list(exclusions[0]), exclusions)
+
+    review.review(
+        exclusions_path=altered_exclusions,
+        review_out=tmp_path / "exclusions-review.md",
+        qc_out=tmp_path / "exclusions-qc.tsv",
+        resource_out=tmp_path / "exclusions-resource.tsv",
+    )
+    exclusion_decisions = {
+        row["check_id"]: row["decision"]
+        for row in _read_tsv(tmp_path / "exclusions-qc.tsv")
+    }
+    assert exclusion_decisions["exclusions_recompute"] == "FAIL"
+    assert exclusion_decisions["refusal_evidence_sha256"] == "PASS"
+
+    refusals = _read_tsv(ROOT / "analysis/vgp_pilot_refusals.tsv")
+    refusals[0]["evidence_sha256"] = "0" * 64
+    altered_refusals = tmp_path / "altered-refusals.tsv"
+    review.write_tsv(altered_refusals, list(refusals[0]), refusals)
+
+    review.review(
+        refusals_path=altered_refusals,
+        review_out=tmp_path / "digest-review.md",
+        qc_out=tmp_path / "digest-qc.tsv",
+        resource_out=tmp_path / "digest-resource.tsv",
+    )
+    digest_decisions = {
+        row["check_id"]: row["decision"]
+        for row in _read_tsv(tmp_path / "digest-qc.tsv")
+    }
+    assert digest_decisions["refusals_recompute"] == "PASS"
+    assert digest_decisions["refusal_evidence_sha256"] == "FAIL"

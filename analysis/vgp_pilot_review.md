@@ -1,32 +1,29 @@
 # VGP pilot review
 
 - Overall decision: `FAIL`
-- QC counts: `PASS=13`, `FAIL=6`, `INCONCLUSIVE=0`
+- QC counts: `PASS=19`, `FAIL=3`, `INCONCLUSIVE=0`
 - Resource calibration counts: `PASS=9`, `FAIL=0`, `INCONCLUSIVE=3`
-- Promoted gate decision: `NO_GO` with decision SHA-256 `ae67031eaa4781984cb9da31ee7a9cd18ee4f2667f98e2a201918fc75ae57284`
+- Promoted gate decision: `NO_GO` with decision SHA-256 `6ba08bae6be0903b04cbf2b7a73c5201554ade82d2ea10a22280eff63289eb16`
 - Promoted Slurm terminal state: `NOT_SUBMITTED`
 
 ## Headline findings
 
-- `source_catalog_counts`: The frozen catalog still disagreed with planning headline counts, so the gate correctly stayed NO_GO. (analysis/vgp_phase1_freeze_provenance.json)
 - `selected_manifest_rows`: No rows were selected for the bounded pilot. (analysis/vgp_pilot_manifest.tsv)
-- `composition_ready_rows`: No manifest row independently satisfied exact H1/native-annotation/denominator requirements. (analysis/vgp_pilot_manifest.tsv)
 - `diversity_ready_rows`: No manifest row independently satisfied paired same-individual diversity requirements. (analysis/vgp_pilot_manifest.tsv)
 - `quota_interface`: Filesystem free space existed, but no exact user-visible quota interface was available, so the gate failed closed. (analysis/vgp_data_root_validation.json)
-- `scientific_validity`: The promoted manifest never crossed the scientific validity threshold for pilot execution. (analysis/vgp_pilot_manifest.tsv; analysis/vgp_pilot_gate.json)
 
 ## Independent recomputation
 
 - Fresh gate recomputation matched the promoted gate on stable fields, including blocker set, cap-vector digest, manifest/root digests, row-audit summary, and quota evidence.
-- Fresh refusal-path reruns of `analysis/run_vgp_pilot.py` reproduced the promoted run manifest, refusal telemetry, and result rows after normalizing timestamps, run IDs, and absolute worktree prefixes.
+- Fresh refusal-path reruns of `analysis/run_vgp_pilot.py` reproduced all five promoted ledgers (run manifest, telemetry, results, exclusions, and refusal evidence) after normalizing timestamps, run IDs, and absolute worktree prefixes; both refusal rows independently passed their exact self-digest checks.
 - The promoted refusal path therefore appears immutable and internally consistent even though it did not authorize any biological execution.
 
 ## Scientific and execution evidence
 
 - `analysis/sweepga_origin_main_build.json` still records the accepted native `--num-mappings 1:1` SweepGA build with SHA-256 `fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b`.
 - `analysis/sweepga_impg_observed.json` still records native exact-assembly annotation linkage, callable denominator `14507`, queryable gene count `3`, and 1:1 mapping depth.
-- The manifest never crossed the scientific gate: `selected_rows=0`, `composition_ready=0`, `diversity_ready=0`.
-- Dominant unresolved row defects remained `ANNOTATION_NOT_NATIVE=74`, `CALLABLE_BASES_UNRESOLVED=74`, `QUERYABLE_GENE_COUNT_UNRESOLVED=74`, and `QUERYABLE_GENE_BASES_UNRESOLVED=74`.
+- The manifest remained execution-refused: `selected_rows=0`, `composition_ready=6`, `diversity_ready=0`. Composition eligibility does not override cap or quota blockers, and zero diversity readiness authorizes no diversity analysis.
+- The current row audit records `0` composition-metadata issue instances; diversity eligibility remains governed separately by exact same-individual and phase evidence.
 - `analysis/vgp_data_root_validation.json` still reports filesystem headroom but no user-visible quota interface, so quota evidence remained fail-closed rather than advisory.
 
 ## Resource calibration

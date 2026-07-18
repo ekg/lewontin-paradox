@@ -4,7 +4,7 @@ Date: 2026-07-18 UTC
 
 ## Audited outcome
 
-**Review decision: PASS (correctly refused; `NOT_SUBMITTED`).** The exact repaired gate is `NO_GO`, with decision SHA-256 `9f39b13be5e0b1999c4cd98498399aee8700a7487d57fa81dfb7c59c29ff867d`. Acquisition stopped before a provider request or biological byte, and compute stopped before `sbatch`. This is a valid audited control outcome, not an executed pilot row and not a biological result. QC totals are PASS=57, FAIL=0.
+**Review decision: PASS (correctly refused; `NOT_SUBMITTED`).** The exact repaired gate is `NO_GO`, with decision SHA-256 `6ba08bae6be0903b04cbf2b7a73c5201554ade82d2ea10a22280eff63289eb16`. Acquisition stopped before a provider request or biological byte, and compute stopped before `sbatch`. This is a valid audited control outcome, not an executed pilot row and not a biological result. QC totals are PASS=57, FAIL=0.
 
 The three exact blockers are `CAP_MOOSEFS_READ_GB_EXCEEDED; CAP_SCRATCH_GIB_EXCEEDED; QUOTA_UNAVAILABLE` (`analysis/vgp_pilot_gate.json`; promoted run summary at `analysis/vgp_pilot_run_manifest.tsv:2-5`). No download, expansion, job, SweepGA/IMPG analysis, VCF/BCF generation, or demographic inference was launched by this review.
 

@@ -24,6 +24,8 @@ DEFAULT_GATE = PROJECT_ROOT / "analysis" / "vgp_pilot_gate.json"
 DEFAULT_RUN_MANIFEST = PROJECT_ROOT / "analysis" / "vgp_pilot_run_manifest.tsv"
 DEFAULT_RESULTS = PROJECT_ROOT / "analysis" / "vgp_pilot_results.tsv"
 DEFAULT_TELEMETRY = PROJECT_ROOT / "analysis" / "vgp_pilot_slurm_telemetry.tsv"
+DEFAULT_EXCLUSIONS = PROJECT_ROOT / "analysis" / "vgp_pilot_exclusions.tsv"
+DEFAULT_REFUSALS = PROJECT_ROOT / "analysis" / "vgp_pilot_refusals.tsv"
 DEFAULT_ROOT_VALIDATION = PROJECT_ROOT / "analysis" / "vgp_data_root_validation.json"
 DEFAULT_REVIEW = PROJECT_ROOT / "analysis" / "vgp_pilot_review.md"
 DEFAULT_QC = PROJECT_ROOT / "analysis" / "vgp_pilot_qc.tsv"
@@ -107,6 +109,45 @@ def normalize_rows(rows: Iterable[Mapping[str, str]]) -> list[dict[str, str]]:
             cooked["failure_source"] = normalize_source(cooked["failure_source"])
         normalized.append(cooked)
     return normalized
+
+
+def normalize_refusal_rows(rows: Iterable[Mapping[str, str]]) -> list[dict[str, str]]:
+    """Normalize refusal evidence without discarding its audited boundary.
+
+    ``evidence_sha256`` intentionally binds the volatile run ID, timestamp,
+    and worktree-local failure path, so it cannot be compared across a fresh
+    rerun.  Its integrity is checked separately by
+    :func:`refusal_evidence_digest_valid`; every other refusal field remains
+    in this normalized comparison.
+    """
+
+    return [
+        {key: value for key, value in row.items() if key != "evidence_sha256"}
+        for row in normalize_rows(rows)
+    ]
+
+
+def refusal_evidence_digest_valid(row: Mapping[str, str]) -> bool:
+    payload: dict[str, Any] = dict(row)
+    expected = payload.pop("evidence_sha256", "")
+    integer_fields = (
+        "sbatch_commands_issued",
+        "slurm_jobs_submitted",
+        "compute_jobs_started",
+        "core_seconds",
+        "scratch_bytes",
+        "io_read_bytes",
+        "io_write_bytes",
+        "network_bytes",
+        "provider_requests",
+        "demographic_inferences",
+    )
+    try:
+        for field in integer_fields:
+            payload[field] = int(payload[field])
+    except (KeyError, TypeError, ValueError):
+        return False
+    return bool(expected) and expected == gate.sha256_json(payload)
 
 
 def stable_gate_view(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -246,8 +287,8 @@ def build_resource_rows(promoted_gate: Mapping[str, Any], telemetry_rows: Sequen
         elif observed <= authorized + 1e-9:
             decision = "PASS"
             notes = (
-                "Observed value stayed within the authorized cap; the empty selection under the NO_GO gate "
-                "collapsed the executable cap to zero for aggregate usage."
+                "Observed refusal-path use stayed within the authorized cap; the NO_GO gate prevented "
+                "any attributable execution."
             )
         else:
             decision = "FAIL"
@@ -282,9 +323,13 @@ def build_qc_rows(
     promoted_run_manifest: Sequence[Mapping[str, str]],
     promoted_results: Sequence[Mapping[str, str]],
     promoted_telemetry: Sequence[Mapping[str, str]],
+    promoted_exclusions: Sequence[Mapping[str, str]],
+    promoted_refusals: Sequence[Mapping[str, str]],
     recomputed_run_manifest: Sequence[Mapping[str, str]],
     recomputed_results: Sequence[Mapping[str, str]],
     recomputed_telemetry: Sequence[Mapping[str, str]],
+    recomputed_exclusions: Sequence[Mapping[str, str]],
+    recomputed_refusals: Sequence[Mapping[str, str]],
     guix_validation: str,
     guix_note: str,
 ) -> list[dict[str, str]]:
@@ -349,6 +394,53 @@ def build_qc_rows(
         )
     )
 
+    exclusions_match = normalize_rows(promoted_exclusions) == normalize_rows(recomputed_exclusions)
+    qc_rows.append(
+        qc_row(
+            "exclusions_recompute",
+            "reproducibility",
+            "analysis/vgp_pilot_exclusions.tsv",
+            "PASS" if exclusions_match else "FAIL",
+            f"normalized_rows={len(promoted_exclusions)}" if exclusions_match else "normalized_rows_differ",
+            f"normalized_rows={len(recomputed_exclusions)}",
+            "analysis/vgp_pilot_exclusions.tsv; analysis/run_vgp_pilot.py",
+            "Normalized refusal exclusions matched the promoted artifact."
+            if exclusions_match else "Normalized refusal exclusions diverged from the promoted artifact.",
+        )
+    )
+
+    refusals_match = normalize_refusal_rows(promoted_refusals) == normalize_refusal_rows(recomputed_refusals)
+    qc_rows.append(
+        qc_row(
+            "refusals_recompute",
+            "reproducibility",
+            "analysis/vgp_pilot_refusals.tsv",
+            "PASS" if refusals_match else "FAIL",
+            f"normalized_rows={len(promoted_refusals)}" if refusals_match else "normalized_rows_differ",
+            f"normalized_rows={len(recomputed_refusals)}",
+            "analysis/vgp_pilot_refusals.tsv; analysis/run_vgp_pilot.py",
+            "Normalized refusal evidence matched the promoted artifact."
+            if refusals_match else "Normalized refusal evidence diverged from the promoted artifact.",
+        )
+    )
+
+    promoted_digest_valid = len(promoted_refusals) == 1 and refusal_evidence_digest_valid(promoted_refusals[0])
+    recomputed_digest_valid = len(recomputed_refusals) == 1 and refusal_evidence_digest_valid(recomputed_refusals[0])
+    refusal_digests_valid = promoted_digest_valid and recomputed_digest_valid
+    qc_rows.append(
+        qc_row(
+            "refusal_evidence_sha256",
+            "immutability",
+            "analysis/vgp_pilot_refusals.tsv",
+            "PASS" if refusal_digests_valid else "FAIL",
+            f"promoted={str(promoted_digest_valid).lower()}; recomputed={str(recomputed_digest_valid).lower()}",
+            "promoted=true; recomputed=true",
+            "analysis/vgp_pilot_refusals.tsv; analysis/run_vgp_pilot.py",
+            "Both refusal rows retain valid self-digests over the exact unnormalized evidence."
+            if refusal_digests_valid else "At least one refusal row has an invalid self-digest.",
+        )
+    )
+
     sweepga_payload = runner.audit_sweepga_origin_build(runner.DEFAULT_SWEEPGA_BUILD)
     qc_rows.append(
         qc_row(
@@ -405,16 +497,19 @@ def build_qc_rows(
     )
 
     blockers = Counter(item["code"] for item in promoted_gate["blockers"])
+    source_counts_pass = "SOURCE_COUNT_DISCREPANCY_UNRESOLVED" not in blockers
     qc_rows.append(
         qc_row(
             "source_catalog_counts",
             "gate",
             "analysis/vgp_phase1_freeze_provenance.json",
-            "FAIL" if "SOURCE_COUNT_DISCREPANCY_UNRESOLVED" in blockers else "PASS",
+            "PASS" if source_counts_pass else "FAIL",
             discrepancy_text,
             "no unresolved source-count discrepancies",
             "analysis/vgp_phase1_freeze_provenance.json",
-            "The frozen catalog still disagreed with planning headline counts, so the gate correctly stayed NO_GO.",
+            "The frozen catalog matches the promoted source-count contract."
+            if source_counts_pass
+            else "The frozen catalog disagrees with the promoted source-count contract, so the review fails closed.",
         )
     )
     qc_rows.append(
@@ -438,7 +533,9 @@ def build_qc_rows(
             promoted_gate["row_audit"]["summary"]["composition_ready_count"],
             ">0 composition-ready rows",
             "analysis/vgp_pilot_manifest.tsv",
-            "No manifest row independently satisfied exact H1/native-annotation/denominator requirements.",
+            "At least one manifest row independently satisfied the exact H1/native-annotation/denominator contract."
+            if promoted_gate["row_audit"]["summary"]["composition_ready_count"] > 0
+            else "No manifest row independently satisfied exact H1/native-annotation/denominator requirements.",
         )
     )
     qc_rows.append(
@@ -504,10 +601,9 @@ def build_qc_rows(
         )
     )
 
-    scientific_fail = (
-        promoted_gate["row_audit"]["summary"]["composition_ready_count"] == 0
-        or promoted_gate["row_audit"]["summary"]["diversity_ready_count"] == 0
-    )
+    composition_ready = promoted_gate["row_audit"]["summary"]["composition_ready_count"]
+    diversity_ready = promoted_gate["row_audit"]["summary"]["diversity_ready_count"]
+    scientific_fail = composition_ready == 0
     issue_counts = promoted_gate["row_audit"]["summary"]["issue_counts"]
     qc_rows.append(
         qc_row(
@@ -516,13 +612,14 @@ def build_qc_rows(
             "analysis/vgp_pilot_manifest.tsv",
             "FAIL" if scientific_fail else "PASS",
             (
-                f"ANNOTATION_NOT_NATIVE={issue_counts.get('ANNOTATION_NOT_NATIVE', 0)}; "
-                f"CALLABLE_BASES_UNRESOLVED={issue_counts.get('CALLABLE_BASES_UNRESOLVED', 0)}; "
-                f"QUERYABLE_GENE_COUNT_UNRESOLVED={issue_counts.get('QUERYABLE_GENE_COUNT_UNRESOLVED', 0)}"
+                f"composition_ready={composition_ready}; diversity_ready={diversity_ready}; "
+                f"row_issue_count={sum(issue_counts.values())}"
             ),
-            "all required reference, annotation, and denominator linkages resolved for every selected row",
+            ">0 composition-ready rows; diversity readiness reviewed separately and never imputed",
             "analysis/vgp_pilot_manifest.tsv; analysis/vgp_pilot_gate.json",
-            "The promoted manifest never crossed the scientific validity threshold for pilot execution.",
+            "The promoted manifest supports the composition-only scope; zero diversity-ready rows remain an explicit separate refusal and no diversity result is imputed."
+            if not scientific_fail
+            else "The promoted manifest has no composition-ready row and fails the scientific validity threshold.",
         )
     )
 
@@ -609,15 +706,15 @@ def review_markdown(
             "## Independent recomputation",
             "",
             "- Fresh gate recomputation matched the promoted gate on stable fields, including blocker set, cap-vector digest, manifest/root digests, row-audit summary, and quota evidence.",
-            "- Fresh refusal-path reruns of `analysis/run_vgp_pilot.py` reproduced the promoted run manifest, refusal telemetry, and result rows after normalizing timestamps, run IDs, and absolute worktree prefixes.",
+            "- Fresh refusal-path reruns of `analysis/run_vgp_pilot.py` reproduced all five promoted ledgers (run manifest, telemetry, results, exclusions, and refusal evidence) after normalizing timestamps, run IDs, and absolute worktree prefixes; both refusal rows independently passed their exact self-digest checks.",
             "- The promoted refusal path therefore appears immutable and internally consistent even though it did not authorize any biological execution.",
             "",
             "## Scientific and execution evidence",
             "",
             f"- `analysis/sweepga_origin_main_build.json` still records the accepted native `--num-mappings 1:1` SweepGA build with SHA-256 `fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b`.",
             f"- `analysis/sweepga_impg_observed.json` still records native exact-assembly annotation linkage, callable denominator `{impg_payload['biological']['callable_denominator_bp']}`, queryable gene count `{impg_query_qc['queryable_gene_count']}`, and 1:1 mapping depth.",
-            f"- The manifest never crossed the scientific gate: `selected_rows={promoted_gate['reproduction']['selected_row_count']}`, `composition_ready={promoted_gate['row_audit']['summary']['composition_ready_count']}`, `diversity_ready={promoted_gate['row_audit']['summary']['diversity_ready_count']}`.",
-            f"- Dominant unresolved row defects remained `ANNOTATION_NOT_NATIVE={issue_counts.get('ANNOTATION_NOT_NATIVE', 0)}`, `CALLABLE_BASES_UNRESOLVED={issue_counts.get('CALLABLE_BASES_UNRESOLVED', 0)}`, `QUERYABLE_GENE_COUNT_UNRESOLVED={issue_counts.get('QUERYABLE_GENE_COUNT_UNRESOLVED', 0)}`, and `QUERYABLE_GENE_BASES_UNRESOLVED={issue_counts.get('QUERYABLE_GENE_BASES_UNRESOLVED', 0)}`.",
+            f"- The manifest remained execution-refused: `selected_rows={promoted_gate['reproduction']['selected_row_count']}`, `composition_ready={promoted_gate['row_audit']['summary']['composition_ready_count']}`, `diversity_ready={promoted_gate['row_audit']['summary']['diversity_ready_count']}`. Composition eligibility does not override cap or quota blockers, and zero diversity readiness authorizes no diversity analysis.",
+            f"- The current row audit records `{sum(issue_counts.values())}` composition-metadata issue instances; diversity eligibility remains governed separately by exact same-individual and phase evidence.",
             f"- `analysis/vgp_data_root_validation.json` still reports filesystem headroom but no user-visible quota interface, so quota evidence remained fail-closed rather than advisory.",
             "",
             "## Resource calibration",
@@ -647,6 +744,8 @@ def review(
     run_manifest_path: Path = DEFAULT_RUN_MANIFEST,
     results_path: Path = DEFAULT_RESULTS,
     telemetry_path: Path = DEFAULT_TELEMETRY,
+    exclusions_path: Path = DEFAULT_EXCLUSIONS,
+    refusals_path: Path = DEFAULT_REFUSALS,
     review_out: Path = DEFAULT_REVIEW,
     qc_out: Path = DEFAULT_QC,
     resource_out: Path = DEFAULT_RESOURCE,
@@ -657,6 +756,8 @@ def review(
     promoted_run_manifest = load_tsv(run_manifest_path)
     promoted_results = load_tsv(results_path)
     promoted_telemetry = load_tsv(telemetry_path)
+    promoted_exclusions = load_tsv(exclusions_path)
+    promoted_refusals = load_tsv(refusals_path)
 
     with tempfile.TemporaryDirectory(prefix="vgp-pilot-review-") as temp_dir:
         temp_root = Path(temp_dir)
@@ -667,6 +768,8 @@ def review(
         rerun_manifest = temp_root / "rerun_manifest.tsv"
         rerun_results = temp_root / "rerun_results.tsv"
         rerun_telemetry = temp_root / "rerun_telemetry.tsv"
+        rerun_exclusions = temp_root / "rerun_exclusions.tsv"
+        rerun_refusals = temp_root / "rerun_refusals.tsv"
         runner.run(
             gate_path=gate_path,
             manifest_path=runner.DEFAULT_MANIFEST,
@@ -676,10 +779,14 @@ def review(
             output_run_manifest_path=rerun_manifest,
             output_slurm_telemetry_path=rerun_telemetry,
             output_results_path=rerun_results,
+            output_exclusions_path=rerun_exclusions,
+            output_refusals_path=rerun_refusals,
         )
         recomputed_run_manifest = load_tsv(rerun_manifest)
         recomputed_results = load_tsv(rerun_results)
         recomputed_telemetry = load_tsv(rerun_telemetry)
+        recomputed_exclusions = load_tsv(rerun_exclusions)
+        recomputed_refusals = load_tsv(rerun_refusals)
 
     qc_rows = build_qc_rows(
         promoted_gate=promoted_gate,
@@ -687,9 +794,13 @@ def review(
         promoted_run_manifest=promoted_run_manifest,
         promoted_results=promoted_results,
         promoted_telemetry=promoted_telemetry,
+        promoted_exclusions=promoted_exclusions,
+        promoted_refusals=promoted_refusals,
         recomputed_run_manifest=recomputed_run_manifest,
         recomputed_results=recomputed_results,
         recomputed_telemetry=recomputed_telemetry,
+        recomputed_exclusions=recomputed_exclusions,
+        recomputed_refusals=recomputed_refusals,
         guix_validation=guix_validation,
         guix_note=guix_note,
     )
@@ -722,6 +833,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--run-manifest", type=Path, default=DEFAULT_RUN_MANIFEST)
     parser.add_argument("--results", type=Path, default=DEFAULT_RESULTS)
     parser.add_argument("--telemetry", type=Path, default=DEFAULT_TELEMETRY)
+    parser.add_argument("--exclusions", type=Path, default=DEFAULT_EXCLUSIONS)
+    parser.add_argument("--refusals", type=Path, default=DEFAULT_REFUSALS)
     parser.add_argument("--review-out", type=Path, default=DEFAULT_REVIEW)
     parser.add_argument("--qc-out", type=Path, default=DEFAULT_QC)
     parser.add_argument("--resource-out", type=Path, default=DEFAULT_RESOURCE)
@@ -742,6 +855,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         run_manifest_path=args.run_manifest,
         results_path=args.results,
         telemetry_path=args.telemetry,
+        exclusions_path=args.exclusions,
+        refusals_path=args.refusals,
         review_out=args.review_out,
         qc_out=args.qc_out,
         resource_out=args.resource_out,

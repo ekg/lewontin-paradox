@@ -259,11 +259,15 @@ def audit_storage(
         live_identity = {
             "exists": True,
             "resolved_path": str(root.resolve()),
-            "device": stat.st_dev,
             "inode": stat.st_ino,
             "uid": stat.st_uid,
             "gid": stat.st_gid,
             "mode_octal": oct(stat.st_mode & 0o7777),
+            # Numeric st_dev values are allocated by each host's mount
+            # namespace and legitimately differ between login and Slurm
+            # nodes.  Bind the portable invariant instead: the frozen catalog
+            # and authorized root must resolve onto the same live filesystem.
+            "catalog_on_same_filesystem": catalog_path.stat().st_dev == stat.st_dev,
         }
     if validation.get("root") != str(root) or validation.get("root_owner", {}).get("path") != str(root):
         blockers.append(_blocker("ROOT_VALIDATION_IDENTITY_MISMATCH", "storage validation does not identify the configured external root", "analysis/vgp_data_root_validation.json"))
@@ -272,6 +276,8 @@ def audit_storage(
         blockers.append(_blocker("ROOT_WORLD_WRITABLE", "configured VGP root is or may be world writable", "analysis/vgp_data_root_validation.json"))
     if not _within(catalog_path, root):
         blockers.append(_blocker("CATALOG_ROOT_IDENTITY_MISMATCH", "catalog provenance is outside the configured external root", str(catalog_path)))
+    if live_identity.get("catalog_on_same_filesystem") is not True:
+        blockers.append(_blocker("CATALOG_ROOT_FILESYSTEM_MISMATCH", "catalog provenance and configured external root are not on the same live filesystem", str(catalog_path)))
     required_smoke = ("file_fsync", "staging_dir_fsync", "atomic_promotion", "checksum_verification", "lock_behavior", "cleanup")
     smoke = validation.get("smoke_tests", {})
     for key in required_smoke:

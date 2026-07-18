@@ -26,6 +26,13 @@ def test_repaired_review_reproduces_refusal_and_exact_demography_join(tmp_path):
     qc_rows = read_tsv(tmp_path / "qc.tsv")
     by_id = {row["check_id"]: row for row in qc_rows}
     assert all(row["decision"] == "PASS" for row in qc_rows)
+    assert by_id["gate_stable_recompute"]["decision"] == "PASS"
+    assert by_id["current_run_refusal_recompute"]["decision"] == "PASS"
+    assert by_id["refusal_evidence_sha256"]["decision"] == "PASS"
+    assert by_id["promoted_file_sha256"]["decision"] == "PASS"
+    refusal_rows = [row for row in qc_rows if row["check_id"].startswith("refusal:")]
+    assert len(refusal_rows) == 14
+    assert all("provider_calls=0; submit_calls=0" in row["observed"] for row in refusal_rows)
     assert by_id["refusal:current_no_go"]["observed"].startswith("acquire=GATE_NO_GO; run=GATE_NO_GO")
     assert by_id["refusal:unknown_decision"]["observed"].startswith("acquire=GATE_DECISION_UNKNOWN; run=GATE_DECISION_UNKNOWN")
     assert by_id["refusal:altered_manifest_digest"]["observed"].startswith("acquire=BOUND_DIGEST_MISMATCH; run=BOUND_DIGEST_MISMATCH")

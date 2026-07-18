@@ -708,9 +708,10 @@ def _validate_live_storage(payload: Mapping[str, Any], root: Path) -> None:
     if allocation.get("status") in {None, "", "unknown"} or allocation.get("headroom_pass") is not True:
         raise Tier3ValidationError("root/storage quota or allocation headroom is unavailable")
     recorded = storage.get("live_identity", {})
+    if recorded.get("catalog_on_same_filesystem") is not True:
+        raise Tier3ValidationError("root/storage catalog filesystem identity is not bound")
     observed = root.stat()
     identity_checks = {
-        "device": observed.st_dev,
         "inode": observed.st_ino,
         "uid": observed.st_uid,
         "gid": observed.st_gid,

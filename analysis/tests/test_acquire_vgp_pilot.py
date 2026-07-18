@@ -169,6 +169,25 @@ def test_run_refuses_missing_gate_before_downloader(tmp_path):
     assert calls == []
 
 
+def test_live_storage_identity_is_cross_host_portable_but_same_filesystem_bound():
+    payload = json.loads((ROOT / "analysis/vgp_pilot_gate.json").read_text(encoding="utf-8"))
+    storage = payload["storage_audit"]
+    storage["adequate"] = True
+    storage["enforceable_allocation"]["status"] = "known"
+    storage["enforceable_allocation"]["headroom_pass"] = True
+    root = Path(storage["root"])
+
+    # Numeric st_dev is intentionally absent because it varies by host mount
+    # namespace; the stable path/inode/ownership/mode and catalog co-location
+    # remain exact live gates.
+    assert "device" not in storage["live_identity"]
+    acquire._validate_live_storage(payload, root)
+
+    storage["live_identity"]["catalog_on_same_filesystem"] = False
+    with pytest.raises(Tier3ValidationError, match="catalog filesystem identity is not bound"):
+        acquire._validate_live_storage(payload, root)
+
+
 def test_promotion_rejects_staged_content_change_before_atomic_promotion(tmp_path):
     part = tmp_path / "staging" / "payload.part"
     part.parent.mkdir()

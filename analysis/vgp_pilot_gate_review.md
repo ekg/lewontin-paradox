@@ -1,8 +1,8 @@
 # Independently regenerated VGP pilot gate review
 
 - Decision: `NO_GO`
-- Decision SHA-256: `9f39b13be5e0b1999c4cd98498399aee8700a7487d57fa81dfb7c59c29ff867d`
-- Authorization tuple SHA-256: `410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240`
+- Decision SHA-256: `6ba08bae6be0903b04cbf2b7a73c5201554ade82d2ea10a22280eff63289eb16`
+- Authorization tuple SHA-256: `8c4aa1927cf48ae6fcee3587e271f4d729586511e26e23d17e237fbb637b3ee2`
 - Downstream rule: only the literal decision `GO`, with every bound digest reverified, authorizes acquisition or compute.
 
 ## Catalog units and duplicate identities
@@ -57,7 +57,7 @@
 ## Bound decision components
 
 - `catalog_provenance_digest`: `dc3fdcaea438635595a4d1c50b2d3146846101a154e6bbc1406a5da077cae58b`
-- `data_root_storage_contract_digest`: `1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb`
+- `data_root_storage_contract_digest`: `05846dd869c05986e7a155be78fd9de03d4042a50cc488b34522621b6c600c2a`
 - `environment_digest`: `fe8e45bb716ffc9560cf2cda37d4974c46905279635ca5e8c590666d1f9b354e`
 - `cap_vector_digest`: `b6d15c85feee41edac606dba1d51e5d288016de0b99b0922292d0244437bac4c`
 - `retrieval_checksum_obligations_digest`: `3e8ef805ded1ac58f1e1446d96a45922a40b5ddc34fff6424fd183be1cfe5be9`
@@ -65,9 +65,9 @@
 - `measurement_contract_digest`: `6fa68a0a657877953d5d92dc99f850492fbe5d823672d38d81cd806653f84018`
 - `row_dispositions_digest`: `dc6357145a61b4692d8db30b0e3a19dcde683281b9a3abfa7dd59bf887eb90fe`
 - `manifest_digest`: `b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988`
-- `root_contract_digest`: `1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb`
+- `root_contract_digest`: `05846dd869c05986e7a155be78fd9de03d4042a50cc488b34522621b6c600c2a`
 - `input_bundle_digest`: `5595cb4cf38504fba4b6c862ee46283e8d48c7cafaeacbc813f5804390f135be`
-- `authorization_tuple_digest`: `410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240`
+- `authorization_tuple_digest`: `8c4aa1927cf48ae6fcee3587e271f4d729586511e26e23d17e237fbb637b3ee2`
 
 ## Blockers
 

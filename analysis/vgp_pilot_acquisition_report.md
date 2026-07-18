@@ -1,8 +1,8 @@
 # Repaired VGP pilot acquisition report
 
-- Run ID: `vgp-pilot-acquire-20260718T085124Z-22120`
-- Generated at: `2026-07-18T08:51:24Z`
-- Gate path: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-227/analysis/vgp_pilot_gate.json`
+- Run ID: `vgp-pilot-acquire-20260718T131002Z-32357`
+- Generated at: `2026-07-18T13:10:02Z`
+- Gate path: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_gate.json`
 - Gate decision: `NO_GO`
 - Acquisition status: `refused_preflight`
 - Refused before first biological byte: `true`
@@ -11,22 +11,22 @@
 - Verified immutable objects promoted: `0`
 - Quarantine objects written: `0`
 - Slurm environment detected: `false`
-- Output manifest: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-227/analysis/vgp_pilot_acquisition_manifest.tsv`
-- Immutable-object inventory: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-227/analysis/vgp_pilot_immutable_object_inventory.tsv`
-- Refusal evidence: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-227/analysis/vgp_pilot_acquisition_refusal.json`
+- Output manifest: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_acquisition_manifest.tsv`
+- Immutable-object inventory: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_immutable_object_inventory.tsv`
+- Refusal evidence: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_acquisition_refusal.json`
 
 ## Authorization boundary
 
-- Manifest path: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-227/analysis/vgp_pilot_manifest.tsv`
+- Manifest path: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_manifest.tsv`
 - Manifest digest: `b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988`
-- Root contract path: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-227/analysis/vgp_data_root_config.json`
-- Root/storage digest: `1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb`
+- Root contract path: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_data_root_config.json`
+- Root/storage digest: `05846dd869c05986e7a155be78fd9de03d4042a50cc488b34522621b6c600c2a`
 - Environment digest: `fe8e45bb716ffc9560cf2cda37d4974c46905279635ca5e8c590666d1f9b354e`
 - Cap-vector digest: `b6d15c85feee41edac606dba1d51e5d288016de0b99b0922292d0244437bac4c`
 - Retrieval/checksum digest: `3e8ef805ded1ac58f1e1446d96a45922a40b5ddc34fff6424fd183be1cfe5be9`
 - Pair-evidence digest: `73e641104bad3f5a5f7c269a303e72dbd492141b9be3a05d6b60c0d143f1f7b3`
 - Measurement-contract digest: `6fa68a0a657877953d5d92dc99f850492fbe5d823672d38d81cd806653f84018`
-- Authorization-tuple digest: `410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240`
+- Authorization-tuple digest: `8c4aa1927cf48ae6fcee3587e271f4d729586511e26e23d17e237fbb637b3ee2`
 
 ## Refusal reason
 

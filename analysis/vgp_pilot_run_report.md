@@ -1,6 +1,6 @@
 # Repaired VGP pilot run report
 
-- Run ID: `vgp-pilot-run-20260718T090728Z-14273`
+- Run ID: `vgp-pilot-run-20260718T131009Z-32686`
 - Gate decision: `NO_GO`
 - Final state: `NOT_SUBMITTED`
 - Failure: `GATE_NO_GO` — gate decision is NO_GO; repaired VGP compute is not authorized
@@ -9,15 +9,15 @@ The repaired authorization boundary closed before any Slurm or provider command.
 
 ## Bound and observed digests
 
-- `gate_file_sha256`: `fc284eb617aadc6af4d348beaf47377df55fc4798c5e1460583dc6b9ef7115d6`
-- `decision_sha256`: `9f39b13be5e0b1999c4cd98498399aee8700a7487d57fa81dfb7c59c29ff867d`
-- `authorization_tuple_digest`: `410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240`
+- `gate_file_sha256`: `0c7b37078ce6997023923fa0fc0572e4cac2362316a9f223531ef257502730a6`
+- `decision_sha256`: `6ba08bae6be0903b04cbf2b7a73c5201554ade82d2ea10a22280eff63289eb16`
+- `authorization_tuple_digest`: `8c4aa1927cf48ae6fcee3587e271f4d729586511e26e23d17e237fbb637b3ee2`
 - `manifest_sha256`: `b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988`
-- `acquisition_manifest_sha256`: `55c8270abe62d6508898f89e4f66b24f338ede8fbc5d8aa9b1593104ce581d88`
+- `acquisition_manifest_sha256`: `f44054e2a72e1aa2047ce50367c60b751ecf852a17fdc7075aef6d413c474c28`
 - `immutable_inventory_sha256`: `f8d835008801cb32b0a4cc75990cfad4642d5e0f62bcb27df1c3814fd399a248`
 - `root_config_sha256`: `912e47c66eeacaf8db3ff535fb857b296eb890d56e2ba0f38af3fdeb4ec12989`
 - `input_bundle_digest`: `5595cb4cf38504fba4b6c862ee46283e8d48c7cafaeacbc813f5804390f135be`
-- `root_contract_digest`: `1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb`
+- `root_contract_digest`: `05846dd869c05986e7a155be78fd9de03d4042a50cc488b34522621b6c600c2a`
 - `cap_vector_digest`: `b6d15c85feee41edac606dba1d51e5d288016de0b99b0922292d0244437bac4c`
 - `retrieval_digest`: `3e8ef805ded1ac58f1e1446d96a45922a40b5ddc34fff6424fd183be1cfe5be9`
 - `pair_evidence_digest`: `73e641104bad3f5a5f7c269a303e72dbd492141b9be3a05d6b60c0d143f1f7b3`
@@ -35,10 +35,10 @@ The repaired authorization boundary closed before any Slurm or provider command.
 
 ## Promoted evidence tables
 
-- `run_manifest`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-230/analysis/vgp_pilot_run_manifest.tsv` (`82e8316b91acf7d7645e2381232b181d76ff7b17c919eca5696e2a3417a02f2f`)
-- `telemetry`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-230/analysis/vgp_pilot_slurm_telemetry.tsv` (`a1b94966d31c615628069f455a1412210c7b58e94fc6d2576e60fedcb530ef5e`)
-- `results`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-230/analysis/vgp_pilot_results.tsv` (`4c4b27babd0603986ecb801964abc47c207e27264ab2636cb9dabc9aada011ef`)
-- `exclusions`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-230/analysis/vgp_pilot_exclusions.tsv` (`a503f143b00b35c86419478883e7a3879f387d0ab6cfa59dbd4e7041fbac5839`)
-- `refusals`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-230/analysis/vgp_pilot_refusals.tsv` (`569e96eb35f3c6c05d048aa6a48b011f9a38544c5335fa18019a0213c77b3407`)
+- `run_manifest`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_run_manifest.tsv` (`fb84735c8d4f9dda7b7f4a77cff4714802d3d067820a46ffb87f972e12027e75`)
+- `telemetry`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_slurm_telemetry.tsv` (`f7191a075de40d9c51f94092951657a0f2f0bd43841a5a31bca635768727cb76`)
+- `results`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_results.tsv` (`48de42e2c36df4f8fe27856117c17bca945b98244e5c11e2c5498da2c12f07f7`)
+- `exclusions`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_exclusions.tsv` (`7ad02cceff7b300504a947b7c1649d34849893c3ffbb380b8cd42dc435a62cde`)
+- `refusals`: `/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-283/analysis/vgp_pilot_refusals.tsv` (`d098e9b516ca712c20f36485e26bd3d685ff64125a8ffb1b830594e01290d67a`)
 
 The Slurm worker contract remains dormant. If a future independently regenerated exact GO passes every repaired binding and complete acquisition check, it requires pinned GNU Guix, node-local `$SLURM_TMPDIR`, no compute-node network, SweepGA whole-haplotype `--num-mappings 1:1`, IMPG native partition/query VCF/BCF contracts, atomic promotion, bounded retries, sentinels, dependency records, `sacct`, and scratch/I/O telemetry. VGP H1/H2 is never population or demographic input.

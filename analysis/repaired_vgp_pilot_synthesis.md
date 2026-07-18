@@ -4,7 +4,7 @@ Date: 2026-07-18 UTC
 
 ## Bottom line
 
-**Audited outcome: `NO_GO`, correctly refused, `NOT_SUBMITTED`. No biological pilot ran.** The immutable decision SHA-256 is `9f39b13be5e0b1999c4cd98498399aee8700a7487d57fa81dfb7c59c29ff867d`. Acquisition stopped before a provider request and compute stopped before `sbatch`. The zero-byte, zero-job, empty-result outcome is evidence that the authorization boundary worked; it is not diversity, composition, or performance evidence.
+**Audited outcome: `NO_GO`, correctly refused, `NOT_SUBMITTED`. No biological pilot ran.** The immutable decision SHA-256 is `6ba08bae6be0903b04cbf2b7a73c5201554ade82d2ea10a22280eff63289eb16`. Acquisition stopped before a provider request and compute stopped before `sbatch`. The zero-byte, zero-job, empty-result outcome is evidence that the authorization boundary worked; it is not diversity, composition, or performance evidence.
 
 The reviewed scope comprised **6 metadata candidates / 6 species / 6 classes**, one each from Mammalia, Aves, Lepidosauria, Amphibia, Actinopteri, Chondrichthyes. Metadata repair made all 6/6 composition candidates pre-download eligible, but the stricter integrated gate selected and executed 0/6. Diversity eligibility was 0/6, population-genomic eligibility 0/6, and demographic eligibility 0/6. Review QC was 57 PASS, 0 FAIL.
 

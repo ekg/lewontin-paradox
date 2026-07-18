@@ -133,6 +133,8 @@ def test_gate_recomputes_strictest_caps_and_does_not_promote_free_space_to_quota
     assert storage["enforceable_allocation"]["status"] == "unknown"
     assert storage["adequate"] is False
     assert storage["headroom_fraction_required"] == 0.25
+    assert storage["live_identity"]["catalog_on_same_filesystem"] is True
+    assert "device" not in storage["live_identity"]
 
 
 @pytest.mark.parametrize(
