@@ -1,0 +1,9 @@
+{
+  "acquisition_branch_status": "failed_mismatch",
+  "annotation_accession_version": "GCF_028858725.1-RS_2023_12",
+  "core_blocked_by_annotation": false,
+  "output_status": "not_run_core_preflight_failed",
+  "reason_code": "ANNOTATION_MISMATCH",
+  "schema_version": "vgp-10-pilot-run-adjudication-v1",
+  "selection_id": "P03"
+}

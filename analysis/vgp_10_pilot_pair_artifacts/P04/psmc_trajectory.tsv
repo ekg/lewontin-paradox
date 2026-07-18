@@ -1,0 +1,2 @@
+selection_id	status	scale	interval	time_2N0	lambda	reason_code
+P04	not_run_preflight_failed	unscaled_not_produced				MISSING_EXACT_FINAL_SEQUENCE_QV

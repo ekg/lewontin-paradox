@@ -1,0 +1,109 @@
+{
+  "accepted_core_object_count": 10,
+  "accepted_core_objects": [
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h1:assembly_report",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/11/0a/110af27244fca696e026d9bfbcaf9611302137f110fb733fc6136f0b5e8cb6bc",
+      "role": "assembly_report",
+      "sha256": "110af27244fca696e026d9bfbcaf9611302137f110fb733fc6136f0b5e8cb6bc",
+      "side": "h1",
+      "size_bytes": 20393
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h1:assembly_stats",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/9e/66/9e660471bef5529b28f0f4e32afa4d5bb07ec7c4edd09b61b5f32a2c8f0d90bc",
+      "role": "assembly_stats",
+      "sha256": "9e660471bef5529b28f0f4e32afa4d5bb07ec7c4edd09b61b5f32a2c8f0d90bc",
+      "side": "h1",
+      "size_bytes": 46613
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h1:checksum_catalog",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/ec/06/ec06923bdb7b058aa4fe09978eca1a43b197313b066df5112d18215bf40a93b4",
+      "role": "checksum_catalog",
+      "sha256": "ec06923bdb7b058aa4fe09978eca1a43b197313b066df5112d18215bf40a93b4",
+      "side": "h1",
+      "size_bytes": 12533
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h1:dataset_report",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/c1/51/c151f632bf0c5c467ac084b79582af89421f1a26ef34b240c68758bb379d6687",
+      "role": "dataset_report",
+      "sha256": "c151f632bf0c5c467ac084b79582af89421f1a26ef34b240c68758bb379d6687",
+      "side": "h1",
+      "size_bytes": 4661
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h1:genome_fasta",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/71/7c/717ccefb41d4107efa50151ae1e2e83fc13407df56ef0c83d1e65859e79e5264",
+      "role": "genome_fasta",
+      "sha256": "717ccefb41d4107efa50151ae1e2e83fc13407df56ef0c83d1e65859e79e5264",
+      "side": "h1",
+      "size_bytes": 371548250
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h2:assembly_report",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/26/40/26406a95b57c31162ffdecdb2eaa630837d100caf85aae7cb8f2a4c34e0f8feb",
+      "role": "assembly_report",
+      "sha256": "26406a95b57c31162ffdecdb2eaa630837d100caf85aae7cb8f2a4c34e0f8feb",
+      "side": "h2",
+      "size_bytes": 22683
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h2:assembly_stats",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/dc/9d/dc9d9c61c2fbd48c51e2f44377e93af1b86959a4b266df74c05953b8a4d950ce",
+      "role": "assembly_stats",
+      "sha256": "dc9d9c61c2fbd48c51e2f44377e93af1b86959a4b266df74c05953b8a4d950ce",
+      "side": "h2",
+      "size_bytes": 42443
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h2:checksum_catalog",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/a9/b7/a9b7676fe38cb2ad07a7a2332979b1519dfbe4de003d4b99d8338cbf03f8b164",
+      "role": "checksum_catalog",
+      "sha256": "a9b7676fe38cb2ad07a7a2332979b1519dfbe4de003d4b99d8338cbf03f8b164",
+      "side": "h2",
+      "size_bytes": 11014
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h2:dataset_report",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/86/62/866240b517bb474c9823da0750222cac91f9344033021785993e1ce21a2a2009",
+      "role": "dataset_report",
+      "sha256": "866240b517bb474c9823da0750222cac91f9344033021785993e1ce21a2a2009",
+      "side": "h2",
+      "size_bytes": 4361
+    },
+    {
+      "live_sha256_reverified": true,
+      "object_id": "P03:h2:genome_fasta",
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/objects/sha256/54/ae/54aeb74bb909ca918d09287fb1865d1a88da3ab664a58a16c0dbebe7c2619358",
+      "role": "genome_fasta",
+      "sha256": "54aeb74bb909ca918d09287fb1865d1a88da3ab664a58a16c0dbebe7c2619358",
+      "side": "h2",
+      "size_bytes": 342211708
+    }
+  ],
+  "cpu_seconds": 0.5328513689999999,
+  "disposition": "failed_preflight",
+  "elapsed_seconds": 0.5409312564879656,
+  "filesystem_read_bytes": 139264,
+  "filesystem_write_bytes": 0,
+  "logical_read_bytes": 713924659,
+  "maximum_rss_kib": 41712,
+  "metadata_operations": 30,
+  "retry_count": 0,
+  "scratch_high_water_bytes": 0,
+  "selection_id": "P03",
+  "slurm_dependency_ids": [],
+  "slurm_job_ids": [],
+  "status": "pass"
+}

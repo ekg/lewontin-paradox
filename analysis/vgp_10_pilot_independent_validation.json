@@ -1,0 +1,20 @@
+{
+  "alternate_activations": 0,
+  "artifact_packets_verified": 10,
+  "bootstrap_attempts": 0,
+  "checksum_failures": 0,
+  "completed": 0,
+  "failed_preflight": 10,
+  "primary_slots": 10,
+  "reason_counts": {
+    "MISSING_EXACT_FINAL_SEQUENCE_QV": 10,
+    "MISSING_H1_BUSCO": 2,
+    "MISSING_H2_BUSCO": 10,
+    "MISSING_KMER_COPY_NUMBER_AUDIT": 10,
+    "MISSING_REPEAT_OR_LOW_COMPLEXITY_MASK": 10,
+    "UNRESOLVED_EXACT_READ_CHEMISTRY": 1
+  },
+  "slurm_jobs_submitted": 0,
+  "unresolved_identity": 0,
+  "validation_controls_not_run": 40
+}

@@ -1,0 +1,5 @@
+selection_id	validation_control	comparison_status	observed	expected	status	reason_code
+P05	raw_read	not_run_no_core_result			not_run_preflight_failed	MISSING_EXACT_FINAL_SEQUENCE_QV
+P05	kmer	not_run_no_core_result			not_run_preflight_failed	MISSING_EXACT_FINAL_SEQUENCE_QV
+P05	published	not_run_no_core_result			not_run_preflight_failed	MISSING_EXACT_FINAL_SEQUENCE_QV
+P05	D01_direct_control	not_run_no_core_result			not_run_preflight_failed	MISSING_EXACT_FINAL_SEQUENCE_QV

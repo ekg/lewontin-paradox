@@ -1,0 +1,78 @@
+{
+  "alternate_activations": 0,
+  "alternate_slots_declared": 6,
+  "bootstrap_attempts": 0,
+  "bootstrap_requirement_status": "not_reached_for_any_pair_preflight_failed",
+  "bootstrap_successes": 0,
+  "callable_mask_status": "not_materialized_for_any_pair_preflight_failed",
+  "completed_utc": "2026-07-18T12:32:07Z",
+  "core_checksum_failures": 0,
+  "core_qc_passes": 0,
+  "deliverables": {
+    "command_log": {
+      "path": "analysis/vgp_10_pilot_command_log.json",
+      "sha256": "7802c8aea18e83c43de9744446a50de422fd3d783fb533dfc7290b5748e7f50f",
+      "size_bytes": 880
+    },
+    "qc": {
+      "path": "analysis/vgp_10_pilot_qc.tsv",
+      "sha256": "c2f53146639133f5f3ad4a881a4afd228bc314a814711b6ff33720b6baeae209",
+      "size_bytes": 6683
+    },
+    "resource_telemetry": {
+      "path": "analysis/vgp_10_pilot_resource_telemetry.tsv",
+      "sha256": "e0495dfae32a0e3ead8e1658af1582ac68f94c6ee5430368ad481baebe7f2469",
+      "size_bytes": 3436
+    },
+    "result_manifest": {
+      "path": "analysis/vgp_10_pilot_result_manifest.tsv",
+      "sha256": "f7d846a47155c6f4ee19ab67dab45ed808f73a9f9d6d83eb6f35c8098eb5c932",
+      "size_bytes": 14110
+    },
+    "results": {
+      "path": "analysis/vgp_10_pilot_results.md",
+      "sha256": "bf4b7f2fa6c8198b2dafaa830338b9c0985b42915562fed06d8d8a0b53536f42",
+      "size_bytes": 4270
+    }
+  },
+  "direct_control": "D01_acquired_but_not_compared_no_core_results",
+  "environment": {
+    "channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "closure_sha256": "8fcdb32021f1cd8eac839509cff47ab6bdd63b656b30e243fdf78d3c4ba24f9d",
+    "derivation": "/gnu/store/g05w4h08h891dcaf7v4gy3irf2zwbwa7-profile.drv",
+    "manifest_sha256": "afd14da446d29d4e66b64837194dfae524342dc5b8de3c2778ec85c1cca09a3d",
+    "profile": "/gnu/store/3c2mxm30rbzvnw7qsi235mrkk3m38fym-profile"
+  },
+  "h1_ref_check_status": "not_measured_for_any_pair_preflight_failed",
+  "h2_reconstruction_status": "not_measured_for_any_pair_preflight_failed",
+  "input_digests": {
+    "analysis/guix/vgp_10_pilot/realization.json": "c37690b52536a5573c9a172375464247f826e4f904443d2181c00c725f897a12",
+    "analysis/vgp_10_pair_manifest.tsv": "bf6c9ff647aed332bfc002bf803e8307203b51432343f2eca6d95a6c80d82997",
+    "analysis/vgp_10_pilot_acquisition_manifest.tsv": "8575f4daef91b821fcd6bc7a410af62d1b62249b12449503c137b22e23e9b46c",
+    "analysis/vgp_10_pilot_object_inventory.tsv": "c852dea88c3912150ad7a04c95bb4f5c2b05d89df2bbc75e18cfd9247e509832"
+  },
+  "manifest_amendments": [],
+  "multiplicity_measurement_status": "not_measured_for_any_pair_preflight_failed",
+  "primary_completed": 0,
+  "primary_failed_preflight": 10,
+  "primary_slots_accounted": 10,
+  "primary_slots_expected": 10,
+  "reason_counts": {
+    "MISSING_EXACT_FINAL_SEQUENCE_QV": 10,
+    "MISSING_H1_BUSCO": 2,
+    "MISSING_H2_BUSCO": 10,
+    "MISSING_KMER_COPY_NUMBER_AUDIT": 10,
+    "MISSING_REPEAT_OR_LOW_COMPLEXITY_MASK": 10,
+    "UNRESOLVED_EXACT_READ_CHEMISTRY": 1
+  },
+  "retained_query_multiplicity_gt_one": 0,
+  "retained_target_multiplicity_gt_one": 0,
+  "run_id": "vgp10-20260718-preflight-v1",
+  "schema_version": "vgp-10-pilot-run-adjudication-v1",
+  "slurm_dependency_edges": 0,
+  "slurm_jobs_submitted": 0,
+  "started_utc": "2026-07-18T12:31:57Z",
+  "unresolved_pair_or_accession_identity": 0,
+  "unscaled_scenario_separation": "not_applicable_no_psmc_outputs",
+  "validation_subset_status": "not_run_no_core_results"
+}

@@ -1,0 +1,2 @@
+selection_id	status	attempts_required	attempts	successes	success_fraction	block_bp	boundary_aware	reason_code
+P02	not_run_preflight_failed	200	0	0	not_applicable	5000000	not_materialized	MISSING_EXACT_FINAL_SEQUENCE_QV

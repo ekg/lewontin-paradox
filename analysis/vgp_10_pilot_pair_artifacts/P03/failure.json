@@ -1,0 +1,21 @@
+{
+  "alternate_activated": false,
+  "amendment_id": "none",
+  "failure_stage": "preflight_core_qc",
+  "message": "Mandatory measurements are absent; biological compute was not authorized.",
+  "primary_reason_code": "MISSING_EXACT_FINAL_SEQUENCE_QV",
+  "primary_retained": true,
+  "reason_codes": [
+    "MISSING_EXACT_FINAL_SEQUENCE_QV",
+    "MISSING_H2_BUSCO",
+    "MISSING_KMER_COPY_NUMBER_AUDIT",
+    "MISSING_REPEAT_OR_LOW_COMPLEXITY_MASK"
+  ],
+  "retry_count": 0,
+  "roster_type": "primary",
+  "run_id": "vgp10-20260718-preflight-v1",
+  "schema_version": "vgp-10-pilot-run-adjudication-v1",
+  "scientific_thresholds_relaxed": false,
+  "selection_id": "P03",
+  "slurm_jobs_submitted": 0
+}

@@ -1,0 +1,9 @@
+{
+  "acquisition_branch_status": "available_paired_refseq_pending_dictionary_audit",
+  "annotation_accession_version": "GCF_036321535.1-RS_2024_04",
+  "core_blocked_by_annotation": false,
+  "output_status": "not_run_core_preflight_failed",
+  "reason_code": "ANNOTATION_NOT_REACHED",
+  "schema_version": "vgp-10-pilot-run-adjudication-v1",
+  "selection_id": "P01"
+}

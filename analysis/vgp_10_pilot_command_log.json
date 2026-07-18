@@ -1,0 +1,27 @@
+{
+  "commands": [
+    {
+      "command": "guix time-machine -C analysis/guix/vgp_10_pilot/channels.scm -- shell ... validate_vgp_10_pilot_acquisition.py --reverify-local",
+      "status": "passed"
+    },
+    {
+      "command": "python3 -m analysis.vgp_10_pilot verify-capture analysis/guix/vgp_10_pilot/realization.json",
+      "execution_environment": "captured_pinned_guix_profile",
+      "status": "passed"
+    },
+    {
+      "command": "analysis/slurm/vgp_10_pilot/submit.sh --dry-run",
+      "status": "not_run_preflight_refused_missing_hard_gate_measurements"
+    },
+    {
+      "command": "sbatch",
+      "status": "not_invoked_zero_jobs_submitted"
+    }
+  ],
+  "retry_reasons": [],
+  "run_id": "vgp10-20260718-preflight-v1",
+  "schema_version": "vgp-10-pilot-run-adjudication-v1",
+  "scientific_thresholds_relaxed": false,
+  "slurm_dependencies": [],
+  "slurm_jobs": []
+}
