@@ -1,59 +1,36 @@
 {
   "authorization_boundary": {
-    "authorize_commands": {
-      "acquire": [
-        "python3",
-        "-m",
-        "analysis.gate_vgp_pilot",
-        "authorize",
-        "--gate",
-        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_gate.json",
-        "--manifest",
-        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_manifest.tsv",
-        "--root-config",
-        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_data_root_config.json",
-        "--action",
-        "acquire"
-      ],
-      "compute": [
-        "python3",
-        "-m",
-        "analysis.gate_vgp_pilot",
-        "authorize",
-        "--gate",
-        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_gate.json",
-        "--manifest",
-        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_manifest.tsv",
-        "--root-config",
-        "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_data_root_config.json",
-        "--action",
-        "compute"
-      ]
-    },
-    "cap_vector_digest": "d51827af5600976f52549ce1a16a7f38bef03f671814d351ff2270ebe7b1b59e",
-    "manifest_digest": "f27b81f369af18caf97a1ccee1b14d8a8b050d665832e6e99f188041275f49ce",
-    "root_contract_digest": "912e47c66eeacaf8db3ff535fb857b296eb890d56e2ba0f38af3fdeb4ec12989"
+    "authorization_tuple_digest": "9e56663a8983c38f464b2c9790b85ce29401d845788e8082d30daa30c42964e8",
+    "cap_vector_digest": "b6d15c85feee41edac606dba1d51e5d288016de0b99b0922292d0244437bac4c",
+    "catalog_provenance_digest": "dc3fdcaea438635595a4d1c50b2d3146846101a154e6bbc1406a5da077cae58b",
+    "data_root_storage_contract_digest": "1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb",
+    "environment_digest": "fe8e45bb716ffc9560cf2cda37d4974c46905279635ca5e8c590666d1f9b354e",
+    "go_token": "GO",
+    "input_bundle_digest": "d49a1fe1098344413908ffcf3168367ca0a1d6235f71e8a1502612048f01e426",
+    "manifest_digest": "b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988",
+    "measurement_contract_digest": "6fa68a0a657877953d5d92dc99f850492fbe5d823672d38d81cd806653f84018",
+    "pair_evidence_digest": "73e641104bad3f5a5f7c269a303e72dbd492141b9be3a05d6b60c0d143f1f7b3",
+    "retrieval_checksum_obligations_digest": "3e8ef805ded1ac58f1e1446d96a45922a40b5ddc34fff6424fd183be1cfe5be9",
+    "root_contract_digest": "1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb",
+    "row_dispositions_digest": "dc6357145a61b4692d8db30b0e3a19dcde683281b9a3abfa7dd59bf887eb90fe"
+  },
+  "authorization_scope": {
+    "biological_payloads_downloaded_by_gate": 0,
+    "demographic_inference_authorized": false,
+    "full_catalog_download_authorized": false,
+    "jobs_launched_by_gate": 0,
+    "raw_population_bulk_download_authorized": false
   },
   "blockers": [
     {
-      "code": "SOURCE_COUNT_DISCREPANCY_UNRESOLVED",
-      "message": "the frozen raw VGP catalog still disagrees with the planning headline counts and no explicit signed discrepancy resolution is bundled here",
-      "source": "analysis/vgp_phase1_freeze_provenance.json"
+      "code": "CAP_MOOSEFS_READ_GB_EXCEEDED",
+      "message": "proposed finite worst-case moosefs_read_gb=406.72740000000005 exceeds strictest limit 180.0 GB",
+      "source": "strict cap vector"
     },
     {
-      "code": "NO_SELECTED_ROWS",
-      "message": "the frozen pilot manifest selects zero rows, so no bounded pilot can be authorized",
-      "source": "analysis/vgp_pilot_manifest.tsv"
-    },
-    {
-      "code": "ZERO_COMPOSITION_ELIGIBLE_ROWS",
-      "message": "no manifest row independently satisfies exact H1/native-annotation/denominator requirements",
-      "source": "analysis/vgp_pilot_manifest.tsv"
-    },
-    {
-      "code": "ZERO_DIVERSITY_ELIGIBLE_ROWS",
-      "message": "no manifest row independently satisfies the paired same-individual diversity requirements",
-      "source": "analysis/vgp_pilot_manifest.tsv"
+      "code": "CAP_SCRATCH_GIB_EXCEEDED",
+      "message": "proposed finite worst-case scratch_gib=205.5066 exceeds strictest limit 139.69838619232178 GiB",
+      "source": "strict cap vector"
     },
     {
       "code": "QUOTA_UNAVAILABLE",
@@ -63,765 +40,1971 @@
   ],
   "cap_vector": {
     "dimensions": {
-      "aggregate_core_hours": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 280.0
-          },
-          {
-            "source": "decision_D012",
-            "value": 280.0
-          },
-          {
-            "source": "resource_budget_stratified_pilot",
-            "value": 280.0
-          },
-          {
-            "source": "resource_budget_selected_stage_sum_high",
-            "value": 0.0
-          }
-        ],
-        "unit": "core-h",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_sum_high"
-      },
       "aggregate_wall_hours": {
+        "limit": 17.5,
+        "observed": 8.7311,
+        "passes": true,
         "sources": [
           {
-            "source": "execution_plan_small_cap",
-            "value": 17.5
+            "limit": 17.5,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "hours"
           },
           {
-            "source": "decision_D012",
-            "value": 17.5
+            "limit": 17.5,
+            "source": "integrated_decision_hard_gates",
+            "unit": "hours"
           },
           {
-            "source": "resource_budget_stratified_pilot",
-            "value": 17.5
-          },
-          {
-            "source": "resource_budget_selected_stage_sum_high",
-            "value": 0.0
+            "limit": 17.5,
+            "source": "integrated_resource_envelope_high",
+            "unit": "hours"
           }
         ],
-        "unit": "h",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_sum_high"
+        "unit": "hours",
+        "value": 17.5,
+        "winner_source": "integrated_execution_plan_small_cap"
       },
-      "cpus_per_element": {
+      "compressed_inputs_gib": {
+        "limit": 120.0,
+        "observed": 3.8653049999999998,
+        "passes": true,
         "sources": [
           {
-            "source": "execution_plan_small_cap",
-            "value": 8.0
+            "limit": 120.0,
+            "source": "regate_task_bound",
+            "unit": "GiB"
           },
           {
-            "source": "resource_budget_stratified_pilot",
-            "value": 8.0
-          }
-        ],
-        "unit": "count",
-        "value": 8.0,
-        "winner_source": "execution_plan_small_cap"
-      },
-      "file_inodes": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 60000.0
+            "limit": 149.01161193847656,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "GiB"
           },
           {
-            "source": "resource_budget_stratified_pilot",
-            "value": 60000.0
+            "limit": 149.01161193847656,
+            "source": "integrated_decision_hard_gates",
+            "unit": "GiB"
           },
           {
-            "source": "resource_budget_selected_stage_sum_high",
-            "value": 0.0
-          },
-          {
-            "source": "filesystem_safe_available",
-            "value": 753435225.0
-          }
-        ],
-        "unit": "count",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_sum_high"
-      },
-      "metadata_operations": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 500000.0
-          },
-          {
-            "source": "resource_budget_stratified_pilot",
-            "value": 500000.0
-          },
-          {
-            "source": "resource_budget_selected_stage_sum_high",
-            "value": 0.0
-          }
-        ],
-        "unit": "count",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_sum_high"
-      },
-      "moosefs_read_gb": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 180.0
-          },
-          {
-            "source": "resource_budget_stratified_pilot",
-            "value": 180.0
-          },
-          {
-            "source": "resource_budget_selected_stage_sum_high",
-            "value": 0.0
-          }
-        ],
-        "unit": "GB",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_sum_high"
-      },
-      "moosefs_write_gb": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 200.0
-          },
-          {
-            "source": "resource_budget_stratified_pilot",
-            "value": 200.0
-          },
-          {
-            "source": "resource_budget_selected_stage_sum_high",
-            "value": 0.0
-          }
-        ],
-        "unit": "GB",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_sum_high"
-      },
-      "pause_fraction": {
-        "sources": [
-          {
-            "source": "decision_D018",
-            "value": 0.8
-          }
-        ],
-        "unit": "fraction",
-        "value": 0.8,
-        "winner_source": "decision_D018"
-      },
-      "peak_bandwidth_mib_s": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 120.0
-          },
-          {
-            "source": "resource_budget_stratified_pilot",
-            "value": 120.0
-          },
-          {
-            "source": "resource_budget_selected_stage_max_high",
-            "value": 0.0
-          }
-        ],
-        "unit": "MiB/s",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_max_high"
-      },
-      "peak_local_scratch_gb": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 150.0
-          },
-          {
-            "source": "decision_D012",
-            "value": 150.0
-          },
-          {
-            "source": "resource_budget_stratified_pilot",
-            "value": 150.0
-          },
-          {
-            "source": "resource_budget_selected_stage_max_high",
-            "value": 0.0
-          },
-          {
-            "source": "filesystem_safe_available",
-            "value": 75918.164754432
-          }
-        ],
-        "unit": "GB",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_max_high"
-      },
-      "peak_memory_gib_per_job": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 96.0
-          },
-          {
-            "source": "decision_D012",
-            "value": 96.0
-          },
-          {
-            "source": "resource_budget_stratified_pilot",
-            "value": 96.0
-          },
-          {
-            "source": "resource_budget_selected_stage_max_high",
-            "value": 0.0
+            "limit": 149.01161193847656,
+            "source": "integrated_resource_envelope_high",
+            "unit": "GiB"
           }
         ],
         "unit": "GiB",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_max_high"
+        "value": 120.0,
+        "winner_source": "regate_task_bound"
       },
-      "persistent_input_gb": {
+      "concurrent_species": {
+        "limit": 2.0,
+        "observed": 2.0,
+        "passes": true,
         "sources": [
           {
-            "source": "execution_plan_small_cap",
-            "value": 160.0
+            "limit": 2.0,
+            "source": "regate_task_bound",
+            "unit": "count"
           },
           {
-            "source": "decision_D011",
-            "value": 160.0
+            "limit": 2.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "count"
           },
           {
-            "source": "resource_budget_stratified_pilot",
-            "value": 160.0
+            "limit": 2.0,
+            "source": "integrated_decision_hard_gates",
+            "unit": "count"
           },
           {
-            "source": "selected_manifest_exact",
-            "value": 0.0
-          },
-          {
-            "source": "filesystem_safe_available",
-            "value": 75918.164754432
-          }
-        ],
-        "unit": "GB",
-        "value": 0.0,
-        "winner_source": "selected_manifest_exact"
-      },
-      "persistent_output_gb": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 32.0
-          },
-          {
-            "source": "decision_D012",
-            "value": 32.0
-          },
-          {
-            "source": "resource_budget_stratified_pilot",
-            "value": 32.0
-          },
-          {
-            "source": "resource_budget_selected_stage_sum_high",
-            "value": 0.0
-          },
-          {
-            "source": "filesystem_safe_available",
-            "value": 75918.164754432
-          }
-        ],
-        "unit": "GB",
-        "value": 0.0,
-        "winner_source": "resource_budget_selected_stage_sum_high"
-      },
-      "quota_headroom_fraction": {
-        "sources": [
-          {
-            "source": "decision_D018",
-            "value": 0.25
-          }
-        ],
-        "unit": "fraction",
-        "value": 0.25,
-        "winner_source": "decision_D018"
-      },
-      "selected_pair_species_count": {
-        "sources": [
-          {
-            "source": "selected_pair_count",
-            "value": 0.0
-          }
-        ],
-        "unit": "count",
-        "value": 0.0,
-        "winner_source": "selected_pair_count"
-      },
-      "selected_species_count": {
-        "sources": [
-          {
-            "source": "selected_manifest_count",
-            "value": 0.0
-          }
-        ],
-        "unit": "count",
-        "value": 0.0,
-        "winner_source": "selected_manifest_count"
-      },
-      "stop_fraction": {
-        "sources": [
-          {
-            "source": "decision_D018",
-            "value": 0.95
-          }
-        ],
-        "unit": "fraction",
-        "value": 0.95,
-        "winner_source": "decision_D018"
-      },
-      "tier3a_concurrency": {
-        "sources": [
-          {
-            "source": "execution_plan_small_cap",
-            "value": 2.0
-          },
-          {
-            "source": "resource_budget_sweepga",
-            "value": 10.0
+            "limit": 2.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "count"
           }
         ],
         "unit": "count",
         "value": 2.0,
-        "winner_source": "execution_plan_small_cap"
+        "winner_source": "regate_task_bound"
       },
-      "tier3c_concurrency": {
+      "core_hours": {
+        "limit": 280.0,
+        "observed": 11.1353,
+        "passes": true,
         "sources": [
           {
-            "source": "execution_plan_small_cap",
-            "value": 8.0
+            "limit": 1500.0,
+            "source": "regate_task_bound",
+            "unit": "core-hours"
           },
           {
-            "source": "resource_budget_tier3c",
-            "value": 16.0
+            "limit": 280.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "core-hours"
+          },
+          {
+            "limit": 280.0,
+            "source": "integrated_decision_hard_gates",
+            "unit": "core-hours"
+          },
+          {
+            "limit": 280.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "core-hours"
+          }
+        ],
+        "unit": "core-hours",
+        "value": 280.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "cpus_per_element": {
+        "limit": 8.0,
+        "observed": 8.0,
+        "passes": true,
+        "sources": [
+          {
+            "limit": 8.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "count"
+          },
+          {
+            "limit": 8.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "count"
           }
         ],
         "unit": "count",
         "value": 8.0,
-        "winner_source": "execution_plan_small_cap"
+        "winner_source": "integrated_execution_plan_small_cap"
       },
-      "transfer_concurrency": {
+      "file_inodes": {
+        "limit": 60000.0,
+        "observed": 22596.0,
+        "passes": true,
         "sources": [
           {
-            "source": "execution_plan_small_cap",
-            "value": 2.0
+            "limit": 60000.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "count"
           },
           {
-            "source": "decision_D018",
-            "value": 2.0
-          },
-          {
-            "source": "resource_budget_stage_assets",
-            "value": 2.0
+            "limit": 60000.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "count"
           }
         ],
         "unit": "count",
-        "value": 2.0,
-        "winner_source": "execution_plan_small_cap"
+        "value": 60000.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "memory_per_job_gib": {
+        "limit": 96.0,
+        "observed": 32.0,
+        "passes": true,
+        "sources": [
+          {
+            "limit": 256.0,
+            "source": "regate_task_bound",
+            "unit": "GiB"
+          },
+          {
+            "limit": 96.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "GiB"
+          },
+          {
+            "limit": 96.0,
+            "source": "integrated_decision_hard_gates",
+            "unit": "GiB"
+          },
+          {
+            "limit": 96.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "GiB"
+          }
+        ],
+        "unit": "GiB",
+        "value": 96.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "metadata_operations": {
+        "limit": 500000.0,
+        "observed": 271151.0,
+        "passes": true,
+        "sources": [
+          {
+            "limit": 500000.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "count"
+          },
+          {
+            "limit": 500000.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "count"
+          }
+        ],
+        "unit": "count",
+        "value": 500000.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "moosefs_read_gb": {
+        "limit": 180.0,
+        "observed": 406.72740000000005,
+        "passes": false,
+        "sources": [
+          {
+            "limit": 180.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "GB"
+          },
+          {
+            "limit": 180.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "GB"
+          }
+        ],
+        "unit": "GB",
+        "value": 180.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "moosefs_write_gb": {
+        "limit": 200.0,
+        "observed": 3.1634,
+        "passes": true,
+        "sources": [
+          {
+            "limit": 200.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "GB"
+          },
+          {
+            "limit": 200.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "GB"
+          }
+        ],
+        "unit": "GB",
+        "value": 200.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "peak_bandwidth_mib_s": {
+        "limit": 120.0,
+        "observed": 120.0,
+        "passes": true,
+        "sources": [
+          {
+            "limit": 120.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "MiB/s"
+          },
+          {
+            "limit": 120.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "MiB/s"
+          }
+        ],
+        "unit": "MiB/s",
+        "value": 120.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "persistent_input_gb": {
+        "limit": 160.0,
+        "observed": 4.150340415,
+        "passes": true,
+        "sources": [
+          {
+            "limit": 160.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "GB"
+          },
+          {
+            "limit": 160.0,
+            "source": "integrated_decision_hard_gates",
+            "unit": "GB"
+          },
+          {
+            "limit": 160.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "GB"
+          }
+        ],
+        "unit": "GB",
+        "value": 160.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "persistent_output_gb": {
+        "limit": 32.0,
+        "observed": 0.0,
+        "passes": true,
+        "sources": [
+          {
+            "limit": 32.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "GB"
+          },
+          {
+            "limit": 32.0,
+            "source": "integrated_decision_hard_gates",
+            "unit": "GB"
+          },
+          {
+            "limit": 32.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "GB"
+          }
+        ],
+        "unit": "GB",
+        "value": 32.0,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "scratch_gib": {
+        "limit": 139.69838619232178,
+        "observed": 205.5066,
+        "passes": false,
+        "sources": [
+          {
+            "limit": 750.0,
+            "source": "regate_task_bound",
+            "unit": "GiB"
+          },
+          {
+            "limit": 139.69838619232178,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "GiB"
+          },
+          {
+            "limit": 139.69838619232178,
+            "source": "integrated_decision_hard_gates",
+            "unit": "GiB"
+          },
+          {
+            "limit": 139.69838619232178,
+            "source": "integrated_resource_envelope_high",
+            "unit": "GiB"
+          }
+        ],
+        "unit": "GiB",
+        "value": 139.69838619232178,
+        "winner_source": "integrated_execution_plan_small_cap"
+      },
+      "species": {
+        "limit": 6.0,
+        "observed": 6.0,
+        "passes": true,
+        "sources": [
+          {
+            "limit": 6.0,
+            "source": "regate_task_bound",
+            "unit": "count"
+          },
+          {
+            "limit": 8.0,
+            "source": "integrated_execution_plan_small_cap",
+            "unit": "count"
+          },
+          {
+            "limit": 8.0,
+            "source": "integrated_decision_hard_gates",
+            "unit": "count"
+          },
+          {
+            "limit": 8.0,
+            "source": "integrated_resource_envelope_high",
+            "unit": "count"
+          }
+        ],
+        "unit": "count",
+        "value": 6.0,
+        "winner_source": "regate_task_bound"
       }
     },
-    "selected_stage_totals_high": {
-      "aggregate_core_hours": 0.0,
-      "aggregate_wall_hours": 0.0,
-      "file_inodes": 0.0,
-      "metadata_operations": 0.0,
-      "moosefs_read_gb": 0.0,
-      "moosefs_write_gb": 0.0,
-      "peak_bandwidth_mib_s": 0.0,
-      "peak_memory_gib_per_job": 0.0,
-      "peak_scratch_gb": 0.0,
-      "persistent_output_gb": 0.0,
-      "selected_composition_species_count": 0.0,
-      "selected_pair_species_count": 0.0,
-      "selected_species_count": 0.0
+    "operational_thresholds": {
+      "pause_at_cap_fraction": 0.8,
+      "quota_headroom_fraction_minimum": 0.25,
+      "stop_resumption_at_cap_fraction": 0.95
     },
-    "sha256": "d51827af5600976f52549ce1a16a7f38bef03f671814d351ff2270ebe7b1b59e"
+    "policy": "minimum finite limit wins across the task bound and every integrated numeric/storage/I/O cap",
+    "proposed_metadata_ready": {
+      "aggregate_wall_hours": 8.7311,
+      "compressed_inputs_gib": 3.8653049999999998,
+      "concurrent_species": 2.0,
+      "core_hours": 11.1353,
+      "cpus_per_element": 8.0,
+      "file_inodes": 22596.0,
+      "memory_per_job_gib": 32.0,
+      "metadata_operations": 271151.0,
+      "moosefs_read_gb": 406.72740000000005,
+      "moosefs_write_gb": 3.1634,
+      "peak_bandwidth_mib_s": 120.0,
+      "persistent_input_gb": 4.150340415,
+      "persistent_output_gb": 0.0,
+      "scratch_gib": 205.5066,
+      "species": 6.0
+    },
+    "sha256": "b6d15c85feee41edac606dba1d51e5d288016de0b99b0922292d0244437bac4c"
+  },
+  "catalog_audit": {
+    "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv",
+    "provenance_record_sha256": "3b8dd80df4f1c5220cbdf3ae42d0ab23218a740bcedfcde9b8033cc3d6609dd5",
+    "retrieved_at_utc": "2026-07-17T18:21:07Z",
+    "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4",
+    "size_bytes": 327466,
+    "source_commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "source_url": "https://raw.githubusercontent.com/VGP/vgp-phase1/dc1b2af5a7741b97d66fb10cb2bce97f41765cdf/VGPPhase1-freeze-1.0.tsv",
+    "statistics": {
+      "data_row_excess_over_unique_species": 2,
+      "data_rows": 716,
+      "duplicated_species": [
+        {
+          "multiplicity": 2,
+          "scientific_name": "Lophostoma evotis"
+        },
+        {
+          "multiplicity": 2,
+          "scientific_name": "Micronycteris microtis"
+        }
+      ],
+      "header_lines": 1,
+      "physical_lines": 717,
+      "unique_species": 714
+    }
   },
   "decision": {
-    "go_requires_exact_match": true,
-    "projected_persistent_gb_against_safe_free_gb": {
-      "projected": 0.0,
-      "safe_free_gb": 75918.164754432,
-      "within_safe_margin": true
-    },
+    "authorization_tuple_digest": "9e56663a8983c38f464b2c9790b85ce29401d845788e8082d30daa30c42964e8",
+    "blocker_count": 3,
+    "only_literal_go_authorizes_downstream": true,
     "status": "NO_GO"
   },
-  "decision_sha256": "ae67031eaa4781984cb9da31ee7a9cd18ee4f2667f98e2a201918fc75ae57284",
-  "generated_at_utc": "2026-07-17T19:05:29Z",
+  "decision_sha256": "f65ea5692979484d78d285a10306ff938236935db0c4f025d43768f491d0c86c",
+  "disposition_audit": {
+    "all_rows_match": true,
+    "rejection_row_count": 74,
+    "rows": [
+      {
+        "candidate_id": "dasypus_novemcinctus_gca_030445035_2",
+        "catalog_physical_line": 13,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Dasypus novemcinctus"
+      },
+      {
+        "candidate_id": "jaculus_jaculus_gca_020740685_1",
+        "catalog_physical_line": 55,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Jaculus jaculus"
+      },
+      {
+        "candidate_id": "ochotona_princeps_gca_030435755_1",
+        "catalog_physical_line": 61,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Ochotona princeps"
+      },
+      {
+        "candidate_id": "hippopotamus_amphibius_gca_030028045_1",
+        "catalog_physical_line": 91,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Hippopotamus amphibius"
+      },
+      {
+        "candidate_id": "camelus_dromedarius_gca_036321535_1",
+        "catalog_physical_line": 102,
+        "expected_rejection_status": "blocked_stricter_cap",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "blocked_stricter_cap",
+        "prioritized": true,
+        "scientific_name": "Camelus dromedarius"
+      },
+      {
+        "candidate_id": "diceros_bicornis_minor_gca_020826845_1",
+        "catalog_physical_line": 106,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Diceros bicornis minor"
+      },
+      {
+        "candidate_id": "manis_pentadactyla_gca_030020395_1",
+        "catalog_physical_line": 178,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Manis pentadactyla"
+      },
+      {
+        "candidate_id": "macropus_eugenii_gca_028372415_2",
+        "catalog_physical_line": 185,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Macropus eugenii"
+      },
+      {
+        "candidate_id": "colius_striatus_gca_028858725_2",
+        "catalog_physical_line": 264,
+        "expected_rejection_status": "blocked_stricter_cap",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "blocked_stricter_cap",
+        "prioritized": true,
+        "scientific_name": "Colius striatus"
+      },
+      {
+        "candidate_id": "gavia_stellata_gca_030936135_1",
+        "catalog_physical_line": 287,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Gavia stellata"
+      },
+      {
+        "candidate_id": "gallus_gallus_gca_016700215_2",
+        "catalog_physical_line": 329,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Gallus gallus"
+      },
+      {
+        "candidate_id": "struthio_camelus_australis_gca_040807025_1",
+        "catalog_physical_line": 348,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Struthio camelus australis"
+      },
+      {
+        "candidate_id": "dromaius_novaehollandiae_gca_036370855_1",
+        "catalog_physical_line": 350,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Dromaius novaehollandiae"
+      },
+      {
+        "candidate_id": "apteryx_mantelli_gca_036417845_1",
+        "catalog_physical_line": 351,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Apteryx mantelli"
+      },
+      {
+        "candidate_id": "alligator_mississippiensis_gca_030867095_1",
+        "catalog_physical_line": 354,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Alligator mississippiensis"
+      },
+      {
+        "candidate_id": "emys_orbicularis_gca_028017835_1",
+        "catalog_physical_line": 366,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Emys orbicularis"
+      },
+      {
+        "candidate_id": "candoia_aspera_gca_035149785_1",
+        "catalog_physical_line": 379,
+        "expected_rejection_status": "blocked_stricter_cap",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "blocked_stricter_cap",
+        "prioritized": true,
+        "scientific_name": "Candoia aspera"
+      },
+      {
+        "candidate_id": "anolis_sagrei_gca_037176765_1",
+        "catalog_physical_line": 388,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Anolis sagrei"
+      },
+      {
+        "candidate_id": "rhineura_floridana_gca_030035675_1",
+        "catalog_physical_line": 412,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Rhineura floridana"
+      },
+      {
+        "candidate_id": "euleptes_europaea_gca_029931775_1",
+        "catalog_physical_line": 415,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Euleptes europaea"
+      },
+      {
+        "candidate_id": "dendropsophus_ebraccatus_gca_027789765_1",
+        "catalog_physical_line": 435,
+        "expected_rejection_status": "blocked_stricter_cap",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "blocked_stricter_cap",
+        "prioritized": true,
+        "scientific_name": "Dendropsophus ebraccatus"
+      },
+      {
+        "candidate_id": "engystomops_pustulosus_gca_040894005_1",
+        "catalog_physical_line": 440,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Engystomops pustulosus"
+      },
+      {
+        "candidate_id": "pseudophryne_corroboree_gca_028390025_1",
+        "catalog_physical_line": 442,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Pseudophryne corroboree"
+      },
+      {
+        "candidate_id": "ambystoma_mexicanum_x_ambystoma_tigrinum_gca_040938575_1",
+        "catalog_physical_line": 455,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Ambystoma mexicanum x Ambystoma tigrinum"
+      },
+      {
+        "candidate_id": "erpetoichthys_calabaricus_gca_900747795_4",
+        "catalog_physical_line": 464,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Erpetoichthys calabaricus"
+      },
+      {
+        "candidate_id": "acipenser_ruthenus_gca_902713425_2",
+        "catalog_physical_line": 465,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Acipenser ruthenus"
+      },
+      {
+        "candidate_id": "amia_calva_gca_036373705_1",
+        "catalog_physical_line": 467,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Amia calva"
+      },
+      {
+        "candidate_id": "lepisosteus_oculatus_gca_040954835_1",
+        "catalog_physical_line": 468,
+        "expected_rejection_status": "blocked_stricter_cap",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "blocked_stricter_cap",
+        "prioritized": true,
+        "scientific_name": "Lepisosteus oculatus"
+      },
+      {
+        "candidate_id": "megalops_cyprinoides_gca_013368585_1",
+        "catalog_physical_line": 470,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Megalops cyprinoides"
+      },
+      {
+        "candidate_id": "anguilla_anguilla_gca_013347855_1",
+        "catalog_physical_line": 473,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Anguilla anguilla"
+      },
+      {
+        "candidate_id": "scleropages_formosus_gca_900964775_1",
+        "catalog_physical_line": 476,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Scleropages formosus"
+      },
+      {
+        "candidate_id": "denticeps_clupeoides_gca_900700375_2",
+        "catalog_physical_line": 477,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Denticeps clupeoides"
+      },
+      {
+        "candidate_id": "chanos_chanos_gca_902362185_1",
+        "catalog_physical_line": 483,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Chanos chanos"
+      },
+      {
+        "candidate_id": "pygocentrus_nattereri_gca_015220715_1",
+        "catalog_physical_line": 499,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Pygocentrus nattereri"
+      },
+      {
+        "candidate_id": "esox_lucius_gca_011004845_1",
+        "catalog_physical_line": 514,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Esox lucius"
+      },
+      {
+        "candidate_id": "lampris_incognitus_gca_029633865_1",
+        "catalog_physical_line": 535,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Lampris incognitus"
+      },
+      {
+        "candidate_id": "gadus_morhua_gca_902167405_1",
+        "catalog_physical_line": 539,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Gadus morhua"
+      },
+      {
+        "candidate_id": "myripristis_murdjan_gca_902150065_1",
+        "catalog_physical_line": 548,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Myripristis murdjan"
+      },
+      {
+        "candidate_id": "thalassophryne_amazonica_gca_902500255_1",
+        "catalog_physical_line": 550,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Thalassophryne amazonica"
+      },
+      {
+        "candidate_id": "periophthalmus_magnuspinnatus_gca_009829125_3",
+        "catalog_physical_line": 551,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Periophthalmus magnuspinnatus"
+      },
+      {
+        "candidate_id": "syngnathus_acus_gca_901709675_2",
+        "catalog_physical_line": 553,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Syngnathus acus"
+      },
+      {
+        "candidate_id": "thunnus_maccoyii_gca_910596095_1",
+        "catalog_physical_line": 556,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Thunnus maccoyii"
+      },
+      {
+        "candidate_id": "mastacembelus_armatus_gca_900324485_3",
+        "catalog_physical_line": 564,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Mastacembelus armatus"
+      },
+      {
+        "candidate_id": "anabas_testudineus_gca_900324465_3",
+        "catalog_physical_line": 565,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Anabas testudineus"
+      },
+      {
+        "candidate_id": "toxotes_jaculatrix_gca_017976425_1",
+        "catalog_physical_line": 567,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Toxotes jaculatrix"
+      },
+      {
+        "candidate_id": "hippoglossus_hippoglossus_gca_009819705_1",
+        "catalog_physical_line": 568,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Hippoglossus hippoglossus"
+      },
+      {
+        "candidate_id": "echeneis_naucrates_gca_900963305_2",
+        "catalog_physical_line": 578,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Echeneis naucrates"
+      },
+      {
+        "candidate_id": "parambassis_ranga_gca_900634625_2",
+        "catalog_physical_line": 581,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Parambassis ranga"
+      },
+      {
+        "candidate_id": "astatotilapia_calliptera_gca_964374335_1",
+        "catalog_physical_line": 583,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Astatotilapia calliptera"
+      },
+      {
+        "candidate_id": "scatophagus_argus_gca_020382885_1",
+        "catalog_physical_line": 588,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Scatophagus argus"
+      },
+      {
+        "candidate_id": "melanotaenia_boesemani_gca_017639745_1",
+        "catalog_physical_line": 593,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Melanotaenia boesemani"
+      },
+      {
+        "candidate_id": "salarias_fasciatus_gca_902148845_1",
+        "catalog_physical_line": 601,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Salarias fasciatus"
+      },
+      {
+        "candidate_id": "enoplosus_armatus_gca_043641665_1",
+        "catalog_physical_line": 607,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Enoplosus armatus"
+      },
+      {
+        "candidate_id": "notolabrus_celidotus_gca_009762535_1",
+        "catalog_physical_line": 611,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Notolabrus celidotus"
+      },
+      {
+        "candidate_id": "cottoperca_gobio_gca_900634415_1",
+        "catalog_physical_line": 622,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Cottoperca gobio"
+      },
+      {
+        "candidate_id": "chelmon_rostratus_gca_017976325_1",
+        "catalog_physical_line": 632,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Chelmon rostratus"
+      },
+      {
+        "candidate_id": "sparus_aurata_gca_900880675_2",
+        "catalog_physical_line": 648,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Sparus aurata"
+      },
+      {
+        "candidate_id": "takifugu_rubripes_gca_901000725_3",
+        "catalog_physical_line": 654,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Takifugu rubripes"
+      },
+      {
+        "candidate_id": "pempheris_klunzingeri_gca_042242105_1",
+        "catalog_physical_line": 658,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Pempheris klunzingeri"
+      },
+      {
+        "candidate_id": "sphaeramia_orbicularis_gca_902148855_1",
+        "catalog_physical_line": 662,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Sphaeramia orbicularis"
+      },
+      {
+        "candidate_id": "gouania_willdenowi_gca_900634775_2",
+        "catalog_physical_line": 663,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Gouania willdenowi"
+      },
+      {
+        "candidate_id": "cyclopterus_lumpus_gca_009769545_1",
+        "catalog_physical_line": 665,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Cyclopterus lumpus"
+      },
+      {
+        "candidate_id": "sebastes_umbrosus_gca_015220745_1",
+        "catalog_physical_line": 666,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Sebastes umbrosus"
+      },
+      {
+        "candidate_id": "heterodontus_francisci_gca_036365525_1",
+        "catalog_physical_line": 677,
+        "expected_rejection_status": "blocked_stricter_cap",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "blocked_stricter_cap",
+        "prioritized": true,
+        "scientific_name": "Heterodontus francisci"
+      },
+      {
+        "candidate_id": "hemiscyllium_ocellatum_gca_020745735_1",
+        "catalog_physical_line": 679,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Hemiscyllium ocellatum"
+      },
+      {
+        "candidate_id": "carcharodon_carcharias_gca_017639515_1",
+        "catalog_physical_line": 682,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Carcharodon carcharias"
+      },
+      {
+        "candidate_id": "scyliorhinus_canicula_gca_902713615_2",
+        "catalog_physical_line": 685,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Scyliorhinus canicula"
+      },
+      {
+        "candidate_id": "heptranchias_perlo_gca_035084215_1",
+        "catalog_physical_line": 688,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Heptranchias perlo"
+      },
+      {
+        "candidate_id": "pristiophorus_japonicus_gca_044704955_1",
+        "catalog_physical_line": 692,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Pristiophorus japonicus"
+      },
+      {
+        "candidate_id": "narcine_bancroftii_gca_036971445_1",
+        "catalog_physical_line": 693,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Narcine bancroftii"
+      },
+      {
+        "candidate_id": "amblyraja_radiata_gca_010909765_2",
+        "catalog_physical_line": 694,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Amblyraja radiata"
+      },
+      {
+        "candidate_id": "pristis_pectinata_gca_009764475_2",
+        "catalog_physical_line": 696,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Pristis pectinata"
+      },
+      {
+        "candidate_id": "hypanus_sabinus_gca_030144855_1",
+        "catalog_physical_line": 697,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Hypanus sabinus"
+      },
+      {
+        "candidate_id": "latimeria_chalumnae_gca_037176945_1",
+        "catalog_physical_line": 700,
+        "expected_rejection_status": "rejected_not_prioritized",
+        "issues": [],
+        "matches": true,
+        "observed_rejection_status": "rejected_not_prioritized",
+        "prioritized": false,
+        "scientific_name": "Latimeria chalumnae"
+      }
+    ],
+    "seed_row_count": 74,
+    "sha256": "dc6357145a61b4692d8db30b0e3a19dcde683281b9a3abfa7dd59bf887eb90fe",
+    "unique_seed_candidate_count": 74
+  },
+  "environment": {
+    "channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "environment_record_sha256": "48acf30d8b6e91c2bcbb49869145e89edbb1ab51023bdea98cc6c7be109f5cad",
+    "execution": "guix time-machine -C analysis/guix/channels.scm -- shell -m analysis/guix/manifest.scm --pure",
+    "manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "profile_derivation": "/gnu/store/x7vw3qvf5yxsff7x5cjhxs713m90ni6n-profile.drv",
+    "profile_store_path": "/gnu/store/z9v2f6faha9cwjz0sm5iphhlzisgi077-profile",
+    "resolved_channels_sha256": "94d5bf44554d60195c03f55d7edb7e6f79f4a9f52c05785abc3ccffc4f98dea2",
+    "sha256": "fe8e45bb716ffc9560cf2cda37d4974c46905279635ca5e8c590666d1f9b354e",
+    "tool_versions": {
+      "bcftools": "bcftools 1.14",
+      "bedtools": "bedtools v2.30.0",
+      "bgzip": "bgzip (htslib) 1.16",
+      "pytest": "pytest 7.1.3",
+      "python3": "Python 3.10.7",
+      "samtools": "samtools 1.14",
+      "tabix": "tabix (htslib) 1.16",
+      "vcftools": "VCFtools (0.1.16)",
+      "wfmash": "wfmash commit e040aa10e87cab44ed5a4db005e784be62b0bd21 (upstream binary emits no version string)"
+    }
+  },
+  "generated_at_utc": "2026-07-18T08:31:13Z",
   "inputs": {
     "decisions": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vertebrate_scaleout_decisions.tsv",
-      "sha256": "ec23412bc5c93ed81376324ac90f749b9dbd29afe9a7591552315dd8eb995cae"
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vertebrate_scaleout_decisions.tsv",
+      "sha256": "ec23412bc5c93ed81376324ac90f749b9dbd29afe9a7591552315dd8eb995cae",
+      "size_bytes": 18255
     },
     "execution_plan": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vertebrate_scaleout_execution_plan.md",
-      "sha256": "9e6fd40ae4bc01f6e1b5a7c7cf74c9e4a1bba27b7262e7ef53467e0d6c93f595"
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vertebrate_scaleout_execution_plan.md",
+      "sha256": "9e6fd40ae4bc01f6e1b5a7c7cf74c9e4a1bba27b7262e7ef53467e0d6c93f595",
+      "size_bytes": 48357
     },
     "freeze_provenance": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_phase1_freeze_provenance.json",
-      "sha256": "8b3c847ba261a218b2f81b379041d7215dcb547e1b854b1d780fc6903fde463b"
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_phase1_freeze_provenance.json",
+      "sha256": "8b3c847ba261a218b2f81b379041d7215dcb547e1b854b1d780fc6903fde463b",
+      "size_bytes": 4321
+    },
+    "guix_channels": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/guix/channels.scm",
+      "sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+      "size_bytes": 405
+    },
+    "guix_environment": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/pilot_results/guix_environment.json",
+      "sha256": "48acf30d8b6e91c2bcbb49869145e89edbb1ab51023bdea98cc6c7be109f5cad",
+      "size_bytes": 15381
+    },
+    "guix_manifest": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/guix/manifest.scm",
+      "sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+      "size_bytes": 1684
     },
     "manifest": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_manifest.tsv",
-      "sha256": "f27b81f369af18caf97a1ccee1b14d8a8b050d665832e6e99f188041275f49ce"
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_pilot_manifest.tsv",
+      "sha256": "b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988",
+      "size_bytes": 33299
+    },
+    "prior_seed_manifest": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_resolution_cache/prior_refusal/vgp_pilot_manifest.tsv",
+      "sha256": "f27b81f369af18caf97a1ccee1b14d8a8b050d665832e6e99f188041275f49ce",
+      "size_bytes": 212072
+    },
+    "rejections": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_pilot_rejections.tsv",
+      "sha256": "e84667ee0be6ba1edf9909ddf66fa74b498d9aaec9014f06ce3a0fb63e6fb052",
+      "size_bytes": 25695
+    },
+    "resolution_index": {
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_resolution_cache/index.json",
+      "sha256": "293cd2475339b3d338ee2f3d3900da5d2a285a99b18bc31b7a1558b5574eb35b",
+      "size_bytes": 65075
     },
     "resource_budget": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vertebrate_scaleout_resource_budget.tsv",
-      "sha256": "d0659b1dfc29fd078de7b5f6f82399fb43d125d96403b88a774515d4539e7692"
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vertebrate_scaleout_resource_budget.tsv",
+      "sha256": "d0659b1dfc29fd078de7b5f6f82399fb43d125d96403b88a774515d4539e7692",
+      "size_bytes": 12362
     },
     "root_config": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_data_root_config.json",
-      "sha256": "912e47c66eeacaf8db3ff535fb857b296eb890d56e2ba0f38af3fdeb4ec12989"
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_data_root_config.json",
+      "sha256": "912e47c66eeacaf8db3ff535fb857b296eb890d56e2ba0f38af3fdeb4ec12989",
+      "size_bytes": 1661
     },
     "root_validation": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_data_root_validation.json",
-      "sha256": "fa49635fac94b13a7fc3a9d0dbcdfa3f36cd1ed437633479f5a87957e0594149"
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_data_root_validation.json",
+      "sha256": "fa49635fac94b13a7fc3a9d0dbcdfa3f36cd1ed437633479f5a87957e0594149",
+      "size_bytes": 8458
     },
     "size_budget": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-183/analysis/vgp_pilot_size_budget.tsv",
-      "sha256": "f0be4a495d2385536daadf23811911990a390cbdbdfbf1d7c8e904097b355e40"
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_pilot_size_budget.tsv",
+      "sha256": "aabd5e8dcf9039f77452d4a03e831dd1989fa99bcca241d2f5229b7655db6c9b",
+      "size_bytes": 8715
     }
+  },
+  "measurement_contract": {
+    "contract_id": "vgp_post_alignment_denominators_v1",
+    "executable_command": "python3 analysis/resolve_vgp_candidates.py measure --metrics-json METRICS.json --output-json ACCEPTANCE.json",
+    "failure_disposition": "exclude_downstream_result",
+    "inputs": {
+      "callable_bases": "integer bases passing the pinned alignment/callability mask",
+      "callable_fraction": "callable_bases divided by exact H1 assembly length",
+      "queryable_gene_bases": "union of queryable protein-coding CDS bases",
+      "queryable_gene_count": "protein-coding genes with at least one queryable CDS base"
+    },
+    "minimum_thresholds": {
+      "callable_bases": 10000000,
+      "callable_fraction": 0.5,
+      "queryable_gene_bases": 1000000,
+      "queryable_gene_count": 1000
+    },
+    "phase": "post_alignment_pre_result_acceptance",
+    "pre_download_prerequisite": false,
+    "sha256": "6fa68a0a657877953d5d92dc99f850492fbe5d823672d38d81cd806653f84018"
+  },
+  "pair_evidence": {
+    "rows": [
+      {
+        "biosample_accession": "SAMN39296380",
+        "candidate_id": "camelus_dromedarius_gca_036321535_1",
+        "h1_accession_version": "GCF_036321535.1",
+        "h1_h2_relationship": "same_individual_linked_pair",
+        "h2_accession_version": "",
+        "haplotype_contig_map_sha256": "UNRESOLVED_PRECOMPUTE",
+        "haplotype_contig_relationship_audit": "manifest_h2_matches_ncbi_linked_assembly;shared_biosample:SAMN39296380;shared_isolate:mCamDro1;reciprocal_linked_assemblies",
+        "individual_or_isolate_id": "mCamDro1",
+        "linked_h2_accessions_ncbi": "GCA_036321565.1",
+        "pair_evidence_retrieved_at_utc": "2026-07-17T18:21:22Z",
+        "pair_evidence_url": "",
+        "phase_evidence_status": "not_applicable_composition_only",
+        "resolved_modality": "tier3c_composition",
+        "same_individual_evidence": "not_applicable_composition_only",
+        "same_individual_status": "not_applicable_composition_only"
+      },
+      {
+        "biosample_accession": "SAMN33339572",
+        "candidate_id": "colius_striatus_gca_028858725_2",
+        "h1_accession_version": "GCF_028858725.1",
+        "h1_h2_relationship": "same_individual_linked_pair",
+        "h2_accession_version": "",
+        "haplotype_contig_map_sha256": "UNRESOLVED_PRECOMPUTE",
+        "haplotype_contig_relationship_audit": "manifest_h2_matches_ncbi_linked_assembly;shared_biosample:SAMN33339572;shared_isolate:bColStr4;reciprocal_linked_assemblies",
+        "individual_or_isolate_id": "bColStr4",
+        "linked_h2_accessions_ncbi": "GCA_028858625.2",
+        "pair_evidence_retrieved_at_utc": "2026-07-17T18:21:34Z",
+        "pair_evidence_url": "",
+        "phase_evidence_status": "not_applicable_composition_only",
+        "resolved_modality": "tier3c_composition",
+        "same_individual_evidence": "not_applicable_composition_only",
+        "same_individual_status": "not_applicable_composition_only"
+      },
+      {
+        "biosample_accession": "SAMN37159891",
+        "candidate_id": "candoia_aspera_gca_035149785_1",
+        "h1_accession_version": "GCF_035149785.1",
+        "h1_h2_relationship": "same_individual_linked_pair",
+        "h2_accession_version": "",
+        "haplotype_contig_map_sha256": "UNRESOLVED_PRECOMPUTE",
+        "haplotype_contig_relationship_audit": "manifest_h2_matches_ncbi_linked_assembly;shared_biosample:SAMN37159891;shared_isolate:rCanAsp1;reciprocal_linked_assemblies",
+        "individual_or_isolate_id": "rCanAsp1",
+        "linked_h2_accessions_ncbi": "GCA_035125265.1",
+        "pair_evidence_retrieved_at_utc": "2026-07-17T18:22:01Z",
+        "pair_evidence_url": "",
+        "phase_evidence_status": "not_applicable_composition_only",
+        "resolved_modality": "tier3c_composition",
+        "same_individual_evidence": "not_applicable_composition_only",
+        "same_individual_status": "not_applicable_composition_only"
+      },
+      {
+        "biosample_accession": "SAMN32145295",
+        "candidate_id": "dendropsophus_ebraccatus_gca_027789765_1",
+        "h1_accession_version": "GCF_027789765.1",
+        "h1_h2_relationship": "same_individual_linked_pair",
+        "h2_accession_version": "",
+        "haplotype_contig_map_sha256": "UNRESOLVED_PRECOMPUTE",
+        "haplotype_contig_relationship_audit": "manifest_h2_matches_ncbi_linked_assembly;shared_biosample:SAMN32145295;shared_isolate:aDenEbr1;reciprocal_linked_assemblies",
+        "individual_or_isolate_id": "aDenEbr1",
+        "linked_h2_accessions_ncbi": "GCA_027789725.1",
+        "pair_evidence_retrieved_at_utc": "2026-07-17T18:22:16Z",
+        "pair_evidence_url": "",
+        "phase_evidence_status": "not_applicable_composition_only",
+        "resolved_modality": "tier3c_composition",
+        "same_individual_evidence": "not_applicable_composition_only",
+        "same_individual_status": "not_applicable_composition_only"
+      },
+      {
+        "biosample_accession": "SAMN41155427",
+        "candidate_id": "lepisosteus_oculatus_gca_040954835_1",
+        "h1_accession_version": "GCF_040954835.1",
+        "h1_h2_relationship": "same_individual_linked_pair",
+        "h2_accession_version": "",
+        "haplotype_contig_map_sha256": "UNRESOLVED_PRECOMPUTE",
+        "haplotype_contig_relationship_audit": "manifest_h2_matches_ncbi_linked_assembly;shared_biosample:SAMN41155427;shared_isolate:fLepOcu1;reciprocal_linked_assemblies",
+        "individual_or_isolate_id": "fLepOcu1",
+        "linked_h2_accessions_ncbi": "GCA_040954845.1",
+        "pair_evidence_retrieved_at_utc": "2026-07-17T18:22:38Z",
+        "pair_evidence_url": "",
+        "phase_evidence_status": "not_applicable_composition_only",
+        "resolved_modality": "tier3c_composition",
+        "same_individual_evidence": "not_applicable_composition_only",
+        "same_individual_status": "not_applicable_composition_only"
+      },
+      {
+        "biosample_accession": "SAMN39432692",
+        "candidate_id": "heterodontus_francisci_gca_036365525_1",
+        "h1_accession_version": "GCF_036365525.1",
+        "h1_h2_relationship": "same_individual_linked_pair",
+        "h2_accession_version": "",
+        "haplotype_contig_map_sha256": "UNRESOLVED_PRECOMPUTE",
+        "haplotype_contig_relationship_audit": "manifest_h2_matches_ncbi_linked_assembly;shared_biosample:SAMN39432692;shared_isolate:sHetFra1;reciprocal_linked_assemblies",
+        "individual_or_isolate_id": "sHetFra1",
+        "linked_h2_accessions_ncbi": "GCA_036365495.1",
+        "pair_evidence_retrieved_at_utc": "2026-07-17T18:23:49Z",
+        "pair_evidence_url": "",
+        "phase_evidence_status": "not_applicable_composition_only",
+        "resolved_modality": "tier3c_composition",
+        "same_individual_evidence": "not_applicable_composition_only",
+        "same_individual_status": "not_applicable_composition_only"
+      }
+    ],
+    "sha256": "73e641104bad3f5a5f7c269a303e72dbd492141b9be3a05d6b60c0d143f1f7b3"
   },
   "quota_evidence": {
     "free_bytes": 101224219672576,
     "free_inodes": 1004580301,
-    "inode_status": "reported",
-    "quota_interfaces": [],
-    "quota_message": "No user-visible quota command was available from the current environment.",
-    "quota_status": "blocked",
-    "root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
-    "safe_free_bytes": 75918164754432,
-    "safe_free_inodes": 753435225
+    "quota_status": "unknown"
   },
   "reproduction": {
-    "freeze_provenance_candidate_summary": {
-      "rejected_count": 74,
-      "resolved_row_count": 74,
-      "seed_count": 74,
-      "selected_count": 0
-    },
-    "manifest_candidate_count": 74,
+    "manifest_candidate_count": 6,
     "selected_candidate_ids": [],
     "selected_row_count": 0,
-    "size_budget_summary": {
-      "aggregate_selected_download_bytes_exact": 0,
-      "aggregate_selected_persistent_bytes_exact": 0,
-      "candidate_budget_row_count": 74,
-      "selected_download_bytes_exact": 0,
-      "selected_persistent_bytes_exact": 0,
-      "selected_row_count": 0
-    },
     "source_catalog": {
-      "counts": {
-        "current_fish_completed_refseq_species": [
-          "Acipenser ruthenus",
-          "Amblyraja radiata",
-          "Amia calva",
-          "Anabas testudineus",
-          "Anguilla anguilla",
-          "Carcharodon carcharias",
-          "Chanos chanos",
-          "Chelmon rostratus",
-          "Cottoperca gobio",
-          "Cyclopterus lumpus",
-          "Denticeps clupeoides",
-          "Echeneis naucrates",
-          "Enoplosus armatus",
-          "Erpetoichthys calabaricus",
-          "Esox lucius",
-          "Gadus morhua",
-          "Gouania willdenowi",
-          "Hemiscyllium ocellatum",
-          "Heptranchias perlo",
-          "Heterodontus francisci",
-          "Hippoglossus hippoglossus",
-          "Hypanus sabinus",
-          "Lampris incognitus",
-          "Latimeria chalumnae",
-          "Lepisosteus oculatus",
-          "Mastacembelus armatus",
-          "Megalops cyprinoides",
-          "Melanotaenia boesemani",
-          "Myripristis murdjan",
-          "Narcine bancroftii",
-          "Notolabrus celidotus",
-          "Parambassis ranga",
-          "Pempheris klunzingeri",
-          "Periophthalmus magnuspinnatus",
-          "Pristiophorus japonicus",
-          "Pristis pectinata",
-          "Pygocentrus nattereri",
-          "Salarias fasciatus",
-          "Scatophagus argus",
-          "Scleropages formosus",
-          "Scyliorhinus canicula",
-          "Sebastes umbrosus",
-          "Sparus aurata",
-          "Sphaeramia orbicularis",
-          "Syngnathus acus",
-          "Takifugu rubripes",
-          "Thalassophryne amazonica",
-          "Thunnus maccoyii",
-          "Toxotes jaculatrix"
-        ],
-        "current_fish_triple_species": [
-          "Acipenser ruthenus",
-          "Amia calva",
-          "Astatotilapia calliptera",
-          "Cyclopterus lumpus",
-          "Enoplosus armatus",
-          "Hemiscyllium ocellatum",
-          "Heptranchias perlo",
-          "Heterodontus francisci",
-          "Lampris incognitus",
-          "Lepisosteus oculatus",
-          "Narcine bancroftii",
-          "Pempheris klunzingeri",
-          "Pristiophorus japonicus",
-          "Syngnathus acus"
-        ],
-        "discrepancies": [
+      "discrepancies": [],
+      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv",
+      "provenance_record_sha256": "3b8dd80df4f1c5220cbdf3ae42d0ab23218a740bcedfcde9b8033cc3d6609dd5",
+      "retrieved_at_utc": "2026-07-17T18:21:07Z",
+      "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4",
+      "size_bytes": 327466,
+      "source_commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+      "source_url": "https://raw.githubusercontent.com/VGP/vgp-phase1/dc1b2af5a7741b97d66fb10cb2bce97f41765cdf/VGPPhase1-freeze-1.0.tsv",
+      "statistics": {
+        "data_row_excess_over_unique_species": 2,
+        "data_rows": 716,
+        "duplicated_species": [
           {
-            "delta": -2,
-            "expected": 120,
-            "metric": "completed_annotated",
-            "observed": 118
+            "multiplicity": 2,
+            "scientific_name": "Lophostoma evotis"
           },
           {
-            "delta": -2,
-            "expected": 40,
-            "metric": "triple_eligible",
-            "observed": 38
-          },
-          {
-            "delta": 1,
-            "expected": 13,
-            "metric": "triple_eligible_fish",
-            "observed": 14
-          },
-          {
-            "delta": 3,
-            "expected": 46,
-            "metric": "completed_refseq_fish",
-            "observed": 49
+            "multiplicity": 2,
+            "scientific_name": "Micronycteris microtis"
           }
         ],
-        "observed": {
-          "completed": 223,
-          "completed_annotated": 118,
-          "completed_refseq_fish": 49,
-          "triple_eligible": 38,
-          "triple_eligible_fish": 14,
-          "unique_species": 714
-        }
-      },
-      "discrepancies": [
-        {
-          "delta": -2,
-          "expected": 120,
-          "metric": "completed_annotated",
-          "observed": 118
-        },
-        {
-          "delta": -2,
-          "expected": 40,
-          "metric": "triple_eligible",
-          "observed": 38
-        },
-        {
-          "delta": 1,
-          "expected": 13,
-          "metric": "triple_eligible_fish",
-          "observed": 14
-        },
-        {
-          "delta": 3,
-          "expected": 46,
-          "metric": "completed_refseq_fish",
-          "observed": 49
-        }
-      ],
-      "line_count": 717,
-      "path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv",
-      "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4"
+        "header_lines": 1,
+        "physical_lines": 717,
+        "unique_species": 714
+      }
     }
   },
-  "row_audit": {
-    "blocked_examples": [
-      {
-        "candidate_id": "dasypus_novemcinctus_gca_030445035_2",
-        "issues": [
-          {
-            "code": "H1_SHA256_MISSING",
-            "message": "missing H1 SHA-256"
-          },
-          {
-            "code": "H2_SHA256_MISSING",
-            "message": "missing H2 SHA-256 for paired row"
-          },
-          {
-            "code": "ANNOTATION_URL_MISSING",
-            "message": "missing annotation GFF URL"
-          }
-        ]
-      },
-      {
-        "candidate_id": "jaculus_jaculus_gca_020740685_1",
-        "issues": [
-          {
-            "code": "H1_SHA256_MISSING",
-            "message": "missing H1 SHA-256"
-          },
-          {
-            "code": "H2_SHA256_MISSING",
-            "message": "missing H2 SHA-256 for paired row"
-          },
-          {
-            "code": "ANNOTATION_URL_MISSING",
-            "message": "missing annotation GFF URL"
-          }
-        ]
-      },
-      {
-        "candidate_id": "ochotona_princeps_gca_030435755_1",
-        "issues": [
-          {
-            "code": "H1_SHA256_MISSING",
-            "message": "missing H1 SHA-256"
-          },
-          {
-            "code": "H2_SHA256_MISSING",
-            "message": "missing H2 SHA-256 for paired row"
-          },
-          {
-            "code": "ANNOTATION_URL_MISSING",
-            "message": "missing annotation GFF URL"
-          }
-        ]
-      },
-      {
-        "candidate_id": "hippopotamus_amphibius_gca_030028045_1",
-        "issues": [
-          {
-            "code": "H1_SHA256_MISSING",
-            "message": "missing H1 SHA-256"
-          },
-          {
-            "code": "H2_SHA256_MISSING",
-            "message": "missing H2 SHA-256 for paired row"
-          },
-          {
-            "code": "ANNOTATION_URL_MISSING",
-            "message": "missing annotation GFF URL"
-          }
-        ]
-      },
+  "retrieval_audit": {
+    "policy": "official exact-version staging; finite size; verify every available source checksum; compute and reverify local SHA-256 before atomic read-only promotion",
+    "ready_count": 6,
+    "rows": [
       {
         "candidate_id": "camelus_dromedarius_gca_036321535_1",
-        "issues": [
+        "issues": [],
+        "metadata_cache_request_keys": [
+          "acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a",
+          "a648ed5fc7c368b934a50744e84196ef308d157f1e493b34628300c30f9eef79",
+          "5373a2c941b7d12ba8c75785da5c28045c97387583de6559e2e982a7d361c6e4",
+          "357a09301e2e1146064386c3e7697f75c393021c2213da1c7237023cdcf297e4",
+          "833a9dd05aa07fcfa734bfe53a1498845bec28337533939c47446a3582dd2c6b",
+          "d053c05db5f4f1121e77727e51db07a65a7ebe21d88a08b30009ba513ece7131"
+        ],
+        "obligations": [
           {
-            "code": "H1_SHA256_MISSING",
-            "message": "missing H1 SHA-256"
+            "accession_version": "GCF_036321535.1",
+            "expected_size_bytes": 679861027,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "833a9dd05aa07fcfa734bfe53a1498845bec28337533939c47446a3582dd2c6b",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "h1_fasta",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "8e498cd100f59ce6ca271c5168fd8352"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:679861027",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:8e498cd100f59ce6ca271c5168fd8352",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/321/535/GCF_036321535.1_mCamDro1.pat/GCF_036321535.1_mCamDro1.pat_genomic.fna.gz"
           },
           {
-            "code": "H2_SHA256_MISSING",
-            "message": "missing H2 SHA-256 for paired row"
-          },
-          {
-            "code": "ANNOTATION_URL_MISSING",
-            "message": "missing annotation GFF URL"
+            "accession_version": "GCF_036321535.1",
+            "expected_size_bytes": 17510754,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "d053c05db5f4f1121e77727e51db07a65a7ebe21d88a08b30009ba513ece7131",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "native_h1_annotation",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "471553d2359fbadb0163f402c1197217"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:17510754",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:471553d2359fbadb0163f402c1197217",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/321/535/GCF_036321535.1_mCamDro1.pat/GCF_036321535.1_mCamDro1.pat_genomic.gff.gz"
           }
-        ]
+        ],
+        "pre_download_ready": true
       },
       {
-        "candidate_id": "diceros_bicornis_minor_gca_020826845_1",
-        "issues": [
+        "candidate_id": "colius_striatus_gca_028858725_2",
+        "issues": [],
+        "metadata_cache_request_keys": [
+          "acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a",
+          "a648ed5fc7c368b934a50744e84196ef308d157f1e493b34628300c30f9eef79",
+          "ef23c0429fec1a58a1afd94aa6de09af3022343ff6dccad0202ff2bc07a285c7",
+          "d515763c71e9143481baf0c8ab872eff83a79ea25421a891b4c31f8bca6906df",
+          "c9d0524f3dda0c7214b96efb09e486a77564671a38420c2924d81d21a91dc704",
+          "3f9b88383a1e32c1dfe9a016a03d42c6cd02824056f1dfead1ec46440cfed153"
+        ],
+        "obligations": [
           {
-            "code": "H1_SHA256_MISSING",
-            "message": "missing H1 SHA-256"
+            "accession_version": "GCF_028858725.1",
+            "expected_size_bytes": 371555486,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "c9d0524f3dda0c7214b96efb09e486a77564671a38420c2924d81d21a91dc704",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "h1_fasta",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "7c493fd9b5bd40acfbd1b20513eb39a0"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:371555486",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:7c493fd9b5bd40acfbd1b20513eb39a0",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/GCF_028858725.1_bColStr4.1.hap1_genomic.fna.gz"
           },
           {
-            "code": "H2_SHA256_MISSING",
-            "message": "missing H2 SHA-256 for paired row"
-          },
-          {
-            "code": "ANNOTATION_URL_MISSING",
-            "message": "missing annotation GFF URL"
+            "accession_version": "GCF_028858725.1",
+            "expected_size_bytes": 11168255,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "3f9b88383a1e32c1dfe9a016a03d42c6cd02824056f1dfead1ec46440cfed153",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "native_h1_annotation",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "bd600f1e89db31044a6e84c904f33f92"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:11168255",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:bd600f1e89db31044a6e84c904f33f92",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/725/GCF_028858725.1_bColStr4.1.hap1/GCF_028858725.1_bColStr4.1.hap1_genomic.gff.gz"
           }
-        ]
+        ],
+        "pre_download_ready": true
       },
       {
-        "candidate_id": "manis_pentadactyla_gca_030020395_1",
-        "issues": [
+        "candidate_id": "candoia_aspera_gca_035149785_1",
+        "issues": [],
+        "metadata_cache_request_keys": [
+          "acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a",
+          "a648ed5fc7c368b934a50744e84196ef308d157f1e493b34628300c30f9eef79",
+          "211798cc8fd4fd031eb498d5896cb60d7c5846b51ba7d0526616679047cfe0c2",
+          "a209837cc42988db9e11e3a3cee10b370297345b9ce9ad1f721250e1b2b71331",
+          "3b2798e0d4c972a64d03fc0fafe32ce015343c285c69789820f37b737bad6001",
+          "c82c8e25cf9b890b59601bac4727761e4e817a7852296e6f5c1fac373ac51f9e"
+        ],
+        "obligations": [
           {
-            "code": "H1_SHA256_MISSING",
-            "message": "missing H1 SHA-256"
+            "accession_version": "GCF_035149785.1",
+            "expected_size_bytes": 483728267,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "3b2798e0d4c972a64d03fc0fafe32ce015343c285c69789820f37b737bad6001",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "h1_fasta",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "5771cf860d22716e046000ee879b2c71"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:483728267",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:5771cf860d22716e046000ee879b2c71",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/035/149/785/GCF_035149785.1_rCanAsp1.hap2/GCF_035149785.1_rCanAsp1.hap2_genomic.fna.gz"
           },
           {
-            "code": "H2_SHA256_MISSING",
-            "message": "missing H2 SHA-256 for paired row"
-          },
-          {
-            "code": "ANNOTATION_URL_MISSING",
-            "message": "missing annotation GFF URL"
+            "accession_version": "GCF_035149785.1",
+            "expected_size_bytes": 9426436,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "c82c8e25cf9b890b59601bac4727761e4e817a7852296e6f5c1fac373ac51f9e",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "native_h1_annotation",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "9d55eaec8cdd7246b697c8cb2dbdd142"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:9426436",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:9d55eaec8cdd7246b697c8cb2dbdd142",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/035/149/785/GCF_035149785.1_rCanAsp1.hap2/GCF_035149785.1_rCanAsp1.hap2_genomic.gff.gz"
           }
-        ]
+        ],
+        "pre_download_ready": true
       },
       {
-        "candidate_id": "macropus_eugenii_gca_028372415_2",
-        "issues": [
+        "candidate_id": "dendropsophus_ebraccatus_gca_027789765_1",
+        "issues": [],
+        "metadata_cache_request_keys": [
+          "acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a",
+          "a648ed5fc7c368b934a50744e84196ef308d157f1e493b34628300c30f9eef79",
+          "86eb689034ca6b7eadd5149a70b16975ffd0e87b4bf85499793f79c9f6a633e7",
+          "2b768c5eb9c63b6604bcc7ef50c41666fa461c29471f611b20bd546f27c4da84",
+          "e279e8b4d476a324c6cf070c61df0e46069241fa091de9f628f1ba4df24ad143",
+          "2737f5f894ae3961b47753dd040976302ebddd9e15839edfc87403c4ef2b91e0"
+        ],
+        "obligations": [
           {
-            "code": "H1_SHA256_MISSING",
-            "message": "missing H1 SHA-256"
+            "accession_version": "GCF_027789765.1",
+            "expected_size_bytes": 649729440,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "e279e8b4d476a324c6cf070c61df0e46069241fa091de9f628f1ba4df24ad143",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "h1_fasta",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "3f1ca68620c0a1ad11803fd48ef2745b"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:649729440",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:3f1ca68620c0a1ad11803fd48ef2745b",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/027/789/765/GCF_027789765.1_aDenEbr1.pat/GCF_027789765.1_aDenEbr1.pat_genomic.fna.gz"
           },
           {
-            "code": "H2_ACCESSION_INVALID",
-            "message": "missing or unversioned H2 accession for paired row"
-          },
-          {
-            "code": "H2_URL_MISSING",
-            "message": "missing exact H2 FASTA URL for paired row"
+            "accession_version": "GCF_027789765.1",
+            "expected_size_bytes": 14541385,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "2737f5f894ae3961b47753dd040976302ebddd9e15839edfc87403c4ef2b91e0",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "native_h1_annotation",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "ba0ef76706aa6b61305bedf6650a075d"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:14541385",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:ba0ef76706aa6b61305bedf6650a075d",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/027/789/765/GCF_027789765.1_aDenEbr1.pat/GCF_027789765.1_aDenEbr1.pat_genomic.gff.gz"
           }
-        ]
+        ],
+        "pre_download_ready": true
+      },
+      {
+        "candidate_id": "lepisosteus_oculatus_gca_040954835_1",
+        "issues": [],
+        "metadata_cache_request_keys": [
+          "acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a",
+          "a648ed5fc7c368b934a50744e84196ef308d157f1e493b34628300c30f9eef79",
+          "b02baaddc6955124f0b6f02b77cad5f31d1d54c94729456e083ef33e7d75c13e",
+          "71c8fe900fa6242cec0830910015e3835284d9f7b19e43db7453aca4b0de973c",
+          "b0b8b3959ba817503d21becbf92d2ca0bbb945720998dd169784e691f1527251",
+          "a14c6db7db250ccbe11d14c2ec600b54aab4424206d7a4555e9a1ca091f10344"
+        ],
+        "obligations": [
+          {
+            "accession_version": "GCF_040954835.1",
+            "expected_size_bytes": 337740037,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "b0b8b3959ba817503d21becbf92d2ca0bbb945720998dd169784e691f1527251",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "h1_fasta",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "d25e0149b0b3c076bb2e03390658d91e"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:337740037",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:d25e0149b0b3c076bb2e03390658d91e",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/040/954/835/GCF_040954835.1_fLepOcu1.hap2/GCF_040954835.1_fLepOcu1.hap2_genomic.fna.gz"
+          },
+          {
+            "accession_version": "GCF_040954835.1",
+            "expected_size_bytes": 17724951,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "a14c6db7db250ccbe11d14c2ec600b54aab4424206d7a4555e9a1ca091f10344",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "native_h1_annotation",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "0d0cddfa2f24704f933ff4618c3e2c11"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:17724951",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:0d0cddfa2f24704f933ff4618c3e2c11",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/040/954/835/GCF_040954835.1_fLepOcu1.hap2/GCF_040954835.1_fLepOcu1.hap2_genomic.gff.gz"
+          }
+        ],
+        "pre_download_ready": true
+      },
+      {
+        "candidate_id": "heterodontus_francisci_gca_036365525_1",
+        "issues": [],
+        "metadata_cache_request_keys": [
+          "acd393a5da9277a848f470b093eb03c3bce0e279bc31b89637fccb9aa01aef9a",
+          "a648ed5fc7c368b934a50744e84196ef308d157f1e493b34628300c30f9eef79",
+          "bac6052f5eba79663f511a0a89043005f5f0e0aa6acc5a39916ae74a34fcf3c4",
+          "103e116185cc2248ce29a04c1be5df004f77cf854a5442f9c53c868e6e0b7c61",
+          "214aaa5577ce6b9a3c8981d5326f38a61e8e6372510bc3b9f88a96b4179591e7",
+          "605d9ccb2bff48e9f195c775962d25746d1c4483217e1cc568ec391aad4dce13"
+        ],
+        "obligations": [
+          {
+            "accession_version": "GCF_036365525.1",
+            "expected_size_bytes": 1540987937,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "214aaa5577ce6b9a3c8981d5326f38a61e8e6372510bc3b9f88a96b4179591e7",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "h1_fasta",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "ef32317fc2e3ba87cfc2a8892e97738b"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:1540987937",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:ef32317fc2e3ba87cfc2a8892e97738b",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/GCF_036365525.1_sHetFra1.hap1_genomic.fna.gz"
+          },
+          {
+            "accession_version": "GCF_036365525.1",
+            "expected_size_bytes": 16366440,
+            "local_sha256_after_staging_required": true,
+            "local_sha256_reverification_required": true,
+            "official_response_request_key": "605d9ccb2bff48e9f195c775962d25746d1c4483217e1cc568ec391aad4dce13",
+            "remote_checksum_required_for_pre_download": false,
+            "role": "native_h1_annotation",
+            "source_checksum": {
+              "algorithm": "md5",
+              "value": "3ee630d9ee506d8c0b61d7ecc09216a2"
+            },
+            "source_checksum_verified_against_official_catalog": true,
+            "steps": [
+              "stage_full_payload",
+              "verify_expected_size_bytes:16366440",
+              "compute_local_sha256",
+              "reverify_local_sha256_before_promotion",
+              "verify_official_md5:3ee630d9ee506d8c0b61d7ecc09216a2",
+              "atomic_promote_read_only"
+            ],
+            "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/365/525/GCF_036365525.1_sHetFra1.hap1/GCF_036365525.1_sHetFra1.hap1_genomic.gff.gz"
+          }
+        ],
+        "pre_download_ready": true
       }
     ],
-    "selected_rows": [],
-    "summary": {
-      "composition_ready_count": 0,
-      "diversity_ready_count": 0,
-      "issue_counts": {
-        "ANNOTATION_MD5_MISSING": 74,
-        "ANNOTATION_NOT_NATIVE": 74,
-        "ANNOTATION_SHA256_MISSING": 74,
-        "ANNOTATION_SIZE_MISSING": 74,
-        "ANNOTATION_URL_MISSING": 74,
-        "CALLABLE_BASES_UNRESOLVED": 74,
-        "DECLARED_DOWNLOAD_SIZE_MISMATCH": 10,
-        "H1_SHA256_MISSING": 74,
-        "H2_ACCESSION_INVALID": 3,
-        "H2_MD5_MISSING": 3,
-        "H2_SHA256_MISSING": 25,
-        "H2_SIZE_MISSING": 3,
-        "H2_URL_MISSING": 3,
-        "PAIR_NOT_SAME_INDIVIDUAL": 4,
-        "QUERYABLE_GENE_BASES_UNRESOLVED": 74,
-        "QUERYABLE_GENE_COUNT_UNRESOLVED": 74
+    "sha256": "3e8ef805ded1ac58f1e1446d96a45922a40b5ddc34fff6424fd183be1cfe5be9"
+  },
+  "row_audit": {
+    "rows": [
+      {
+        "candidate_id": "camelus_dromedarius_gca_036321535_1",
+        "catalog_row_number": 102,
+        "issues": [],
+        "metadata_ready": true,
+        "observed_pilot_selected": false,
+        "resolved_modality": "tier3c_composition",
+        "scientific_name": "Camelus dromedarius",
+        "tier3a_ready": false,
+        "tier3a_required": false
       },
-      "selected_ready_count": 0
+      {
+        "candidate_id": "colius_striatus_gca_028858725_2",
+        "catalog_row_number": 264,
+        "issues": [],
+        "metadata_ready": true,
+        "observed_pilot_selected": false,
+        "resolved_modality": "tier3c_composition",
+        "scientific_name": "Colius striatus",
+        "tier3a_ready": false,
+        "tier3a_required": false
+      },
+      {
+        "candidate_id": "candoia_aspera_gca_035149785_1",
+        "catalog_row_number": 379,
+        "issues": [],
+        "metadata_ready": true,
+        "observed_pilot_selected": false,
+        "resolved_modality": "tier3c_composition",
+        "scientific_name": "Candoia aspera",
+        "tier3a_ready": false,
+        "tier3a_required": false
+      },
+      {
+        "candidate_id": "dendropsophus_ebraccatus_gca_027789765_1",
+        "catalog_row_number": 435,
+        "issues": [],
+        "metadata_ready": true,
+        "observed_pilot_selected": false,
+        "resolved_modality": "tier3c_composition",
+        "scientific_name": "Dendropsophus ebraccatus",
+        "tier3a_ready": false,
+        "tier3a_required": false
+      },
+      {
+        "candidate_id": "lepisosteus_oculatus_gca_040954835_1",
+        "catalog_row_number": 468,
+        "issues": [],
+        "metadata_ready": true,
+        "observed_pilot_selected": false,
+        "resolved_modality": "tier3c_composition",
+        "scientific_name": "Lepisosteus oculatus",
+        "tier3a_ready": false,
+        "tier3a_required": false
+      },
+      {
+        "candidate_id": "heterodontus_francisci_gca_036365525_1",
+        "catalog_row_number": 677,
+        "issues": [],
+        "metadata_ready": true,
+        "observed_pilot_selected": false,
+        "resolved_modality": "tier3c_composition",
+        "scientific_name": "Heterodontus francisci",
+        "tier3a_ready": false,
+        "tier3a_required": false
+      }
+    ],
+    "summary": {
+      "composition_ready_count": 6,
+      "diversity_ready_count": 0,
+      "issue_counts": {},
+      "manifest_row_count": 6,
+      "metadata_ready_count": 6,
+      "tier3a_ready_count": 0
     }
   },
-  "schema_version": "1.0",
-  "task_id": "gate-vgp-pilot"
+  "schema_version": "2.0",
+  "selection_audit": {
+    "independently_expected_selected_candidate_ids": [],
+    "metadata_ready_candidate_ids": [
+      "camelus_dromedarius_gca_036321535_1",
+      "candoia_aspera_gca_035149785_1",
+      "colius_striatus_gca_028858725_2",
+      "dendropsophus_ebraccatus_gca_027789765_1",
+      "heterodontus_francisci_gca_036365525_1",
+      "lepisosteus_oculatus_gca_040954835_1"
+    ],
+    "observed_selected_candidate_ids": [],
+    "selection_rule": "exact metadata AND strict cap vector AND external-root/storage contract; repair eligibility labels are not inputs"
+  },
+  "size_budget_audit": {
+    "aggregate_proposed_row": {
+      "acquisition_obligations": "see_candidate_rows",
+      "blocking_cap": "QUOTA_UNAVAILABLE",
+      "candidate_id": "aggregate_proposed_metadata_eligible",
+      "cap_status": "blocked",
+      "compressed_inputs_gib": "3.865305",
+      "core_hours_high": "11.1353",
+      "download_bytes_exact": "4150340415",
+      "metadata_eligible": "n/a",
+      "peak_memory_gib_high": "32.0",
+      "pilot_selected": "n/a",
+      "post_alignment_measurement_contract_id": "vgp_post_alignment_denominators_v1",
+      "row_type": "aggregate_proposed_metadata_eligible",
+      "scientific_name": "aggregate_proposed_metadata_eligible",
+      "scratch_gib_high": "205.5066"
+    },
+    "candidate_row_count": 6,
+    "issues": [],
+    "metadata_ready_candidate_count": 6
+  },
+  "storage_audit": {
+    "adequate": false,
+    "enforceable_allocation": {
+      "available_interfaces": [],
+      "headroom_pass": false,
+      "remaining_bytes": null,
+      "remaining_inodes": null,
+      "source_status": "blocked",
+      "status": "unknown"
+    },
+    "filesystem": {
+      "byte_headroom_pass": true,
+      "free_bytes": 101224219672576,
+      "free_inodes": 1004580301,
+      "inode_headroom_pass": true,
+      "is_not_an_enforceable_user_allocation": true
+    },
+    "headroom_fraction_required": 0.25,
+    "live_identity": {
+      "device": 47,
+      "exists": true,
+      "gid": 1001,
+      "inode": 8899268,
+      "mode_octal": "0o2770",
+      "resolved_path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+      "uid": 1001
+    },
+    "policy": "filesystem capacity and enforceable per-user/allocation capacity are independent; every stricter limit wins",
+    "root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+    "safety_smoke_pass": true,
+    "sha256": "607beaeb4e821fd3a18d246cd7d5f9e8f0f18d6aa8894c035353b25330c5c913",
+    "worst_case": {
+      "required_bytes": 4150340415,
+      "required_bytes_with_headroom": 5533787220,
+      "required_inodes": 22596,
+      "required_inodes_with_headroom": 30128
+    }
+  },
+  "task_id": "regate-vgp-pilot"
 }

@@ -226,8 +226,16 @@ def build_resource_rows(promoted_gate: Mapping[str, Any], telemetry_rows: Sequen
         "cpus_per_element": to_float(telemetry["requested_cpus"]),
     }
     rows: list[dict[str, str]] = []
+    cap_names = {
+        "aggregate_core_hours": "core_hours",
+        "peak_memory_gib_per_job": "memory_per_job_gib",
+        "peak_local_scratch_gb": "scratch_gib",
+    }
     for metric, budget_field, unit in RESOURCE_METRICS:
-        authorized = promoted_gate["cap_vector"]["dimensions"][metric]["value"]
+        cap_name = cap_names.get(metric, metric)
+        authorized = promoted_gate["cap_vector"]["dimensions"][cap_name]["limit"]
+        if metric == "peak_local_scratch_gb":
+            authorized = authorized * gate.BYTES_PER_GIB / 1_000_000_000
         predicted_low = to_float(stratified["low"][budget_field])
         predicted_base = to_float(stratified["base"][budget_field])
         predicted_high = to_float(stratified["high"][budget_field])

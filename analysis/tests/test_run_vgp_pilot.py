@@ -28,9 +28,9 @@ def test_run_writes_refusal_outputs_for_current_nogo_gate(tmp_path):
         output_results_path=results,
     )
     assert result["status"] == "refused_preflight"
-    # Preserve the integrated refusal gate rather than rebinding it in the
-    # resolver task; compute rejects the repaired manifest digest until regate.
-    assert result["failure_code"] == "MANIFEST_DIGEST_MISMATCH"
+    # The regenerated gate binds the repaired manifest and refuses on its
+    # independently recomputed storage/cap blockers.
+    assert result["failure_code"] == "GATE_NO_GO"
 
     manifest_rows = _read_tsv(run_manifest)
     assert manifest_rows[0]["record_type"] == "run_summary"
@@ -41,9 +41,9 @@ def test_run_writes_refusal_outputs_for_current_nogo_gate(tmp_path):
     assert manifest_rows[0]["sweepga_origin_build_sha256"]
     assert manifest_rows[0]["impg_handoff_sha256"]
     blocker_codes = {row["failure_code"] for row in manifest_rows[1:]}
-    assert "NO_SELECTED_ROWS" in blocker_codes
-    assert "ZERO_COMPOSITION_ELIGIBLE_ROWS" in blocker_codes
-    assert "ZERO_DIVERSITY_ELIGIBLE_ROWS" in blocker_codes
+    assert "QUOTA_UNAVAILABLE" in blocker_codes
+    assert "CAP_SCRATCH_GIB_EXCEEDED" in blocker_codes
+    assert "CAP_MOOSEFS_READ_GB_EXCEEDED" in blocker_codes
 
     telemetry_rows = _read_tsv(slurm_telemetry)
     assert telemetry_rows == [
@@ -72,7 +72,7 @@ def test_run_writes_refusal_outputs_for_current_nogo_gate(tmp_path):
             "io_read_gb": "0",
             "io_write_gb": "0",
             "metadata_operations": "0",
-            "failure_code": "MANIFEST_DIGEST_MISMATCH",
+            "failure_code": "GATE_NO_GO",
             "notes": "gate refusal prevented sbatch submission and sacct telemetry collection",
         }
     ]
@@ -80,11 +80,11 @@ def test_run_writes_refusal_outputs_for_current_nogo_gate(tmp_path):
     result_rows = _read_tsv(results)
     assert result_rows[0]["metric"] == "validated_species_count"
     assert result_rows[0]["value"] == "0"
-    assert result_rows[0]["failure_code"] == "MANIFEST_DIGEST_MISMATCH"
+    assert result_rows[0]["failure_code"] == "GATE_NO_GO"
     assert {row["failure_code"] for row in result_rows[1:]} >= {
-        "NO_SELECTED_ROWS",
-        "ZERO_COMPOSITION_ELIGIBLE_ROWS",
-        "ZERO_DIVERSITY_ELIGIBLE_ROWS",
+        "QUOTA_UNAVAILABLE",
+        "CAP_SCRATCH_GIB_EXCEEDED",
+        "CAP_MOOSEFS_READ_GB_EXCEEDED",
     }
 
 

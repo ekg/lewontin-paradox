@@ -1,65 +1,83 @@
-# VGP pilot gate review
+# Independently regenerated VGP pilot gate review
 
 - Decision: `NO_GO`
-- Decision SHA-256: `ae67031eaa4781984cb9da31ee7a9cd18ee4f2667f98e2a201918fc75ae57284`
-- Manifest digest: `f27b81f369af18caf97a1ccee1b14d8a8b050d665832e6e99f188041275f49ce`
-- Root contract digest: `912e47c66eeacaf8db3ff535fb857b296eb890d56e2ba0f38af3fdeb4ec12989`
-- Cap vector digest: `d51827af5600976f52549ce1a16a7f38bef03f671814d351ff2270ebe7b1b59e`
+- Decision SHA-256: `f65ea5692979484d78d285a10306ff938236935db0c4f025d43768f491d0c86c`
+- Authorization tuple SHA-256: `9e56663a8983c38f464b2c9790b85ce29401d845788e8082d30daa30c42964e8`
+- Downstream rule: only the literal decision `GO`, with every bound digest reverified, authorizes acquisition or compute.
 
-## Reproduced counts
+## Catalog units and duplicate identities
 
-- Raw frozen catalog lines: `717`
-- Raw frozen candidate seeds: `74`
-- Selected rows in manifest: `0`
-- Independently composition-ready rows: `0`
-- Independently diversity-ready rows: `0`
+- 717 physical lines = `1` header + `716` data rows.
+- `714` unique species; the data-row excess over unique species is `2`.
+- `Lophostoma evotis` multiplicity: `2`.
+- `Micronycteris microtis` multiplicity: `2`.
 
-## Winning caps
+## Independent row closure
 
-- `aggregate_core_hours`: `0.0` core-h (winner: `resource_budget_selected_stage_sum_high`)
-- `aggregate_wall_hours`: `0.0` h (winner: `resource_budget_selected_stage_sum_high`)
-- `cpus_per_element`: `8.0` count (winner: `execution_plan_small_cap`)
-- `file_inodes`: `0.0` count (winner: `resource_budget_selected_stage_sum_high`)
-- `metadata_operations`: `0.0` count (winner: `resource_budget_selected_stage_sum_high`)
-- `moosefs_read_gb`: `0.0` GB (winner: `resource_budget_selected_stage_sum_high`)
-- `moosefs_write_gb`: `0.0` GB (winner: `resource_budget_selected_stage_sum_high`)
-- `pause_fraction`: `0.8` fraction (winner: `decision_D018`)
-- `peak_bandwidth_mib_s`: `0.0` MiB/s (winner: `resource_budget_selected_stage_max_high`)
-- `peak_local_scratch_gb`: `0.0` GB (winner: `resource_budget_selected_stage_max_high`)
-- `peak_memory_gib_per_job`: `0.0` GiB (winner: `resource_budget_selected_stage_max_high`)
-- `persistent_input_gb`: `0.0` GB (winner: `selected_manifest_exact`)
-- `persistent_output_gb`: `0.0` GB (winner: `resource_budget_selected_stage_sum_high`)
-- `quota_headroom_fraction`: `0.25` fraction (winner: `decision_D018`)
-- `selected_pair_species_count`: `0.0` count (winner: `selected_pair_count`)
-- `selected_species_count`: `0.0` count (winner: `selected_manifest_count`)
-- `stop_fraction`: `0.95` fraction (winner: `decision_D018`)
-- `tier3a_concurrency`: `2.0` count (winner: `execution_plan_small_cap`)
-- `tier3c_concurrency`: `8.0` count (winner: `execution_plan_small_cap`)
-- `transfer_concurrency`: `2.0` count (winner: `execution_plan_small_cap`)
+- Manifest rows audited: `6`.
+- Exact H1/native-annotation metadata-ready rows: `6`.
+- Exact paired Tier3A-ready rows: `0`.
+- Seed/rejection rows independently closed: `74` / `74`; all match: `true`.
+- Independently expected selected rows: `none`.
+
+## Strictest finite cap vector
+
+- `species`: observed `6.0`; limit `6.0` count; pass `true`; winner `regate_task_bound`.
+- `compressed_inputs_gib`: observed `3.8653049999999998`; limit `120.0` GiB; pass `true`; winner `regate_task_bound`.
+- `scratch_gib`: observed `205.5066`; limit `139.69838619232178` GiB; pass `false`; winner `integrated_execution_plan_small_cap`.
+- `core_hours`: observed `11.1353`; limit `280.0` core-hours; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `concurrent_species`: observed `2.0`; limit `2.0` count; pass `true`; winner `regate_task_bound`.
+- `memory_per_job_gib`: observed `32.0`; limit `96.0` GiB; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `file_inodes`: observed `22596.0`; limit `60000.0` count; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `moosefs_read_gb`: observed `406.72740000000005`; limit `180.0` GB; pass `false`; winner `integrated_execution_plan_small_cap`.
+- `moosefs_write_gb`: observed `3.1634`; limit `200.0` GB; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `metadata_operations`: observed `271151.0`; limit `500000.0` count; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `peak_bandwidth_mib_s`: observed `120.0`; limit `120.0` MiB/s; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `aggregate_wall_hours`: observed `8.7311`; limit `17.5` hours; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `persistent_input_gb`: observed `4.150340415`; limit `160.0` GB; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `persistent_output_gb`: observed `0.0`; limit `32.0` GB; pass `true`; winner `integrated_execution_plan_small_cap`.
+- `cpus_per_element`: observed `8.0`; limit `8.0` count; pass `true`; winner `integrated_execution_plan_small_cap`.
+
+## External-root and storage contract
+
+- Root: `/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0`; live identity digest is bound in the decision.
+- Filesystem free bytes/inodes: `101224219672576` / `1004580301`.
+- Enforceable allocation/quota status: `unknown`.
+- Filesystem free space and inodes are reported independently from enforceable per-user/allocation limits. Unknown quota never counts as adequate and cannot be overridden by free space.
+- Required worst-case byte and inode capacity includes at least 25% headroom; every stricter integrated limit wins.
+
+## Retrieval, checksums, pairs, and denominators
+
+- Pre-download-ready exact-version rows: `6`.
+- Each exact official payload is staged, finite-size checked, checked against every available official checksum, locally SHA-256 hashed, reverified, and atomically promoted read-only. A missing remote SHA-256/MD5 is not itself a pre-download blocker.
+- Pair evidence digest: `73e641104bad3f5a5f7c269a303e72dbd492141b9be3a05d6b60c0d143f1f7b3`; Tier3A requires exact versioned H2 plus affirmative same-individual and phasing evidence.
+- Denominator contract: `vgp_post_alignment_denominators_v1`; pre-download prerequisite `false`.
+- Callable/queryable denominators are measured after alignment. Missing or sub-threshold measurements exclude the affected downstream result.
+
+## Bound decision components
+
+- `catalog_provenance_digest`: `dc3fdcaea438635595a4d1c50b2d3146846101a154e6bbc1406a5da077cae58b`
+- `data_root_storage_contract_digest`: `1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb`
+- `environment_digest`: `fe8e45bb716ffc9560cf2cda37d4974c46905279635ca5e8c590666d1f9b354e`
+- `cap_vector_digest`: `b6d15c85feee41edac606dba1d51e5d288016de0b99b0922292d0244437bac4c`
+- `retrieval_checksum_obligations_digest`: `3e8ef805ded1ac58f1e1446d96a45922a40b5ddc34fff6424fd183be1cfe5be9`
+- `pair_evidence_digest`: `73e641104bad3f5a5f7c269a303e72dbd492141b9be3a05d6b60c0d143f1f7b3`
+- `measurement_contract_digest`: `6fa68a0a657877953d5d92dc99f850492fbe5d823672d38d81cd806653f84018`
+- `row_dispositions_digest`: `dc6357145a61b4692d8db30b0e3a19dcde683281b9a3abfa7dd59bf887eb90fe`
+- `manifest_digest`: `b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988`
+- `root_contract_digest`: `1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb`
+- `input_bundle_digest`: `d49a1fe1098344413908ffcf3168367ca0a1d6235f71e8a1502612048f01e426`
+- `authorization_tuple_digest`: `9e56663a8983c38f464b2c9790b85ce29401d845788e8082d30daa30c42964e8`
 
 ## Blockers
 
-- `SOURCE_COUNT_DISCREPANCY_UNRESOLVED`: the frozen raw VGP catalog still disagrees with the planning headline counts and no explicit signed discrepancy resolution is bundled here (analysis/vgp_phase1_freeze_provenance.json)
-- `NO_SELECTED_ROWS`: the frozen pilot manifest selects zero rows, so no bounded pilot can be authorized (analysis/vgp_pilot_manifest.tsv)
-- `ZERO_COMPOSITION_ELIGIBLE_ROWS`: no manifest row independently satisfies exact H1/native-annotation/denominator requirements (analysis/vgp_pilot_manifest.tsv)
-- `ZERO_DIVERSITY_ELIGIBLE_ROWS`: no manifest row independently satisfies the paired same-individual diversity requirements (analysis/vgp_pilot_manifest.tsv)
+- `CAP_MOOSEFS_READ_GB_EXCEEDED`: proposed finite worst-case moosefs_read_gb=406.72740000000005 exceeds strictest limit 180.0 GB (strict cap vector)
+- `CAP_SCRATCH_GIB_EXCEEDED`: proposed finite worst-case scratch_gib=205.5066 exceeds strictest limit 139.69838619232178 GiB (strict cap vector)
 - `QUOTA_UNAVAILABLE`: No user-visible quota command was available from the current environment. (analysis/vgp_data_root_validation.json)
 
-## Dominant row-level failures
+## Authorization exclusions
 
-- `ANNOTATION_MD5_MISSING`: `74` rows
-- `ANNOTATION_NOT_NATIVE`: `74` rows
-- `ANNOTATION_SHA256_MISSING`: `74` rows
-- `ANNOTATION_SIZE_MISSING`: `74` rows
-- `ANNOTATION_URL_MISSING`: `74` rows
-- `CALLABLE_BASES_UNRESOLVED`: `74` rows
-- `DECLARED_DOWNLOAD_SIZE_MISMATCH`: `10` rows
-- `H1_SHA256_MISSING`: `74` rows
-- `H2_ACCESSION_INVALID`: `3` rows
-- `H2_MD5_MISSING`: `3` rows
-- `H2_SHA256_MISSING`: `25` rows
-- `H2_SIZE_MISSING`: `3` rows
-- `H2_URL_MISSING`: `3` rows
-- `PAIR_NOT_SAME_INDIVIDUAL`: `4` rows
-- `QUERYABLE_GENE_BASES_UNRESOLVED`: `74` rows
-- `QUERYABLE_GENE_COUNT_UNRESOLVED`: `74` rows
+- Full-catalog acquisition is unauthorized.
+- Raw population bulk download is unauthorized.
+- Demographic inference is unauthorized.
+- This gate launched zero downloads and zero jobs.

@@ -24,17 +24,16 @@ def test_run_writes_refusal_manifest_and_report_for_current_nogo_gate(tmp_path):
         output_report_path=report_out,
     )
     assert result["status"] == "refused_preflight"
-    # The repaired manifest intentionally does not rewrite the integrated
-    # refusal gate.  Acquisition must therefore fail even earlier on the bound
-    # manifest digest until the downstream independent regate task runs.
-    assert result["failure_code"] == "MANIFEST_DIGEST_MISMATCH"
+    # The independently regenerated gate binds the repaired manifest and then
+    # refuses because the strict storage/cap contract remains NO_GO.
+    assert result["failure_code"] == "GATE_NO_GO"
     rows = _read_manifest(manifest_out)
     assert rows[0]["record_type"] == "run_summary"
     assert rows[0]["status"] == "refused_preflight"
     assert rows[0]["observed_bytes"] == "0"
     blocker_codes = {row["failure_code"] for row in rows[1:]}
-    assert "NO_SELECTED_ROWS" in blocker_codes
-    assert "ZERO_COMPOSITION_ELIGIBLE_ROWS" in blocker_codes
+    assert "QUOTA_UNAVAILABLE" in blocker_codes
+    assert "CAP_SCRATCH_GIB_EXCEEDED" in blocker_codes
     report = report_out.read_text(encoding="utf-8")
     assert "Gate decision: `NO_GO`" in report
     assert "Refused before first biological byte: `true`" in report

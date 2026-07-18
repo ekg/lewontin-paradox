@@ -34,13 +34,11 @@ def test_review_recomputes_current_refusal_artifacts(tmp_path):
 
     qc_rows = _read_tsv(qc_out)
     decisions = {row["check_id"]: row["decision"] for row in qc_rows}
-    # The old promoted gate remains immutable refusal evidence and is not
-    # rebound to the repaired manifest.  Independent regating is downstream.
-    assert decisions["promoted_gate_recompute"] == "FAIL"
+    assert decisions["promoted_gate_recompute"] == "PASS"
     assert decisions["run_manifest_recompute"] == "FAIL"
-    assert decisions["telemetry_recompute"] == "FAIL"
+    assert decisions["telemetry_recompute"] == "PASS"
     assert decisions["results_recompute"] == "FAIL"
-    assert decisions["source_catalog_counts"] == "FAIL"
+    assert decisions["source_catalog_counts"] == "PASS"
     assert decisions["selected_manifest_rows"] == "FAIL"
     assert decisions["quota_interface"] == "FAIL"
     assert decisions["slurm_terminal_state"] == "PASS"
@@ -50,7 +48,7 @@ def test_review_recomputes_current_refusal_artifacts(tmp_path):
     resource_rows = _read_tsv(resource_out)
     by_metric = {row["metric"]: row for row in resource_rows}
     assert by_metric["aggregate_core_hours"]["decision"] == "PASS"
-    assert by_metric["aggregate_core_hours"]["authorized_cap"] == "0"
+    assert by_metric["aggregate_core_hours"]["authorized_cap"] == "280"
     assert by_metric["aggregate_core_hours"]["observed"] == "0"
     assert by_metric["peak_memory_gib_per_job"]["decision"] == "INCONCLUSIVE"
 
