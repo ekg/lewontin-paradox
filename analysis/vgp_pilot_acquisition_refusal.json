@@ -1,0 +1,21 @@
+{
+  "authorization_tuple_digest": "410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240",
+  "biological_payload_bytes_transferred": 0,
+  "decision_sha256": "9f39b13be5e0b1999c4cd98498399aee8700a7487d57fa81dfb7c59c29ff867d",
+  "demographic_inferences_performed": 0,
+  "failure_code": "GATE_NO_GO",
+  "failure_message": "gate decision is NO_GO; acquire is not authorized",
+  "full_catalog_downloaded": false,
+  "gate_decision": "NO_GO",
+  "gate_path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-227/analysis/vgp_pilot_gate.json",
+  "generated_at_utc": "2026-07-18T08:51:24Z",
+  "objects_promoted": 0,
+  "partial_files_created": 0,
+  "provider_requests_attempted": 0,
+  "quarantine_objects_written": 0,
+  "raw_population_bulk_downloaded": false,
+  "run_id": "vgp-pilot-acquire-20260718T085124Z-22120",
+  "schema_version": "1.0",
+  "slurm_jobs_submitted": 0,
+  "status": "refused_preflight"
+}

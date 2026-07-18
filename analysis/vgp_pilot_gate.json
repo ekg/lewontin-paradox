@@ -1,12 +1,12 @@
 {
   "authorization_boundary": {
-    "authorization_tuple_digest": "9e56663a8983c38f464b2c9790b85ce29401d845788e8082d30daa30c42964e8",
+    "authorization_tuple_digest": "410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240",
     "cap_vector_digest": "b6d15c85feee41edac606dba1d51e5d288016de0b99b0922292d0244437bac4c",
     "catalog_provenance_digest": "dc3fdcaea438635595a4d1c50b2d3146846101a154e6bbc1406a5da077cae58b",
     "data_root_storage_contract_digest": "1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb",
     "environment_digest": "fe8e45bb716ffc9560cf2cda37d4974c46905279635ca5e8c590666d1f9b354e",
     "go_token": "GO",
-    "input_bundle_digest": "d49a1fe1098344413908ffcf3168367ca0a1d6235f71e8a1502612048f01e426",
+    "input_bundle_digest": "5595cb4cf38504fba4b6c862ee46283e8d48c7cafaeacbc813f5804390f135be",
     "manifest_digest": "b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988",
     "measurement_contract_digest": "6fa68a0a657877953d5d92dc99f850492fbe5d823672d38d81cd806653f84018",
     "pair_evidence_digest": "73e641104bad3f5a5f7c269a303e72dbd492141b9be3a05d6b60c0d143f1f7b3",
@@ -468,12 +468,12 @@
     }
   },
   "decision": {
-    "authorization_tuple_digest": "9e56663a8983c38f464b2c9790b85ce29401d845788e8082d30daa30c42964e8",
+    "authorization_tuple_digest": "410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240",
     "blocker_count": 3,
     "only_literal_go_authorizes_downstream": true,
     "status": "NO_GO"
   },
-  "decision_sha256": "f65ea5692979484d78d285a10306ff938236935db0c4f025d43768f491d0c86c",
+  "decision_sha256": "9f39b13be5e0b1999c4cd98498399aee8700a7487d57fa81dfb7c59c29ff867d",
   "disposition_audit": {
     "all_rows_match": true,
     "rejection_row_count": 74,
@@ -1245,75 +1245,75 @@
       "wfmash": "wfmash commit e040aa10e87cab44ed5a4db005e784be62b0bd21 (upstream binary emits no version string)"
     }
   },
-  "generated_at_utc": "2026-07-18T08:31:13Z",
+  "generated_at_utc": "2026-07-18T08:48:26Z",
   "inputs": {
     "decisions": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vertebrate_scaleout_decisions.tsv",
+      "path": "analysis/vertebrate_scaleout_decisions.tsv",
       "sha256": "ec23412bc5c93ed81376324ac90f749b9dbd29afe9a7591552315dd8eb995cae",
       "size_bytes": 18255
     },
     "execution_plan": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vertebrate_scaleout_execution_plan.md",
+      "path": "analysis/vertebrate_scaleout_execution_plan.md",
       "sha256": "9e6fd40ae4bc01f6e1b5a7c7cf74c9e4a1bba27b7262e7ef53467e0d6c93f595",
       "size_bytes": 48357
     },
     "freeze_provenance": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_phase1_freeze_provenance.json",
+      "path": "analysis/vgp_phase1_freeze_provenance.json",
       "sha256": "8b3c847ba261a218b2f81b379041d7215dcb547e1b854b1d780fc6903fde463b",
       "size_bytes": 4321
     },
     "guix_channels": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/guix/channels.scm",
+      "path": "analysis/guix/channels.scm",
       "sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
       "size_bytes": 405
     },
     "guix_environment": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/pilot_results/guix_environment.json",
+      "path": "analysis/pilot_results/guix_environment.json",
       "sha256": "48acf30d8b6e91c2bcbb49869145e89edbb1ab51023bdea98cc6c7be109f5cad",
       "size_bytes": 15381
     },
     "guix_manifest": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/guix/manifest.scm",
+      "path": "analysis/guix/manifest.scm",
       "sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
       "size_bytes": 1684
     },
     "manifest": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_pilot_manifest.tsv",
+      "path": "analysis/vgp_pilot_manifest.tsv",
       "sha256": "b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988",
       "size_bytes": 33299
     },
     "prior_seed_manifest": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_resolution_cache/prior_refusal/vgp_pilot_manifest.tsv",
+      "path": "analysis/vgp_resolution_cache/prior_refusal/vgp_pilot_manifest.tsv",
       "sha256": "f27b81f369af18caf97a1ccee1b14d8a8b050d665832e6e99f188041275f49ce",
       "size_bytes": 212072
     },
     "rejections": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_pilot_rejections.tsv",
+      "path": "analysis/vgp_pilot_rejections.tsv",
       "sha256": "e84667ee0be6ba1edf9909ddf66fa74b498d9aaec9014f06ce3a0fb63e6fb052",
       "size_bytes": 25695
     },
     "resolution_index": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_resolution_cache/index.json",
+      "path": "analysis/vgp_resolution_cache/index.json",
       "sha256": "293cd2475339b3d338ee2f3d3900da5d2a285a99b18bc31b7a1558b5574eb35b",
       "size_bytes": 65075
     },
     "resource_budget": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vertebrate_scaleout_resource_budget.tsv",
+      "path": "analysis/vertebrate_scaleout_resource_budget.tsv",
       "sha256": "d0659b1dfc29fd078de7b5f6f82399fb43d125d96403b88a774515d4539e7692",
       "size_bytes": 12362
     },
     "root_config": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_data_root_config.json",
+      "path": "analysis/vgp_data_root_config.json",
       "sha256": "912e47c66eeacaf8db3ff535fb857b296eb890d56e2ba0f38af3fdeb4ec12989",
       "size_bytes": 1661
     },
     "root_validation": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_data_root_validation.json",
+      "path": "analysis/vgp_data_root_validation.json",
       "sha256": "fa49635fac94b13a7fc3a9d0dbcdfa3f36cd1ed437633479f5a87957e0594149",
       "size_bytes": 8458
     },
     "size_budget": {
-      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-222/analysis/vgp_pilot_size_budget.tsv",
+      "path": "analysis/vgp_pilot_size_budget.tsv",
       "sha256": "aabd5e8dcf9039f77452d4a03e831dd1989fa99bcca241d2f5229b7655db6c9b",
       "size_bytes": 8715
     }

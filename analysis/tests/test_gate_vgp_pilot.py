@@ -78,6 +78,12 @@ def _authorize(kwargs: dict, **overrides):
     )
 
 
+def test_repository_input_records_are_worktree_portable():
+    record = gate._input_record(ROOT / "analysis/vgp_pilot_manifest.tsv")
+    assert record["path"] == "analysis/vgp_pilot_manifest.tsv"
+    assert record["sha256"] == gate.sha256_file(ROOT / record["path"])
+
+
 def test_regenerated_gate_reproduces_catalog_rows_duplicates_and_dispositions(tmp_path):
     built, kwargs = _build(tmp_path)
     assert kwargs["gate_out"].is_file()

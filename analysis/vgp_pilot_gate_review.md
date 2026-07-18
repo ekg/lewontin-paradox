@@ -1,8 +1,8 @@
 # Independently regenerated VGP pilot gate review
 
 - Decision: `NO_GO`
-- Decision SHA-256: `f65ea5692979484d78d285a10306ff938236935db0c4f025d43768f491d0c86c`
-- Authorization tuple SHA-256: `9e56663a8983c38f464b2c9790b85ce29401d845788e8082d30daa30c42964e8`
+- Decision SHA-256: `9f39b13be5e0b1999c4cd98498399aee8700a7487d57fa81dfb7c59c29ff867d`
+- Authorization tuple SHA-256: `410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240`
 - Downstream rule: only the literal decision `GO`, with every bound digest reverified, authorizes acquisition or compute.
 
 ## Catalog units and duplicate identities
@@ -66,8 +66,8 @@
 - `row_dispositions_digest`: `dc6357145a61b4692d8db30b0e3a19dcde683281b9a3abfa7dd59bf887eb90fe`
 - `manifest_digest`: `b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988`
 - `root_contract_digest`: `1f761b8a8df248f50ea8c61d98189c15113687439ecf81ca519696c91005f7fb`
-- `input_bundle_digest`: `d49a1fe1098344413908ffcf3168367ca0a1d6235f71e8a1502612048f01e426`
-- `authorization_tuple_digest`: `9e56663a8983c38f464b2c9790b85ce29401d845788e8082d30daa30c42964e8`
+- `input_bundle_digest`: `5595cb4cf38504fba4b6c862ee46283e8d48c7cafaeacbc813f5804390f135be`
+- `authorization_tuple_digest`: `410c42c2894d69d88b70361ebe20a3c806e203524595be746562be97343f9240`
 
 ## Blockers
 

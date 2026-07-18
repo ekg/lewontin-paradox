@@ -907,7 +907,18 @@ def _pair_evidence_payload(rows: Sequence[Mapping[str, str]]) -> dict[str, Any]:
 
 
 def _input_record(path: Path) -> dict[str, Any]:
-    return {"path": str(path), "sha256": sha256_file(path), "size_bytes": path.stat().st_size}
+    # Repository inputs must retain the same identity after a WG branch is
+    # merged into another managed worktree.  Absolute worktree paths bind an
+    # ephemeral agent directory and make an otherwise byte-identical gate
+    # impossible to reauthorize downstream.  External-root inputs remain
+    # absolute; only files beneath this checkout use stable repo-relative
+    # names.
+    resolved = path.resolve(strict=True)
+    try:
+        recorded_path = str(resolved.relative_to(PROJECT_ROOT.resolve(strict=True)))
+    except ValueError:
+        recorded_path = str(resolved)
+    return {"path": recorded_path, "sha256": sha256_file(path), "size_bytes": path.stat().st_size}
 
 
 def _evaluate_gate(
