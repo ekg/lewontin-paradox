@@ -35,9 +35,11 @@ def test_review_recomputes_current_refusal_artifacts(tmp_path):
     qc_rows = _read_tsv(qc_out)
     decisions = {row["check_id"]: row["decision"] for row in qc_rows}
     assert decisions["promoted_gate_recompute"] == "PASS"
-    assert decisions["run_manifest_recompute"] == "FAIL"
+    # The repaired run task promotes fresh refusal artifacts bound to the
+    # repaired gate, so all normalized refusal tables now reproduce exactly.
+    assert decisions["run_manifest_recompute"] == "PASS"
     assert decisions["telemetry_recompute"] == "PASS"
-    assert decisions["results_recompute"] == "FAIL"
+    assert decisions["results_recompute"] == "PASS"
     assert decisions["source_catalog_counts"] == "PASS"
     assert decisions["selected_manifest_rows"] == "FAIL"
     assert decisions["quota_interface"] == "FAIL"
