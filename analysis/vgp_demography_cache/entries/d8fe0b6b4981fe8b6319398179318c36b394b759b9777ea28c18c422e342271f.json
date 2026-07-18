@@ -1,0 +1,50 @@
+{
+  "request": {
+    "endpoint": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
+    "method": "GET",
+    "parameters": {
+      "db": "taxonomy",
+      "retmax": "100",
+      "retmode": "json",
+      "term": "txid9838[Organism:exp] OR txid57412[Organism:exp] OR txid51853[Organism:exp] OR txid150705[Organism:exp] OR txid7918[Organism:exp] OR txid7792[Organism:exp]"
+    },
+    "source": "NCBI Entrez E-utilities",
+    "source_version": "live service; response Date header recorded"
+  },
+  "request_key": "d8fe0b6b4981fe8b6319398179318c36b394b759b9777ea28c18c422e342271f",
+  "response_headers": {
+    "access-control-allow-origin": "*",
+    "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+    "alt-svc": "clear",
+    "cache-control": "private",
+    "connection": "close",
+    "content-security-policy": "upgrade-insecure-requests",
+    "content-type": "application/json; charset=UTF-8",
+    "date": "Sat, 18 Jul 2026 08:15:46 GMT",
+    "ncbi-phid": "1D33E36DD8BFFC250000504E27040EE7.1.1.m_1",
+    "ncbi-sid": "C898EB4B7A75BDA5_038CSID",
+    "referrer-policy": "origin-when-cross-origin",
+    "server": "Finatra",
+    "set-cookie": "ncbi_sid=C898EB4B7A75BDA5_038CSID; domain=.nih.gov; path=/; expires=Sun, 18 Jul 2027 08:15:47 GMT",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "via": "1.1 google",
+    "x-ratelimit-limit": "3",
+    "x-ratelimit-remaining": "2",
+    "x-ua-compatible": "IE=Edge",
+    "x-xss-protection": "1; mode=block"
+  },
+  "response_path": "analysis/vgp_demography_cache/responses/d8fe0b6b4981fe8b6319398179318c36b394b759b9777ea28c18c422e342271f.json",
+  "response_sha256": "23a0b9e1c3b45f020783203282b590a70c458ab2dfd1b7b4e4db8936449ed423",
+  "response_size_bytes": 883,
+  "retrieved_at_utc": "2026-07-18T08:15:38Z",
+  "software_environment": {
+    "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "implementation": "CPython",
+    "platform": "Linux-4.19.0-27-amd64-x86_64-with-glibc2.35",
+    "python": "3.10.7",
+    "software": "vgp-demography-metadata-audit/1.0"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "request": {
+    "endpoint": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi",
+    "method": "GET",
+    "parameters": {
+      "db": "sra",
+      "id": "34490960,34490957,34791267,34791266,34791265,34791264,34791263,34791262,34791261,34791260,34791259,34791258,34791257,34791256,34490965,34490964,34490963,34490962,34490961,34490959,34490958,34490956,34490955,34490954,34490953,34490952,34490951,34490950,34490949,34110768,34110767,34110765,34110764,34110763,34110762,34110761,34110759,34110758,34110757,34110756,34110755,34110754,34110753,34110751,34110750,34110749,34110748,34110746,34110745,34110744,34110742,34110741,34110740,34110738,34110737,34110736,34110735,34110733,33768582,33768581,33768580,33768578,32904793,32904792,32904791,32904790,29236400,28555980,28555979,28555978,28555977,28555976,28555975,28555974,28555973,28555972,28555971,28555970,28555969,28555968,28555967,28555966,28555965,28555964,28555963,28555962,28555961,28555960,28555959,28555958,28555957,28555956,28555955,28555954,28555953",
+      "retmode": "json"
+    },
+    "source": "NCBI Entrez E-utilities",
+    "source_version": "live service; response Date header recorded"
+  },
+  "request_key": "4e416144eb11800031da258e5618de2a85bc5562ce675c3c2d705b50b1e9c3f1",
+  "response_headers": {
+    "access-control-allow-origin": "*",
+    "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+    "alt-svc": "clear",
+    "cache-control": "private",
+    "connection": "close",
+    "content-security-policy": "upgrade-insecure-requests",
+    "content-type": "application/json; charset=UTF-8",
+    "date": "Sat, 18 Jul 2026 08:15:48 GMT",
+    "ncbi-phid": "1D32F1EC5D2E8EF50000433DFFF82B0F.1.1.m_1",
+    "ncbi-sid": "A3D5BB730AA9F8CC_332BSID",
+    "referrer-policy": "origin-when-cross-origin",
+    "server": "Finatra",
+    "set-cookie": "ncbi_sid=A3D5BB730AA9F8CC_332BSID; domain=.nih.gov; path=/; expires=Sun, 18 Jul 2027 08:15:48 GMT",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "via": "1.1 google",
+    "x-ratelimit-limit": "3",
+    "x-ratelimit-remaining": "1",
+    "x-ua-compatible": "IE=Edge",
+    "x-xss-protection": "1; mode=block"
+  },
+  "response_path": "analysis/vgp_demography_cache/responses/4e416144eb11800031da258e5618de2a85bc5562ce675c3c2d705b50b1e9c3f1.json",
+  "response_sha256": "774924814c5ae7eca7feaf19d4e5085482654e4f2364f0398c0082fe52ac08ec",
+  "response_size_bytes": 139670,
+  "retrieved_at_utc": "2026-07-18T08:15:40Z",
+  "software_environment": {
+    "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "implementation": "CPython",
+    "platform": "Linux-4.19.0-27-amd64-x86_64-with-glibc2.35",
+    "python": "3.10.7",
+    "software": "vgp-demography-metadata-audit/1.0"
+  }
+}

@@ -1,0 +1,253 @@
+{
+  "audit_denominator": {
+    "biosample_accessions": [
+      "SAMN39296380",
+      "SAMN33339572",
+      "SAMN37159891",
+      "SAMN32145295",
+      "SAMN41155427",
+      "SAMN39432692"
+    ],
+    "candidate_ids": [
+      "camelus_dromedarius_gca_036321535_1",
+      "colius_striatus_gca_028858725_2",
+      "candoia_aspera_gca_035149785_1",
+      "dendropsophus_ebraccatus_gca_027789765_1",
+      "lepisosteus_oculatus_gca_040954835_1",
+      "heterodontus_francisci_gca_036365525_1"
+    ],
+    "interpretation": "six repaired prioritized metadata-eligible candidates; execution remains quota-blocked",
+    "ncbi_taxids": [
+      "9838",
+      "57412",
+      "51853",
+      "150705",
+      "7918",
+      "7792"
+    ]
+  },
+  "authorization_boundary": {
+    "biological_payloads_downloaded": 0,
+    "demographic_inference_performed": false,
+    "jobs_submitted": 0,
+    "raw_population_bulk_download_authorized": false
+  },
+  "generated_at_utc": "2026-07-18T08:25:07Z",
+  "lookup_policy": {
+    "batching": "one OR search per database followed by one comma-ID batch summary",
+    "immutable_cache_key": "sha256(canonical normalized request)",
+    "maximum_attempts": 5,
+    "metadata_only": true,
+    "ncbi_requests": 4,
+    "rate_limit_minimum_interval_seconds": 0.34,
+    "resume_checkpoint": "analysis/vgp_demography_cache/checkpoint.json",
+    "retry_after_aware": true,
+    "retry_after_events_observed": []
+  },
+  "manifest": {
+    "path": "analysis/vgp_pilot_manifest.tsv",
+    "sha256": "b7cbe6cf22287d58dae9e270a81dee2970aaa3d8c73a2270323fa6210b276988"
+  },
+  "responses": [
+    {
+      "request": {
+        "endpoint": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
+        "method": "GET",
+        "parameters": {
+          "db": "taxonomy",
+          "retmax": "100",
+          "retmode": "json",
+          "term": "txid9838[Organism:exp] OR txid57412[Organism:exp] OR txid51853[Organism:exp] OR txid150705[Organism:exp] OR txid7918[Organism:exp] OR txid7792[Organism:exp]"
+        },
+        "source": "NCBI Entrez E-utilities",
+        "source_version": "live service; response Date header recorded"
+      },
+      "request_key": "d8fe0b6b4981fe8b6319398179318c36b394b759b9777ea28c18c422e342271f",
+      "response_headers": {
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "cache-control": "private",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json; charset=UTF-8",
+        "date": "Sat, 18 Jul 2026 08:15:46 GMT",
+        "ncbi-phid": "1D33E36DD8BFFC250000504E27040EE7.1.1.m_1",
+        "ncbi-sid": "C898EB4B7A75BDA5_038CSID",
+        "referrer-policy": "origin-when-cross-origin",
+        "server": "Finatra",
+        "set-cookie": "ncbi_sid=C898EB4B7A75BDA5_038CSID; domain=.nih.gov; path=/; expires=Sun, 18 Jul 2027 08:15:47 GMT",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-ratelimit-limit": "3",
+        "x-ratelimit-remaining": "2",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_demography_cache/responses/d8fe0b6b4981fe8b6319398179318c36b394b759b9777ea28c18c422e342271f.json",
+      "response_sha256": "23a0b9e1c3b45f020783203282b590a70c458ab2dfd1b7b4e4db8936449ed423",
+      "response_size_bytes": 883,
+      "retrieved_at_utc": "2026-07-18T08:15:38Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-glibc2.35",
+        "python": "3.10.7",
+        "software": "vgp-demography-metadata-audit/1.0"
+      }
+    },
+    {
+      "request": {
+        "endpoint": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi",
+        "method": "GET",
+        "parameters": {
+          "db": "taxonomy",
+          "id": "150705,57412,51853,9838,7918,7792",
+          "retmode": "json"
+        },
+        "source": "NCBI Entrez E-utilities",
+        "source_version": "live service; response Date header recorded"
+      },
+      "request_key": "fcf756de780556730cf55874c4116590a3705d2b5503c58bf7aefa2035f8d387",
+      "response_headers": {
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "cache-control": "private",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json; charset=UTF-8",
+        "date": "Sat, 18 Jul 2026 08:15:46 GMT",
+        "ncbi-phid": "1D32F1EC5D2E8EF50000533DFF024787.1.1.m_1",
+        "ncbi-sid": "4695C26BA977F581_FEB1SID",
+        "referrer-policy": "origin-when-cross-origin",
+        "server": "Finatra",
+        "set-cookie": "ncbi_sid=4695C26BA977F581_FEB1SID; domain=.nih.gov; path=/; expires=Sun, 18 Jul 2027 08:15:47 GMT",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-ratelimit-limit": "3",
+        "x-ratelimit-remaining": "1",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_demography_cache/responses/fcf756de780556730cf55874c4116590a3705d2b5503c58bf7aefa2035f8d387.json",
+      "response_sha256": "bce496ab89da9b1d49cdfeff68bde71bd51def5340ff15a3e23b3c6f0151702a",
+      "response_size_bytes": 1821,
+      "retrieved_at_utc": "2026-07-18T08:15:39Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-glibc2.35",
+        "python": "3.10.7",
+        "software": "vgp-demography-metadata-audit/1.0"
+      }
+    },
+    {
+      "request": {
+        "endpoint": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
+        "method": "GET",
+        "parameters": {
+          "db": "sra",
+          "retmax": "10000",
+          "retmode": "json",
+          "term": "SAMN39296380[BioSample] OR SAMN33339572[BioSample] OR SAMN37159891[BioSample] OR SAMN32145295[BioSample] OR SAMN41155427[BioSample] OR SAMN39432692[BioSample]"
+        },
+        "source": "NCBI Entrez E-utilities",
+        "source_version": "live service; response Date header recorded"
+      },
+      "request_key": "5ae65351388dc07085279a88f20fe23f4403f81d854f0188db9bd4faff93ed53",
+      "response_headers": {
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "cache-control": "private",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json; charset=UTF-8",
+        "date": "Sat, 18 Jul 2026 08:15:47 GMT",
+        "ncbi-phid": "1D342B39E16A63E50000624E1F660DB0.1.1.m_1",
+        "ncbi-sid": "EA4E9447974FC305_F294SID",
+        "referrer-policy": "origin-when-cross-origin",
+        "server": "Finatra",
+        "set-cookie": "ncbi_sid=EA4E9447974FC305_F294SID; domain=.nih.gov; path=/; expires=Sun, 18 Jul 2027 08:15:48 GMT",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-ratelimit-limit": "3",
+        "x-ratelimit-remaining": "1",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_demography_cache/responses/5ae65351388dc07085279a88f20fe23f4403f81d854f0188db9bd4faff93ed53.json",
+      "response_sha256": "8f6aa761be1229d9c010ab1eca8533c84b699060f25d334f74e98028d22aed9b",
+      "response_size_bytes": 1898,
+      "retrieved_at_utc": "2026-07-18T08:15:40Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-glibc2.35",
+        "python": "3.10.7",
+        "software": "vgp-demography-metadata-audit/1.0"
+      }
+    },
+    {
+      "request": {
+        "endpoint": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi",
+        "method": "GET",
+        "parameters": {
+          "db": "sra",
+          "id": "34490960,34490957,34791267,34791266,34791265,34791264,34791263,34791262,34791261,34791260,34791259,34791258,34791257,34791256,34490965,34490964,34490963,34490962,34490961,34490959,34490958,34490956,34490955,34490954,34490953,34490952,34490951,34490950,34490949,34110768,34110767,34110765,34110764,34110763,34110762,34110761,34110759,34110758,34110757,34110756,34110755,34110754,34110753,34110751,34110750,34110749,34110748,34110746,34110745,34110744,34110742,34110741,34110740,34110738,34110737,34110736,34110735,34110733,33768582,33768581,33768580,33768578,32904793,32904792,32904791,32904790,29236400,28555980,28555979,28555978,28555977,28555976,28555975,28555974,28555973,28555972,28555971,28555970,28555969,28555968,28555967,28555966,28555965,28555964,28555963,28555962,28555961,28555960,28555959,28555958,28555957,28555956,28555955,28555954,28555953",
+          "retmode": "json"
+        },
+        "source": "NCBI Entrez E-utilities",
+        "source_version": "live service; response Date header recorded"
+      },
+      "request_key": "4e416144eb11800031da258e5618de2a85bc5562ce675c3c2d705b50b1e9c3f1",
+      "response_headers": {
+        "access-control-allow-origin": "*",
+        "access-control-expose-headers": "X-RateLimit-Limit,X-RateLimit-Remaining",
+        "alt-svc": "clear",
+        "cache-control": "private",
+        "connection": "close",
+        "content-security-policy": "upgrade-insecure-requests",
+        "content-type": "application/json; charset=UTF-8",
+        "date": "Sat, 18 Jul 2026 08:15:48 GMT",
+        "ncbi-phid": "1D32F1EC5D2E8EF50000433DFFF82B0F.1.1.m_1",
+        "ncbi-sid": "A3D5BB730AA9F8CC_332BSID",
+        "referrer-policy": "origin-when-cross-origin",
+        "server": "Finatra",
+        "set-cookie": "ncbi_sid=A3D5BB730AA9F8CC_332BSID; domain=.nih.gov; path=/; expires=Sun, 18 Jul 2027 08:15:48 GMT",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "transfer-encoding": "chunked",
+        "vary": "Accept-Encoding",
+        "via": "1.1 google",
+        "x-ratelimit-limit": "3",
+        "x-ratelimit-remaining": "1",
+        "x-ua-compatible": "IE=Edge",
+        "x-xss-protection": "1; mode=block"
+      },
+      "response_path": "analysis/vgp_demography_cache/responses/4e416144eb11800031da258e5618de2a85bc5562ce675c3c2d705b50b1e9c3f1.json",
+      "response_sha256": "774924814c5ae7eca7feaf19d4e5085482654e4f2364f0398c0082fe52ac08ec",
+      "response_size_bytes": 139670,
+      "retrieved_at_utc": "2026-07-18T08:15:40Z",
+      "software_environment": {
+        "guix_channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+        "guix_manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+        "implementation": "CPython",
+        "platform": "Linux-4.19.0-27-amd64-x86_64-with-glibc2.35",
+        "python": "3.10.7",
+        "software": "vgp-demography-metadata-audit/1.0"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "task_id": "audit-vgp-demography"
+}

@@ -1,0 +1,13 @@
+{
+  "completed_request_keys": [
+    "d8fe0b6b4981fe8b6319398179318c36b394b759b9777ea28c18c422e342271f",
+    "fcf756de780556730cf55874c4116590a3705d2b5503c58bf7aefa2035f8d387",
+    "5ae65351388dc07085279a88f20fe23f4403f81d854f0188db9bd4faff93ed53",
+    "4e416144eb11800031da258e5618de2a85bc5562ce675c3c2d705b50b1e9c3f1"
+  ],
+  "pending_request_keys": [],
+  "schema_version": 1,
+  "state": "complete",
+  "task_id": "audit-vgp-demography",
+  "updated_at_utc": "2026-07-18T08:25:06Z"
+}
