@@ -1,0 +1,256 @@
+{
+  "$schema": "schemas/vgp_analysis_manifest.schema.json",
+  "schema_version": "vgp-comprehensive-analysis-v1",
+  "design_frozen_at_utc": "2026-07-18T00:00:00Z",
+  "task_id": "design-vgp-comprehensive",
+  "authorization": {
+    "mode": "design_only",
+    "biological_downloads_authorized": false,
+    "slurm_jobs_authorized": false,
+    "environment_realization_authorized": false
+  },
+  "catalog": {
+    "repository": "https://github.com/VGP/vgp-phase1",
+    "commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "source_url": "https://raw.githubusercontent.com/VGP/vgp-phase1/dc1b2af5a7741b97d66fb10cb2bce97f41765cdf/VGPPhase1-freeze-1.0.tsv",
+    "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4",
+    "size_bytes": 327466,
+    "physical_lines": 717,
+    "header_lines": 1,
+    "data_rows": 716,
+    "unique_species": 714,
+    "duplicate_species": {
+      "Lophostoma evotis": 2,
+      "Micronycteris microtis": 2
+    }
+  },
+  "metadata_snapshot": {
+    "path": "/moosefs/erikg/tier3data/tier3a-acquisition-20260716/authoritative_vgp_PRJNA489243_dataset_report.json",
+    "sha256": "8de3b6a74fe13e92c1e863f153f200fa163d3da80a27935b26f90eb015d78460",
+    "report_count": 2793,
+    "purpose": "exact accession, reciprocal link, BioSample, isolate, date, technology, assembly method, contiguity, and annotation evidence; not release membership"
+  },
+  "selection": {
+    "primary_manifest": {
+      "path": "analysis/vgp_10_pair_manifest.tsv",
+      "sha256": "bf6c9ff647aed332bfc002bf803e8307203b51432343f2eca6d95a6c80d82997",
+      "row_count": 10
+    },
+    "alternate_manifest": {
+      "path": "analysis/vgp_10_pair_alternates.tsv",
+      "sha256": "55127b18f0f17f6673cc0367c60736207a7e2184198cd3855a7e6ea83f39c52e",
+      "row_count": 6
+    },
+    "required_clades": [
+      "Mammalia",
+      "Aves",
+      "Reptilia",
+      "Amphibia",
+      "Actinopterygii",
+      "Chondrichthyes"
+    ],
+    "assembly_generations": [
+      "early_clr_triocanu_parental",
+      "later_hifi_hic_hap1_hap2"
+    ],
+    "genome_size_strata": {
+      "small": {"maximum_bp_exclusive": 1000000000},
+      "medium": {"minimum_bp_inclusive": 1000000000, "maximum_bp_inclusive": 3000000000},
+      "large": {"minimum_bp_exclusive": 3000000000}
+    },
+    "expected_diversity_strata": ["low", "medium", "high"],
+    "alternate_activation": {
+      "same_clade_required": true,
+      "pre_result_hard_gate_only": true,
+      "versioned_amendment_required": true,
+      "failed_primary_retained": true,
+      "post_result_replacement_forbidden": true
+    }
+  },
+  "estimands": {
+    "callable_heterozygosity_snv": "normalized heterozygous biallelic SNV sites divided by callable diploid H1-coordinate bases",
+    "callable_diversity_all_variant_bp": "separately labeled sensitivity including indel-affected bases under the frozen accounting rule",
+    "callability": "callable H1-coordinate bases divided by the declared eligible H1 autosomal universe",
+    "psmc_unscaled": "primary reproducible PSMC interval parameters and trajectory from the same exact pair, mask, variants, and consensus",
+    "psmc_scaled_scenarios": "secondary time and effective-size trajectories, each bound to mutation-rate and generation-time sources",
+    "replication_unit": "one same-individual H1/H2 pair; windows and bootstrap blocks are not independent individuals"
+  },
+  "independence_contract": {
+    "same_pair_psmc_independent_of_same_pair_diversity": false,
+    "reason": "both reuse the same individual, haplotypes, heterozygous differences, callable mask, and consensus",
+    "cross_species_model_requirement": "retain within-pair covariance and never use same-pair PSMC as independent validation of same-pair diversity"
+  },
+  "confidence_tiers": {
+    "A": "all provenance, QV, completeness, duplication/collapse, contiguity, 1:1, callability, consensus, bootstrap, and reproducibility gates pass",
+    "B": "all core gates pass but selective raw-read/k-mer or long-range switch calibration remains incomplete; technical uncertainty widened",
+    "C": "exact pair resolved but at least one quantitative core gate unmeasured; design/metadata only",
+    "X": "hard-gate failure; excluded with reason"
+  },
+  "gates": {
+    "zero_tolerance": {
+      "unresolved_pair_or_accession_fields": 0,
+      "unresolved_taxid_biosample_individual_or_role_fields": 0,
+      "digest_drift_events": 0,
+      "retained_query_overlap_depth_above_one": 0,
+      "retained_target_overlap_depth_above_one": 0,
+      "retained_non_1to1_bases": 0,
+      "mask_accounting_discrepancy_bp": 0,
+      "h1_ref_mismatches": 0,
+      "h2_reconstruction_failures": 0,
+      "non_callable_bases_encoded_homozygous_reference": 0,
+      "annotation_dictionary_mismatches_in_annotation_outputs": 0,
+      "unscaled_scaled_psmc_conflations": 0
+    },
+    "assembly": {
+      "minimum_qv_each_haplotype": 40,
+      "minimum_busco_complete_fraction_each": 0.9,
+      "maximum_busco_missing_fraction_each": 0.05,
+      "maximum_busco_complete_fraction_pair_difference": 0.05,
+      "maximum_busco_duplicated_fraction_each": 0.05,
+      "minimum_haplotype_length_bp": 250000000,
+      "minimum_contig_n50_bp": 1000000,
+      "minimum_h1_h2_length_ratio": 0.8,
+      "maximum_h1_h2_length_ratio": 1.25,
+      "read_chemistry_resolved_required": true,
+      "copy_number_and_kmer_audit_pass_required": true
+    },
+    "callability": {
+      "primary_minimum_fraction": 0.6,
+      "sensitivity_minimum_fraction": 0.5,
+      "minimum_callable_bases": 100000000,
+      "minimum_80pct_callable_1mb_windows": 50,
+      "primary_reason_codes": [
+        "not_eligible_contig",
+        "organellar",
+        "sex_linked_primary_exclusion",
+        "unplaced_or_unlocalized",
+        "h1_gap_or_N",
+        "h2_gap_or_N",
+        "not_1to1",
+        "mapping_breakpoint",
+        "low_base_accuracy",
+        "repeat_or_low_complexity_primary",
+        "duplication_or_collapse",
+        "phase_uncertain",
+        "other_predeclared"
+      ],
+      "ordered_disjoint_reason_assignment": true,
+      "universe_reconciliation_exact": true
+    },
+    "consensus": {
+      "masked_base_encoding": "N",
+      "heterozygous_snp_encoding": "IUPAC",
+      "primary_indel_flank_mask_bp": 10,
+      "indel_flank_sensitivity_bp": [0, 50],
+      "normalization_reference": "exact H1",
+      "exact_duplicate_removal": true
+    },
+    "bootstrap": {
+      "psmc_attempts": 200,
+      "minimum_finite_psmc_attempts": 190,
+      "minimum_finite_fraction": 0.95,
+      "primary_block_bp": 5000000,
+      "sensitivity_block_bp": [1000000, 10000000],
+      "blocks_cross_contigs": false,
+      "blocks_cross_mask_discontinuities": false,
+      "heterozygosity_replicates": 10000,
+      "seed_source": "SHA256 of frozen manifest plus selection_id plus analysis label"
+    },
+    "reproducibility": {
+      "full_independent_sentinels": ["P07", "P08"],
+      "sentinel_output_digest_mismatches_allowed": 0,
+      "other_pair_deterministic_shards": 1,
+      "shard_digest_mismatches_allowed": 0
+    },
+    "resource_prediction": {
+      "maximum_median_absolute_percentage_error": 0.25,
+      "maximum_p95_absolute_percentage_error": 0.5,
+      "dimensions": ["wall_time", "cpu_hours", "peak_rss", "scratch_high_water", "read_bytes", "write_bytes"],
+      "job_stop_multiple_of_approved_high_estimate": 1.5,
+      "minimum_storage_headroom_fraction": 0.25,
+      "unknown_enforceable_quota_disposition": "NO_GO"
+    },
+    "program": {
+      "primary_slots_adjudicated": 10,
+      "minimum_core_passes": 8,
+      "required_clades_remain_among_passers": true,
+      "both_generation_strata_remain_among_passers": true,
+      "systematic_failure_fraction_within_technology_stratum": 0.5,
+      "hard_gate_violations_allowed": 0
+    }
+  },
+  "workflow": {
+    "orientation": "H1_reference_H2_query",
+    "sweepga": {
+      "repository_commit": "018e4ce49d2c125820e0ac50dc5feaa02d423683",
+      "binary_sha256": "fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b",
+      "required_option": "--num-mappings 1:1",
+      "forbidden_option": "-n 1:1",
+      "output": "whole-haplotype PAF with cg tag"
+    },
+    "impg": {
+      "repository_commit": "101df81eb28a809c8fac97d297acd9fcfbbfa048",
+      "observed_version": "0.4.1",
+      "stages": ["index", "partition", "query", "lace"],
+      "native_partitions_only": true,
+      "native_output": "VCF"
+    },
+    "bcftools_ownership": ["normalize", "trim", "exact_deduplicate", "BGZF_VCF_TBI", "BCF_CSI"],
+    "mask": "disjoint H1-coordinate callable BED plus ordered reason-coded complement and exact universe reconciliation",
+    "consensus": "validated diploid H1-coordinate consensus; masked bases never homozygous reference",
+    "psmc": "unscaled primary object, 200 constrained block bootstraps, separately versioned scaling scenarios"
+  },
+  "annotation_policy": {
+    "required_for_core": false,
+    "absence_is_core_veto": false,
+    "permitted_only_after_core": true,
+    "exact_native_or_manifest_bound_liftover_required": true,
+    "exact_sequence_dictionary_audit_required": true
+  },
+  "evidence_branches": {
+    "core": {"status": "EXECUTE", "claim": "callable same-individual assembly-derived diversity"},
+    "annotation": {"status": "OPTIONAL_SUBSET", "claim": "feature-partitioned callable summaries"},
+    "psmc": {"status": "EXECUTE_FOR_CORE_PASSERS", "claim": "descriptive same-pair unscaled history and explicit scaling scenarios"},
+    "direct": {"status": "SEPARATE_AUTHORIZED_PILOT", "claim": "directional transmitted meiotic events and tract rates from pedigrees/gametes"},
+    "population": {"status": "NOT_RUN_DESIGN_ONLY", "claim": "frequency-spectrum WS/SW asymmetry and model-dependent B from multi-individual populations"},
+    "phylogenetic": {"status": "SEPARATE_AUTHORIZED_PILOT", "claim": "historical branch-specific WS/SW substitution asymmetry with outgroups"},
+    "non_allelic": {"status": "NOT_RUN_DESIGN_ONLY", "claim": "copy-resolved paralog homogenization candidates under copy-number nulls"},
+    "h1_h2_only_direct_conversion_claim_allowed": false,
+    "h1_h2_only_biased_transmission_claim_allowed": false
+  },
+  "outputs": {
+    "core": ["normalized.vcf.gz", "normalized.vcf.gz.tbi", "normalized.bcf", "normalized.bcf.csi", "callable.bed.gz", "exclusions.<reason>.bed.gz", "mask_reconciliation.json", "pair_summary.tsv", "windows.tsv", "heterozygosity_bootstrap.tsv", "qc.json"],
+    "annotation": ["annotation_dictionary_audit.json", "feature_callable.tsv", "feature_diversity.tsv", "annotation_exclusions.tsv"],
+    "psmc": ["consensus.fa.gz", "consensus.fa.gz.sha256", "input.psmcfa.gz", "unscaled.psmc", "bootstrap_manifest.tsv", "bootstrap_unscaled.tsv", "scaling_scenarios.tsv", "psmc_qc.json"],
+    "direct": ["direct_dataset_manifest.tsv", "callable_meioses.tsv", "events.tsv", "tracts.tsv", "transmission_bias.tsv", "direct_decision.json"],
+    "population": ["population_design_manifest.tsv", "polarization_qc.tsv", "ws_sw_frequency_spectrum.tsv", "gbgc_model_fits.tsv", "population_decision.json"],
+    "phylogenetic": ["ortholog_manifest.tsv", "alignment_qc.tsv", "ancestral_state_qc.tsv", "branch_ws_sw.tsv", "clustered_substitutions.tsv", "phylogenetic_decision.json"],
+    "non_allelic": ["copy_resolved_loci.tsv", "copy_number_qc.tsv", "paralog_candidate_tracts.tsv", "paralog_nulls.tsv", "non_allelic_decision.json"]
+  },
+  "environments": {
+    "channels": {"path": "analysis/guix/channels.scm", "sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17", "guix_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36"},
+    "analysis": {"path": "analysis/guix/manifest.scm", "sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a"},
+    "sweepga_build": {"path": "analysis/guix/sweepga_origin_main_manifest.scm", "sha256": "ea9ae1ba3e51ac3302d93add158532befec8fb3c09d188f524ac29237bab17d1"},
+    "sweepga_impg": {"path": "analysis/guix/sweepga_impg_smoke_manifest.scm", "sha256": "c0ef5afd6c988341da8446ff3f70af274dd12f5514bc053d3d4e6f0cbdcee521"},
+    "psmc": {"status": "implementation_task_must_add_source_pinned_reproducible_package"}
+  },
+  "data_root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+  "slurm": {
+    "strategy": "size-stratified dependency arrays; IMPG native-partition shards; pair-level join; bounded PSMC bootstrap batches",
+    "initial_mapping_concurrency": {"small": 2, "medium": 1, "large": 1},
+    "scientific_eligibility_resource_cap": false,
+    "transient_retry_limit": 2,
+    "resource_reestimate_retry_limit": 1,
+    "scientific_failure_relaxation_allowed": false
+  },
+  "scale_waves": [
+    {"wave": "0", "scope": ["controlled truth", "existing Spinachia excerpt"], "new_biological_acquisition": false},
+    {"wave": "1", "scope": ["P07", "P08"], "purpose": "small low/high sentinels and deterministic reruns"},
+    {"wave": "2", "scope": ["P01", "P02", "P03", "P05"], "purpose": "medium later-generation cross-clade calibration"},
+    {"wave": "3", "scope": ["P04", "P06"], "purpose": "early CLR/trio technology audit"},
+    {"wave": "4", "scope": ["P09", "P10"], "purpose": "large cartilaginous-fish resource calibration"},
+    {"wave": "S1", "scope": "all eligible exact pairs with dispositions across all 716 catalog rows"},
+    {"wave": "S2", "scope": "optional exact-annotation subset"},
+    {"wave": "S3", "scope": "separately authorized direct and phylogenetic pilots; population and non-allelic remain design-only"}
+  ]
+}

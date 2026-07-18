@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/lewontin-paradox/vgp_analysis_manifest.schema.json",
+  "title": "Comprehensive VGP analysis design manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema", "schema_version", "design_frozen_at_utc", "task_id", "authorization",
+    "catalog", "metadata_snapshot", "selection", "estimands", "independence_contract",
+    "confidence_tiers", "gates", "workflow", "annotation_policy", "evidence_branches",
+    "outputs", "environments", "data_root", "slurm", "scale_waves"
+  ],
+  "properties": {
+    "$schema": {"const": "schemas/vgp_analysis_manifest.schema.json"},
+    "schema_version": {"const": "vgp-comprehensive-analysis-v1"},
+    "design_frozen_at_utc": {"type": "string", "format": "date-time"},
+    "task_id": {"const": "design-vgp-comprehensive"},
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "biological_downloads_authorized", "slurm_jobs_authorized", "environment_realization_authorized"],
+      "properties": {
+        "mode": {"const": "design_only"},
+        "biological_downloads_authorized": {"const": false},
+        "slurm_jobs_authorized": {"const": false},
+        "environment_realization_authorized": {"const": false}
+      }
+    },
+    "catalog": {"$ref": "#/$defs/catalog"},
+    "metadata_snapshot": {"type": "object", "required": ["path", "sha256", "report_count", "purpose"]},
+    "selection": {"$ref": "#/$defs/selection"},
+    "estimands": {"type": "object", "minProperties": 6},
+    "independence_contract": {
+      "type": "object",
+      "required": ["same_pair_psmc_independent_of_same_pair_diversity", "reason", "cross_species_model_requirement"],
+      "properties": {"same_pair_psmc_independent_of_same_pair_diversity": {"const": false}}
+    },
+    "confidence_tiers": {"type": "object", "required": ["A", "B", "C", "X"]},
+    "gates": {"$ref": "#/$defs/gates"},
+    "workflow": {"type": "object", "required": ["orientation", "sweepga", "impg", "bcftools_ownership", "mask", "consensus", "psmc"]},
+    "annotation_policy": {
+      "type": "object",
+      "required": ["required_for_core", "absence_is_core_veto", "permitted_only_after_core", "exact_native_or_manifest_bound_liftover_required", "exact_sequence_dictionary_audit_required"],
+      "properties": {"required_for_core": {"const": false}, "absence_is_core_veto": {"const": false}}
+    },
+    "evidence_branches": {
+      "type": "object",
+      "required": ["core", "annotation", "psmc", "direct", "population", "phylogenetic", "non_allelic", "h1_h2_only_direct_conversion_claim_allowed", "h1_h2_only_biased_transmission_claim_allowed"],
+      "properties": {
+        "h1_h2_only_direct_conversion_claim_allowed": {"const": false},
+        "h1_h2_only_biased_transmission_claim_allowed": {"const": false}
+      }
+    },
+    "outputs": {"type": "object", "required": ["core", "annotation", "psmc", "direct", "population", "phylogenetic", "non_allelic"]},
+    "environments": {"type": "object", "required": ["channels", "analysis", "sweepga_build", "sweepga_impg", "psmc"]},
+    "data_root": {"const": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0"},
+    "slurm": {"type": "object", "required": ["strategy", "initial_mapping_concurrency", "scientific_eligibility_resource_cap", "transient_retry_limit", "resource_reestimate_retry_limit", "scientific_failure_relaxation_allowed"]},
+    "scale_waves": {"type": "array", "minItems": 8, "items": {"type": "object", "required": ["wave", "scope"]}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "catalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "source_url", "sha256", "size_bytes", "physical_lines", "header_lines", "data_rows", "unique_species", "duplicate_species"],
+      "properties": {
+        "repository": {"type": "string", "format": "uri"},
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_url": {"type": "string", "format": "uri"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"const": 327466},
+        "physical_lines": {"const": 717},
+        "header_lines": {"const": 1},
+        "data_rows": {"const": 716},
+        "unique_species": {"const": 714},
+        "duplicate_species": {"type": "object", "minProperties": 2}
+      }
+    },
+    "selection": {
+      "type": "object",
+      "required": ["primary_manifest", "alternate_manifest", "required_clades", "assembly_generations", "genome_size_strata", "expected_diversity_strata", "alternate_activation"],
+      "properties": {
+        "primary_manifest": {"$ref": "#/$defs/file_manifest"},
+        "alternate_manifest": {"$ref": "#/$defs/file_manifest"},
+        "required_clades": {"type": "array", "minItems": 6, "uniqueItems": true},
+        "assembly_generations": {"type": "array", "minItems": 2, "uniqueItems": true},
+        "genome_size_strata": {"type": "object", "required": ["small", "medium", "large"]},
+        "expected_diversity_strata": {"type": "array", "const": ["low", "medium", "high"]},
+        "alternate_activation": {"type": "object", "required": ["same_clade_required", "pre_result_hard_gate_only", "versioned_amendment_required", "failed_primary_retained", "post_result_replacement_forbidden"]}
+      }
+    },
+    "file_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "row_count"],
+      "properties": {"path": {"type": "string"}, "sha256": {"$ref": "#/$defs/sha256"}, "row_count": {"type": "integer", "minimum": 5}}
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["zero_tolerance", "assembly", "callability", "consensus", "bootstrap", "reproducibility", "resource_prediction", "program"],
+      "properties": {
+        "zero_tolerance": {"type": "object", "minProperties": 10},
+        "assembly": {"type": "object", "required": ["minimum_qv_each_haplotype", "minimum_busco_complete_fraction_each", "maximum_busco_missing_fraction_each", "maximum_busco_duplicated_fraction_each", "minimum_contig_n50_bp", "minimum_h1_h2_length_ratio", "maximum_h1_h2_length_ratio"]},
+        "callability": {"type": "object", "required": ["primary_minimum_fraction", "minimum_callable_bases", "primary_reason_codes", "ordered_disjoint_reason_assignment", "universe_reconciliation_exact"]},
+        "consensus": {"type": "object", "required": ["masked_base_encoding", "heterozygous_snp_encoding", "primary_indel_flank_mask_bp", "normalization_reference"]},
+        "bootstrap": {"type": "object", "required": ["psmc_attempts", "minimum_finite_psmc_attempts", "minimum_finite_fraction", "primary_block_bp", "heterozygosity_replicates"]},
+        "reproducibility": {"type": "object", "required": ["full_independent_sentinels", "sentinel_output_digest_mismatches_allowed", "shard_digest_mismatches_allowed"]},
+        "resource_prediction": {"type": "object", "required": ["maximum_median_absolute_percentage_error", "maximum_p95_absolute_percentage_error", "dimensions", "minimum_storage_headroom_fraction", "unknown_enforceable_quota_disposition"]},
+        "program": {"type": "object", "required": ["primary_slots_adjudicated", "minimum_core_passes", "required_clades_remain_among_passers", "both_generation_strata_remain_among_passers", "hard_gate_violations_allowed"]}
+      }
+    }
+  }
+}
