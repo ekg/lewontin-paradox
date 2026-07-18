@@ -1,0 +1,7 @@
+record_type	disposition	primary_reason_code	count	biological_estimates	interpretation	same_pair_psmc_independent_evidence
+catalog_row	excluded	CATALOG_NO_LINKED_HAPLOTYPE	49	0	operational/metadata disposition only; no biological estimate	false
+catalog_row	excluded	CATALOG_NO_RELEASED_MAIN_ACCESSION	135	0	operational/metadata disposition only; no biological estimate	false
+catalog_row	excluded	CATALOG_ONLY_SELF_LINK_NOT_PAIR	3	0	operational/metadata disposition only; no biological estimate	false
+catalog_row	failed	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	529	0	operational/metadata disposition only; no biological estimate	false
+linked_pair	excluded	CATALOG_SELF_LINK_NOT_PAIR	3	0	operational/metadata disposition only; no biological estimate	false
+linked_pair	failed	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	566	0	operational/metadata disposition only; no biological estimate	false

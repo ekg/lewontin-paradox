@@ -1,0 +1,12 @@
+dimension	status	estimate	reason_code	interpretation
+QV	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+completeness	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+duplication_or_collapse	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+long_range_phasing_evidence	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+callability	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+genome_size	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+assembly_generation	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+bootstrap_block_size	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+bootstrap_finite_fraction	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+mutation_rate_scenario	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.
+generation_time_scenario	NOT_ESTIMABLE_ZERO_APPROVED_COMPLETED_PAIRS	NA	UPSTREAM_SCALEOUT_NOT_AUTHORIZED	No threshold effect may be inferred from technical non-execution.

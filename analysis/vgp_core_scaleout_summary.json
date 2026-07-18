@@ -1,0 +1,52 @@
+{
+  "annotation_absence_core_veto": false,
+  "atomic_promotions": 0,
+  "authorization": "BOUNDED_REPAIR_AND_TEN_SLOT_REPILOT_ONLY",
+  "biological_estimates": 0,
+  "catalog": {
+    "commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "rows": 716,
+    "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4"
+  },
+  "catalog_row_dispositions": {
+    "excluded": 187,
+    "failed": 529
+  },
+  "completed_pairs": 0,
+  "distinct_nonself_pair_candidates": 566,
+  "eligible_pairs": 0,
+  "full_biological_scaleout_authorized": false,
+  "generated_at_utc": "2026-07-18T13:15:23Z",
+  "input_digests": {
+    "catalog": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4",
+    "design": "17217bef8f6c2c5efaef1111eebef6f97444f5d39b11b5403ccb76c2e48c185c",
+    "guix_channels": "fd7d00be59ace5d82eb093ab2bd4efab45c30a166f3c3e1572d6e2d4d628bed4",
+    "guix_manifest": "afd14da446d29d4e66b64837194dfae524342dc5b8de3c2778ec85c1cca09a3d",
+    "mirror_manifest": "935d18268c8b3b2ca5eb68332282a39db29fef563164adc8b6a493131b4675a0",
+    "mirror_summary": "801ab3ffce1eca0f43d08ac406ded2604839f783221b4ff91cdc856699596a4c",
+    "review_decision": "561a327d2a7d83c004a011d9bac1ec4b45cf44067858a29a3036bb772a57fc7b",
+    "review_resources": "efc3d69119744116ab73cc75a438d2a2ccd9dcd10eeb9b06c95b02cd9b8b456e",
+    "review_scaleout": "4bed1367c2f521a72b3f7ec2e625b141b7e35e6ce2103a8f29b33f0a824805fc"
+  },
+  "linked_haplotype_entries": 569,
+  "mirror_verified_or_reused_objects": 0,
+  "output_digests": {
+    "independent_validation": "b280b493e9c23bc6c3ebb6f9d39d32f0cade2ad3898f28e4bf013467d7eebefb",
+    "manifest": "5bf2f6102cbd66e881d5fcaedfb22bfdff518e3f49c2dfbb01bbd493e0b461f6",
+    "paper_pairs": "d76e1c242a26e08328f280b557677b4eece0ef64d0a7a3890a077b34f3243de1",
+    "paper_summary": "24f4f644c33d08a3b417deee0071b2898026d1eee51d7f3c7d5edc6dfc86da6c",
+    "qc": "14f37e1ed85176ab49ddac69ab19f8d2b5a3a22837957482f2b0a21f8218b321",
+    "results": "aee30eae473d64ee1827ace34c85010eb1f2f247813029082ecb2bc1cf18889d",
+    "scaling": "959e79777df0cc334b2a8a95d896d1717da0b66898c1e6fe6d8b441c745641df",
+    "sensitivity": "0cd004efa435383da1714e499cc4cf0607b9bfc9b44fe38e421ee545739f7cca",
+    "telemetry": "9f423f2a296210b36059e66f2db392e822849dc97c3603053050960f6b8d66a3",
+    "waves": "3003ec7239376d79189f4ba4e3801835dcaf3818bd35bc3e9b65a2ed67754806"
+  },
+  "pair_dispositions": {
+    "excluded": 3,
+    "failed": 566
+  },
+  "same_pair_psmc_independent_evidence": false,
+  "schema_version": "vgp-core-scaleout-summary-v1.0.0",
+  "slurm_jobs_submitted": 0
+}

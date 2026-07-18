@@ -1,0 +1,6 @@
+validation_component	status	selected_eligible_pairs	completed_checks	slurm_jobs_submitted	reason_code	interpretation
+stratified_sample_across_clade_generation_genome_size_diversity_confidence	EMPTY_BY_PREDECLARED_GATE	0	0	0	ZERO_ELIGIBLE_PAIRS	No post-hoc sample may be drawn from unaudited or failed pair candidates.
+independent_biological_recomputation	NOT_PERFORMED	0	0	0	CORE_NOT_RUN_AND_SCALEOUT_NOT_AUTHORIZED	Nonmaterialization agrees with the reviewed gate; it is not a biological replication.
+raw_read_check	NOT_PERFORMED	0	0	0	RAW_READS_NOT_IN_VERIFIED_FREEZE1_MIRROR	Raw reads cannot be inferred from assembly products or silently acquired outside the manifest.
+kmer_copy_number_check	NOT_PERFORMED	0	0	0	EXACT_READ_KMERS_NOT_MATERIALIZED	Copy-number/collapse evidence remains a mandatory unmeasured core gate.
+literature_triangulation	NOT_PERFORMED	0	0	0	ZERO_ELIGIBLE_STRATIFIED_SAMPLE	Literature values must be source-bound after eligible sample selection, never selected post hoc.
