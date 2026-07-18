@@ -1,0 +1,194 @@
+{
+  "accounting": {
+    "missing": {
+      "bytes": 0,
+      "objects": 20
+    },
+    "newly_promoted": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "planned": {
+      "bytes": 375689532447,
+      "objects": 182
+    },
+    "quarantined": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "reused": {
+      "bytes": 12778465073,
+      "objects": 149
+    },
+    "superseded": {
+      "bytes": 362911067374,
+      "objects": 13
+    },
+    "terminal_disposition_reconciliation": {
+      "bytes": 375689532447,
+      "matches_planned": true,
+      "note": "newly_promoted/reused/missing/superseded/quarantined are mutually exclusive; transferred is an I/O-flow measure and verified is a validation-state measure, so neither is added to terminal-disposition bytes",
+      "objects": 182
+    },
+    "transferred": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "verified": {
+      "bytes": 12778465073,
+      "objects": 149
+    }
+  },
+  "activated_alternates": 0,
+  "alternate_slots": 6,
+  "data_root": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0",
+  "direct_control": {
+    "control_id": "D01",
+    "missing_objects": 0,
+    "raw_archive_disposition": "superseded_not_selected",
+    "selection_status": "selected",
+    "verified_or_reused_objects": 9
+  },
+  "direct_control_accounting": {
+    "missing": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "newly_promoted": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "planned": {
+      "bytes": 357070194237,
+      "objects": 10
+    },
+    "quarantined": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "reused": {
+      "bytes": 85635369,
+      "objects": 9
+    },
+    "superseded": {
+      "bytes": 356984558868,
+      "objects": 1
+    },
+    "terminal_disposition_reconciliation": {
+      "bytes": 357070194237,
+      "matches_planned": true,
+      "note": "newly_promoted/reused/missing/superseded/quarantined are mutually exclusive; transferred is an I/O-flow measure and verified is a validation-state measure, so neither is added to terminal-disposition bytes",
+      "objects": 10
+    },
+    "transferred": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "verified": {
+      "bytes": 85635369,
+      "objects": 9
+    }
+  },
+  "environment": {
+    "channels_sha256": "45c055cd1d9010a72eacbb720037a22bccb2d8d6891dbd11b5d66365f29b3a17",
+    "guix_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "manifest_sha256": "2fb05e87aa2ac45ce51d4dcf93b232cb98627f525adace98357629ee3f15720a",
+    "slurm_environment_detected": false
+  },
+  "generated_at_utc": "2026-07-18T12:18:01Z",
+  "manifest_amendment": "none",
+  "manifest_version": "vgp-10-pilot-acquisition-v1.0.0",
+  "mechanism_demonstration": {
+    "atomic_promotion_and_reverification": {
+      "local_path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/pilot/runs/acquisition-mechanism-demo-v1/objects/sha256/9f/9f/9f9f5111f7b27a781f1f1ddde5ebc2dd2b796bfc7365c9c28b548e564176929f",
+      "revalidation_count": 1,
+      "status": "verified"
+    },
+    "mirror_reuse": {
+      "revalidation_count": 1,
+      "status": "reused",
+      "transferred_bytes": 0
+    },
+    "quarantine": {
+      "quarantine_path": "/moosefs/erikg/lewontin-paradox-data/vgp/phase1-freeze-1.0/pilot/runs/acquisition-mechanism-demo-v1/quarantine/vgp-10-pilot/2026-07-18T121801Z/DEMO_quarantine.partial.content-mismatch",
+      "status": "quarantined"
+    },
+    "resume": {
+      "resume_from_bytes": 5,
+      "status": "verified",
+      "transferred_bytes": 11
+    }
+  },
+  "mechanism_demonstration_accounting": {
+    "atomically_promoted": {
+      "bytes": 16,
+      "objects": 1
+    },
+    "included_in_biological_accounting": false,
+    "mirror_reused_after_sha256_revalidation": {
+      "bytes": 16,
+      "objects": 1
+    },
+    "quarantined_mismatch_candidates": {
+      "bytes": 16,
+      "objects": 1
+    },
+    "resume_candidates": {
+      "bytes": 16,
+      "objects": 1
+    }
+  },
+  "primary_slots": 10,
+  "schema_version": "1.0.0",
+  "scope_proof": {
+    "command_scope": "versioned NCBI assembly/report URLs and the selected direct-control manifest only",
+    "ena_fastq_payload_requests": 0,
+    "ena_run_metadata_manifest_requests": 1,
+    "genomeark_raw_prefix_requests": 0,
+    "manifested_raw_read_or_kmer_objects": 0,
+    "slurm_jobs_submitted": 0,
+    "sra_run_enumeration_requests": 0,
+    "unmanifested_bulk_raw_read_bytes_acquired": 0,
+    "unmanifested_bulk_raw_read_objects_acquired": 0
+  },
+  "vgp_accounting": {
+    "missing": {
+      "bytes": 0,
+      "objects": 20
+    },
+    "newly_promoted": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "planned": {
+      "bytes": 18619338210,
+      "objects": 172
+    },
+    "quarantined": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "reused": {
+      "bytes": 12692829704,
+      "objects": 140
+    },
+    "superseded": {
+      "bytes": 5926508506,
+      "objects": 12
+    },
+    "terminal_disposition_reconciliation": {
+      "bytes": 18619338210,
+      "matches_planned": true,
+      "note": "newly_promoted/reused/missing/superseded/quarantined are mutually exclusive; transferred is an I/O-flow measure and verified is a validation-state measure, so neither is added to terminal-disposition bytes",
+      "objects": 172
+    },
+    "transferred": {
+      "bytes": 0,
+      "objects": 0
+    },
+    "verified": {
+      "bytes": 12692829704,
+      "objects": 140
+    }
+  }
+}
