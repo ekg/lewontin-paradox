@@ -1,0 +1,186 @@
+{
+  "bulk_launch": {
+    "launched": false,
+    "reason": "quota_visibility_unavailable_fail_closed",
+    "slurm_jobs_launched": 0
+  },
+  "catalog_reconciliation": {
+    "accession_or_version_drift": 0,
+    "catalog_rows": 716,
+    "closed_world": true,
+    "expected_accession_roots": 581,
+    "extra_roots": 0,
+    "missing_roots": 0,
+    "observed_accession_roots": 581,
+    "released_rows": 581,
+    "unreleased_rows": 135
+  },
+  "checksum_policy": {
+    "fallback_rule": "compute SHA-256 after staging and reverify before and after promotion",
+    "manifest_transfer_order": "all_md5sum.txt objects before any other payload",
+    "published_checksum_bindings_loaded": 0,
+    "published_checksum_rule": "verify provider MD5 when an exact frozen path is listed",
+    "published_md5_manifests_in_inventory": 581
+  },
+  "fixture": {
+    "atomic_promotion_verified": true,
+    "checksum_failure_quarantined": true,
+    "completed_at_utc": "2026-07-18T11:28:39Z",
+    "exact_resume_sha256": "7fabb846ab516f6f68ccd0a750c8cf84649180241a40431fa683562bb2464f54",
+    "interrupted_partial_bytes": 262144,
+    "passed": true,
+    "quarantine_path": "/moosefs/erikg/lewontin-paradox-data/vgp/freeze1/fixture/quarantine/bad.bin.20260718T112839Z.checksum",
+    "report_path": "/moosefs/erikg/lewontin-paradox-data/vgp/freeze1/fixture/fixture-report.json",
+    "required_before_bulk": true,
+    "resume_additional_bytes": 8126464,
+    "rsync_version": "rsync  version 3.2.7  protocol version 31",
+    "slurm_jobs_launched": 0,
+    "source_bytes": 8388608
+  },
+  "generated_at_utc": "2026-07-18T11:39:08Z",
+  "historical_estimates": {
+    "byte_ceiling": false,
+    "checksum_evidence": false,
+    "completion_criterion": false,
+    "fasta_only_approx_gb": 520,
+    "status": "unverified_historical_planning_estimates_replaced_by_frozen_inventory",
+    "whole_collection_approx_gb": 967
+  },
+  "inventory_totals": {
+    "assembly_2bit": {
+      "bytes": 341066459447,
+      "directories": 0,
+      "files": 581,
+      "objects": 581,
+      "symlinks": 0
+    },
+    "assembly_fasta": {
+      "bytes": 388785172570,
+      "directories": 0,
+      "files": 581,
+      "objects": 581,
+      "symlinks": 0
+    },
+    "assembly_fasta_or_2bit": {
+      "bytes": 729851632017,
+      "directories": 0,
+      "files": 1162,
+      "objects": 1162,
+      "symlinks": 0
+    },
+    "full_release": {
+      "bytes": 3916877494936,
+      "directories": 4499,
+      "files": 43371,
+      "objects": 47870,
+      "symlinks": 0
+    }
+  },
+  "raw_inventory": {
+    "path": "/moosefs/erikg/lewontin-paradox-data/vgp/freeze1/inventory/freeze1-assemblies.20260718T111631Z.rsync-items",
+    "rsync_exit_status": 0,
+    "sha256": "dce0ce8872931c1c8717e2196bc45f9718375413fdf4d26f9187e9639ca6a878"
+  },
+  "release": {
+    "catalog_bytes": 327466,
+    "catalog_commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "catalog_data_rows": 716,
+    "catalog_physical_lines": 717,
+    "catalog_sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4",
+    "guix_channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "guix_manifest": "analysis/guix/vgp-freeze1-manifest.scm",
+    "release_definition_endpoint": "rsync://hgdownload.soe.ucsc.edu/hubs/VGP/",
+    "transport_endpoint": "rsync://hgdownload.soe.ucsc.edu/hubs/"
+  },
+  "retrieval_completed_utc": "2026-07-18T11:19:25Z",
+  "retrieval_started_utc": "2026-07-18T11:16:31Z",
+  "schema_version": "vgp-freeze1-mirror-summary-v1",
+  "state_accounting": {
+    "missing": {
+      "bytes": 0,
+      "files": 0,
+      "objects": 0
+    },
+    "planned": {
+      "bytes": 3916877494936,
+      "files": 43371,
+      "objects": 47870
+    },
+    "quarantined": {
+      "bytes": 0,
+      "files": 0,
+      "objects": 0
+    },
+    "reused": {
+      "bytes": 0,
+      "files": 0,
+      "objects": 0
+    },
+    "superseded": {
+      "bytes": 0,
+      "files": 0,
+      "objects": 0
+    },
+    "transferred": {
+      "bytes": 0,
+      "files": 0,
+      "objects": 0
+    },
+    "verified": {
+      "bytes": 0,
+      "files": 0,
+      "objects": 0
+    }
+  },
+  "storage": {
+    "adequate": false,
+    "arbitrary_global_byte_cap": null,
+    "filesystem_capacity_adequate": true,
+    "gate_reason": "quota_visibility_unavailable_fail_closed",
+    "observed_at_utc": "2026-07-18T11:39:06Z",
+    "path": "/moosefs/erikg/lewontin-paradox-data/vgp/freeze1",
+    "quota_evidence": [
+      {
+        "command": [
+          "mfsgetquota",
+          "-n",
+          "/moosefs/erikg/lewontin-paradox-data/vgp/freeze1"
+        ],
+        "status": "tool_unavailable"
+      },
+      {
+        "command": [
+          "quota",
+          "-s"
+        ],
+        "status": "tool_unavailable"
+      }
+    ],
+    "quota_visibility_adequate": false,
+    "requirements": {
+      "checksum_inodes": 8,
+      "checksum_manifest_bytes": 67108864,
+      "durable_bytes": 3916877494936,
+      "durable_inodes": 47870,
+      "largest_object_bytes": 59721677348,
+      "operational_headroom_bytes": 783375498987,
+      "operational_headroom_fraction": 0.2,
+      "operational_headroom_inodes": 9574,
+      "quarantine_bytes": 59721677348,
+      "quarantine_inodes": 1,
+      "staging_bytes": 119443354696,
+      "staging_concurrency": 2,
+      "staging_inodes": 2,
+      "total_bytes": 4879485134831,
+      "total_inodes": 57455
+    },
+    "statvfs": {
+      "available_bytes": 101082651820032,
+      "block_size": 65536,
+      "free_bytes": 101082651820032,
+      "free_inodes": 1004580301,
+      "total_bytes": 207344084451328,
+      "total_inodes": 1014380191
+    }
+  }
+}
