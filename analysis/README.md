@@ -28,6 +28,10 @@ This directory holds the **empirical** Tier-3 work and its supporting plans.
 - `tier3b_popvcf_*.py` — Phase 2: population π + W/S-stratified π + (SFS-B) from population VCFs
 - `tier3_fit.py` — Phase 4: exact-species merge, observable-separated fits,
   small result table, and headless figure (`fig_tier3.{pdf,png}`); done
+- `vgp_10_pilot.py` — strict ten-pair H1/H2 SweepGA→IMPG→mask/consensus→PSMC
+  workflow accounting; see `vgp_10_pilot_workflow_handoff.md`, the pinned
+  `guix/vgp_10_pilot/` environment, and resumable `slurm/vgp_10_pilot/` entry
+  points. Its deterministic fixtures prove software behavior only.
 
 ## Figures
 

@@ -1,0 +1,90 @@
+{
+  "schema_version": "vgp-10-pilot-workflow-v1",
+  "task_id": "implement-vgp-10-pilot",
+  "design_manifest": "analysis/vgp_analysis_manifest.json",
+  "primary_pair_manifest": "analysis/vgp_10_pair_manifest.tsv",
+  "pair_count": 10,
+  "orientation": "H1_reference_H2_query",
+  "authorization": {
+    "implementation_tests_only": true,
+    "biological_downloads": false,
+    "slurm_submission": false
+  },
+  "environment": {
+    "channels": "analysis/guix/vgp_10_pilot/channels.scm",
+    "manifest": "analysis/guix/vgp_10_pilot/manifest.scm",
+    "lock": "analysis/guix/vgp_10_pilot/environment-lock.json",
+    "realization": "analysis/guix/vgp_10_pilot/realization.json",
+    "ambient_executables_allowed": false
+  },
+  "stages": [
+    {
+      "name": "preflight",
+      "owner": "analysis.vgp_10_pilot",
+      "requires": ["exact pair row", "immutable FASTA hashes", "sequence dictionaries", "measured assembly QC", "resource estimate"]
+    },
+    {
+      "name": "mapping",
+      "owner": "SweepGA",
+      "inputs": ["whole H2 FASTA query", "whole H1 FASTA target"],
+      "required_arguments": ["--num-mappings", "1:1", "--scaffold-jump", "0"],
+      "output": "exact PAF with cg:Z",
+      "postcondition": "independent maximum query and target overlap depth both <=1"
+    },
+    {
+      "name": "impg",
+      "owner": "IMPG",
+      "order": ["index", "partition", "select native partitions intersecting eligible query regions", "query with H1 and H2", "lace"],
+      "arbitrary_user_windows_allowed": false,
+      "native_variant_format": "VCF"
+    },
+    {
+      "name": "variants",
+      "owner": "bcftools",
+      "order": ["decompose and left-normalize against exact H1", "trim to verified eligible 1:1 H1 regions", "exact deduplicate", "write VCF.gz/TBI", "write BCF/CSI"],
+      "postconditions": ["zero H1 REF mismatch", "alternate sequence reconstructs aligned H2"]
+    },
+    {
+      "name": "mask_consensus",
+      "owner": "analysis.vgp_10_pilot",
+      "reason_order": ["not_eligible_contig", "organellar", "sex_linked_primary_exclusion", "unplaced_or_unlocalized", "h1_gap_or_N", "h2_gap_or_N", "not_1to1", "mapping_breakpoint", "low_base_accuracy", "repeat_or_low_complexity_primary", "duplication_or_collapse", "phase_uncertain", "other_predeclared"],
+      "non_callable_encoding": "N",
+      "heterozygous_snp_encoding": "IUPAC",
+      "primary_indel_flank_bp": 10,
+      "indel_flank_sensitivity_bp": [0, 50]
+    },
+    {
+      "name": "psmc",
+      "owner": "PSMC",
+      "primary_output": "unscaled",
+      "bootstrap_attempts": 200,
+      "primary_block_bp": 5000000,
+      "block_sensitivity_bp": [1000000, 10000000],
+      "cross_contig_or_mask_boundaries": false,
+      "scenario_scaling_separate": true
+    },
+    {
+      "name": "annotation",
+      "owner": "analysis.vgp_10_pilot",
+      "optional_for_core": true,
+      "required_binding": "exact assembly accession/version plus equal sequence dictionary, or manifest-bound validated liftover",
+      "partitions": ["CDS", "fourfold", "nonsynonymous", "synonymous", "WS", "SW", "GC3"]
+    }
+  ],
+  "slurm": {
+    "entrypoints": [
+      "analysis/slurm/vgp_10_pilot/submit.sh",
+      "analysis/slurm/vgp_10_pilot/pair_stage.sh",
+      "analysis/slurm/vgp_10_pilot/psmc_array.sh",
+      "analysis/slurm/vgp_10_pilot/psmc_finalize.sh",
+      "analysis/slurm/vgp_10_pilot/annotation_stage.sh"
+    ],
+    "default_submit_mode": "dry-run",
+    "success_sentinels": true,
+    "atomic_promotion": true,
+    "telemetry": true,
+    "resource_limits": "scheduler/job-specific measured estimates; no arbitrary global ceiling"
+  },
+  "output_schema": "analysis/vgp_10_pilot_output_schema.json",
+  "fixtures_are_biological_evidence": false
+}

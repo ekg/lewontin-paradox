@@ -1,0 +1,54 @@
+{
+  "schema_version": "vgp-10-pilot-guix-lock-v1",
+  "channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+  "input_sha256": {
+    "analysis/guix/vgp_10_pilot/channels.scm": "fd7d00be59ace5d82eb093ab2bd4efab45c30a166f3c3e1572d6e2d4d628bed4",
+    "analysis/guix/vgp_10_pilot/manifest.scm": "afd14da446d29d4e66b64837194dfae524342dc5b8de3c2778ec85c1cca09a3d",
+    "analysis/guix/vgp_10_pilot/packages/psmc.scm": "d9e06305115a1c326352c2f7bb82fc50c411010e7173c1e1e07c2ca28de9d8be",
+    "analysis/guix/sweepga_origin_main_manifest.scm": "ea9ae1ba3e51ac3302d93add158532befec8fb3c09d188f524ac29237bab17d1",
+    "analysis/guix/sweepga_impg_smoke_manifest.scm": "c0ef5afd6c988341da8446ff3f70af274dd12f5514bc053d3d4e6f0cbdcee521",
+    "analysis/guix/packages/impg.scm": "665e70e3a64d40f5fb245d0a8ca7d4455b465292343f19b8425fdcbb56c8113d"
+  },
+  "source_identities": {
+    "psmc": {
+      "repository": "https://github.com/lh3/psmc",
+      "version": "0.6.5",
+      "commit": "b37b1cfa05b89c67c2ad1b63c699a27600d5516e",
+      "archive_sha256": "4f6dff8a4d5a4cf98928100c87487d2fec5657da186da0f36795f46e70c48040",
+      "archive_size_bytes": 49347,
+      "guix_base32": "0h40qiq6xx4mczrs0v8qv9bmdv1ggm48f30h524zjk2s9n5gyvag"
+    },
+    "sweepga": {
+      "commit": "018e4ce49d2c125820e0ac50dc5feaa02d423683",
+      "accepted_executable_sha256": "fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b",
+      "build_record": "analysis/sweepga_origin_main_build.json"
+    },
+    "impg": {
+      "commit": "101df81eb28a809c8fac97d297acd9fcfbbfa048",
+      "accepted_executable_sha256": "c587dc2326cd24f887b1fcb3938404229ad0f0a27ef0773e90c287b1ade160d4",
+      "submodules": {
+        "gfaffix": "460e0dd798a9da7d12aef4f9181419d71489da95",
+        "syng": "dd00f52b688c0fb78cb7f25336ef9ac9f6a3e109"
+      },
+      "gfaffix_executable_sha256": "4bc1c5e236a8fe6aa1dbcff6e6cf515e8a70c808549990a515c3c5212776a627",
+      "companion_executable_sha256": {
+        "ALNtoPAF": "dc5446ff411723862219f378892c94d57abeea882d66a47e96d62b3b27e80b57",
+        "FAtoGDB": "8b602f0aab9871a2b666dc6a0a2540cb81eac4d1b9f7461acc01a5c998ea558a",
+        "FastGA": "88fcc7f0eb076a36727677c863557325c2a8ab41a71419c2e50bdcd9a4d3bb4e",
+        "GIXmake": "17bed139553e965aa7a1ccb18ff419e936c098c88257a1eabfd4e648d30cf9c0",
+        "GIXrm": "410ea649af9d018358dda5ca038f3a2e6cd7ca0530f971376d17ea0d4f693400",
+        "ONEview": "77d7dd475859c1fae7de095a0a9e67d819c9e2209dc120dc790d1938967c3278",
+        "PAFtoALN": "f2d181ef7bbb9acf7b113c174b584761424dc6c227020e525dca045d65c3ca6d",
+        "wfmash": "0d8a3a72cfda75a30c38e81b90320c5d212d24b8c312ad22fe97d67e553fc0f6"
+      },
+      "handoff_record": "analysis/sweepga_impg_observed.json"
+    }
+  },
+  "realization": {
+    "status": "capture-required-before-biological-compute",
+    "profile": null,
+    "derivation": null,
+    "closure_sha256": null,
+    "executables": null
+  }
+}
