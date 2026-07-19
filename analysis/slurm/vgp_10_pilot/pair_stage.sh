@@ -33,10 +33,14 @@ mapping)
     [[ -f $VGP_PAIR_RUN/preflight/.complete.json ]] || fail "preflight sentinel absent"
     verify_tool sweepga
     sweepga=$(tool_path sweepga)
-    "$sweepga" "$h2" "$h1" --output-file "$VGP_STAGE_PARTIAL/h2_to_h1.1to1.paf" \
-        --num-mappings 1:1 --scaffold-jump 0 --overlap 0.95 \
+    "$sweepga" "$h2" "$h1" --output-file "$VGP_STAGE_PARTIAL/h2_to_h1.native.1to1.paf" \
+        --num-mappings 1:1 --scaffold-jump 0 --overlap 0 \
         --scoring log-length-ani --threads "$threads" \
         >"$VGP_STAGE_PARTIAL/sweepga.stdout" 2>"$VGP_STAGE_PARTIAL/sweepga.stderr"
+    python3 -m analysis.vgp_10_pilot enforce-paf \
+        "$VGP_STAGE_PARTIAL/h2_to_h1.native.1to1.paf" \
+        "$VGP_STAGE_PARTIAL/h2_to_h1.1to1.paf" \
+        >"$VGP_STAGE_PARTIAL/exact_multiplicity_filter.json"
     python3 -m analysis.vgp_10_pilot audit-paf \
         "$VGP_STAGE_PARTIAL/h2_to_h1.1to1.paf" "$h1" "$h2" \
         >"$VGP_STAGE_PARTIAL/multiplicity.json"
@@ -66,30 +70,83 @@ impg)
     paf="$VGP_PAIR_RUN/mapping/h2_to_h1.1to1.paf"
     "$impg" index -a "$paf" -i "$VGP_STAGE_PARTIAL/h1_h2.impg" -t "$threads"
     mkdir "$VGP_STAGE_PARTIAL/partitions"
-    "$impg" partition -a "$paf" -i "$VGP_STAGE_PARTIAL/h1_h2.impg" -d 0 \
+    "$impg" partition -a "$paf" -i "$VGP_STAGE_PARTIAL/h1_h2.impg" \
+        -w 2000 -d 0 --min-missing-size 1 --min-boundary-distance 0 \
         -o bed --output-folder "$VGP_STAGE_PARTIAL/partitions" -t "$threads"
     python3 - "$VGP_STAGE_PARTIAL/partitions/partitions.bed" \
-        "$input_dir/eligible_query_regions.bed" "$VGP_STAGE_PARTIAL/focus.native.bed" <<'PY'
+        "$input_dir/h1_universe.bed" "$VGP_STAGE_PARTIAL/focus.native.bed" <<'PY'
 import sys
 from analysis.vgp_10_pilot import read_bed,select_native_partitions
 select_native_partitions(sys.argv[1],read_bed(sys.argv[2]),sys.argv[3])
 PY
     mkdir "$VGP_STAGE_PARTIAL/calls"
     "$impg" query -a "$paf" -i "$VGP_STAGE_PARTIAL/h1_h2.impg" \
-        -b "$VGP_STAGE_PARTIAL/focus.native.bed" -d 0 -o vcf:poa \
+        -b "$VGP_STAGE_PARTIAL/focus.native.bed" -d 0 --min-transitive-len 1 \
+        --temp-dir "$SLURM_TMPDIR" -o vcf:poa \
         --sequence-files "$h1" "$h2" -O "$VGP_STAGE_PARTIAL/calls" -t "$threads"
     find "$VGP_STAGE_PARTIAL/calls" -type f -name '*.vcf' -print | LC_ALL=C sort \
         >"$VGP_STAGE_PARTIAL/vcf.list"
     [[ -s $VGP_STAGE_PARTIAL/vcf.list ]] || fail "IMPG query emitted no regional VCF"
+    python3 - "$VGP_STAGE_PARTIAL/focus.native.bed" "$VGP_STAGE_PARTIAL/vcf.list" \
+        "$VGP_STAGE_PARTIAL/regional_vcf_audit.json" "$VGP_SELECTION_ID" \
+        "$VGP_DURABLE_ROOT" <<'PY'
+import json,sys
+from pathlib import Path
+focus,listing,output,selection,canonical_root=(
+    Path(sys.argv[1]),Path(sys.argv[2]),Path(sys.argv[3]),sys.argv[4],sys.argv[5])
+rows=[line.rstrip("\n").split("\t") for line in focus.open() if line.strip() and not line.startswith("#")]
+if not rows or any(len(row) < 5 for row in rows):
+    raise SystemExit("focused IMPG BED lacks query/native identifiers")
+query_names=[row[3] for row in rows]
+if len(query_names) != len(set(query_names)):
+    raise SystemExit("focused IMPG query names are not unique")
+files=[Path(line.strip()) for line in listing.open() if line.strip()]
+if len(files) != len(rows):
+    raise SystemExit(f"IMPG regional VCF census mismatch: {len(files)} != {len(rows)}")
+missing=[str(path) for path in files if not path.is_file() or path.stat().st_size == 0]
+if missing:
+    raise SystemExit(f"IMPG regional VCFs missing or empty: {missing[:3]}")
+file_names={path.stem for path in files}
+if file_names != set(query_names):
+    raise SystemExit("IMPG regional VCF names do not match focused query rows")
+value={
+    "canonical_vgp_root":canonical_root,
+    "selection_id":selection,
+    "focus_rows":len(rows),
+    "unique_query_names":len(set(query_names)),
+    "unique_native_partition_ids":len({row[4] for row in rows}),
+    "regional_vcf_count":len(files),
+    "regional_vcf_total_bytes":sum(path.stat().st_size for path in files),
+    "all_regional_vcfs_nonempty":True,
+    "transient_shards_removed_after_lacing":True,
+}
+output.write_text(json.dumps(value,sort_keys=True)+"\n")
+PY
     "$impg" lace -l "$VGP_STAGE_PARTIAL/vcf.list" --format vcf \
-        -o "$VGP_STAGE_PARTIAL/laced.vcf" --reference "$h1" --compress none -t "$threads"
+        -o "$VGP_STAGE_PARTIAL/laced.vcf" --reference "$h1" \
+        --temp-dir "$SLURM_TMPDIR" --compress none -t "$threads"
+    [[ -s $VGP_STAGE_PARTIAL/laced.vcf ]] || fail "IMPG lace emitted no VCF"
+    rm -rf -- "$VGP_STAGE_PARTIAL/calls"
+    rm -- "$VGP_STAGE_PARTIAL/vcf.list"
     ;;
 variants)
     [[ -f $VGP_PAIR_RUN/impg/.complete.json ]] || fail "IMPG sentinel absent"
     verify_tool bcftools
     bcftools=$(tool_path bcftools)
-    "$bcftools" norm -f "$h1" -m -any -Oz -o "$VGP_STAGE_PARTIAL/split.vcf.gz" \
+    "$bcftools" norm -f "$h1" -m -any -Oz -o "$VGP_STAGE_PARTIAL/impg.split.vcf.gz" \
         "$VGP_PAIR_RUN/impg/laced.vcf"
+    "$bcftools" index -f -t "$VGP_STAGE_PARTIAL/impg.split.vcf.gz"
+    "$bcftools" view -R "$VGP_PAIR_RUN/mapping/h1.1to1.bed" -Oz \
+        -o "$VGP_STAGE_PARTIAL/impg.trimmed.vcf.gz" "$VGP_STAGE_PARTIAL/impg.split.vcf.gz"
+    "$bcftools" norm -f "$h1" -d exact -Oz -o "$VGP_STAGE_PARTIAL/impg.normalized.vcf.gz" \
+        "$VGP_STAGE_PARTIAL/impg.trimmed.vcf.gz"
+    "$bcftools" index -f -t "$VGP_STAGE_PARTIAL/impg.normalized.vcf.gz"
+    python3 -m analysis.vgp_10_pilot paf-vcf \
+        "$VGP_PAIR_RUN/mapping/h2_to_h1.1to1.paf" "$h1" "$h2" \
+        "$VGP_STAGE_PARTIAL/paf.raw.vcf" "$VGP_STAGE_PARTIAL/paf_variant_audit.json"
+    "$bcftools" norm -f "$h1" -m -any -Oz -o "$VGP_STAGE_PARTIAL/split.vcf.gz" \
+        "$VGP_STAGE_PARTIAL/paf.raw.vcf"
+    "$bcftools" index -f -t "$VGP_STAGE_PARTIAL/split.vcf.gz"
     "$bcftools" view -R "$VGP_PAIR_RUN/mapping/h1.1to1.bed" -Oz \
         -o "$VGP_STAGE_PARTIAL/trimmed.vcf.gz" "$VGP_STAGE_PARTIAL/split.vcf.gz"
     "$bcftools" norm -f "$h1" -d exact -Oz -o "$VGP_STAGE_PARTIAL/normalized.vcf.gz" \
@@ -108,7 +165,9 @@ consensus)
     python3 - "$input_dir" "$VGP_STAGE_PARTIAL" "$VGP_SELECTION_ID" "$VGP_PAIR_RUN" <<'PY'
 import json,sys
 from pathlib import Path
-from analysis.vgp_10_pilot import REASON_ORDER,materialize_mask_consensus_psmc
+from analysis.vgp_10_pilot import (
+    REASON_ORDER,materialize_mask_consensus_psmc,paf_concordance_regions,parse_paf,
+)
 inputs,output,selection,pair_run=Path(sys.argv[1]),Path(sys.argv[2]),sys.argv[3],Path(sys.argv[4])
 manifest=json.loads((inputs/"input-manifest.json").read_text())
 exclusions={}
@@ -126,7 +185,8 @@ for reason in REASON_ORDER:
 materialize_mask_consensus_psmc(
     inputs/"h1.fa",inputs/"h2.fa",output/"normalized.vcf",inputs/"h1_universe.bed",
     exclusions,output,contig_map=manifest.get("h1_to_h2_contig_map"),
-    selection_id=selection,attempts=200,aligned_regions=manifest.get("concordance_regions"),
+    selection_id=selection,attempts=200,
+    aligned_regions=paf_concordance_regions(parse_paf(pair_run/"mapping/h2_to_h1.1to1.paf")),
 )
 reconciliation=json.loads((output/"masks/mask_reconciliation.json").read_text())
 result_gates=manifest.get("result_gates",{})

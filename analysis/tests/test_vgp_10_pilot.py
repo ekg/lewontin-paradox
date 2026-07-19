@@ -27,13 +27,16 @@ from analysis.vgp_10_pilot import (
     consensus_to_psmcfa,
     construct_reason_mask,
     estimate_resources,
+    enforce_exact_paf_multiplicity,
     freeze_bootstrap_units,
     impg_commands,
     interval_bp,
     low_complexity_intervals,
     materialize_mask_consensus_psmc,
     non_acgt_intervals,
+    paf_concordance_regions,
     paf_h1_intervals,
+    paf_to_exact_vcf,
     parse_fasta,
     parse_paf,
     parse_psmc_unscaled,
@@ -52,6 +55,7 @@ from analysis.vgp_10_pilot import (
     validate_ref_and_reconstruct_h2,
     verify_environment_capture,
     verify_environment_lock,
+    _contained,
 )
 
 
@@ -95,6 +99,7 @@ def test_sweepga_whole_assembly_native_1to1_and_tool_role_refusals():
     assert command[:3] == ["sweepga", "H2.fa", "H1.fa"]
     assert command[command.index("--num-mappings") + 1] == "1:1"
     assert command[command.index("--scaffold-jump") + 1] == "0"
+    assert command[command.index("--overlap") + 1] == "0"
     assert_tool_roles("mapping", command)
     with pytest.raises(PilotError, match="variant caller"):
         assert_tool_roles("mapping", command + ["--output-vcf", "calls.vcf"])
@@ -125,6 +130,24 @@ def test_bidirectional_paf_multiplicity_and_orientation_are_fail_closed(tmp_path
     paf.write_text(_paf(0, 100, 0, 100).replace("h2", "h1", 1))
     with pytest.raises(PilotError, match="orientation"):
         audit_sweepga_paf(paf, {"h1"}, {"h2"})
+
+
+def test_exact_postfilter_tightens_native_1to1_to_absolute_coordinate_depth(tmp_path):
+    native = tmp_path / "native.paf"
+    exact = tmp_path / "exact.paf"
+    native.write_text(
+        _paf(0, 100, 0, 100)
+        + _paf(50, 90, 120, 160)
+        + _paf(100, 200, 100, 200)
+    )
+    result = enforce_exact_paf_multiplicity(native, exact)
+    assert result["native_maximum_query_overlap_depth"] == 2
+    assert result["native_maximum_target_overlap_depth"] == 2
+    assert result["retained_records"] == 2
+    assert result["removed_records"] == 1
+    assert audit_sweepga_paf(exact, {"h1"}, {"h2"})[
+        "maximum_query_overlap_depth"
+    ] == 1
 
 
 def test_mapping_derives_h1_1to1_complement_and_projects_h2_N_on_both_strands(tmp_path):
@@ -161,13 +184,21 @@ def test_sequence_derived_low_complexity_mask_does_not_require_repeat_report():
 def test_exact_impg_index_partition_query_lace_order_and_both_sequences():
     commands = impg_commands(
         "impg", "exact.paf", "graph.impg", "partitions", "focus.bed", "calls",
-        "vcfs.list", "laced.vcf", "H1.fa", "H2.fa", 6,
+        "vcfs.list", "laced.vcf", "H1.fa", "H2.fa", 6, "node-local-tmp",
     )
     assert [row[1] for row in commands] == ["index", "partition", "query", "lace"]
     assert commands[0][commands[0].index("-a") + 1] == "exact.paf"
-    assert "-w" not in commands[1]  # IMPG owns native partition defaults
+    partition = commands[1]
+    assert partition[partition.index("-w") + 1] == "2000"
+    assert partition[partition.index("-d") + 1] == "0"
+    assert partition[partition.index("--min-missing-size") + 1] == "1"
+    assert partition[partition.index("--min-boundary-distance") + 1] == "0"
+    query = commands[2]
+    assert query[query.index("--min-transitive-len") + 1] == "1"
+    assert query[query.index("--temp-dir") + 1] == "node-local-tmp"
     assert commands[2][commands[2].index("--sequence-files") + 1:] [:2] == ["H1.fa", "H2.fa"]
     assert commands[3][commands[3].index("--reference") + 1] == "H1.fa"
+    assert commands[3][commands[3].index("--temp-dir") + 1] == "node-local-tmp"
     for stage, command in zip(("index", "partition", "query", "lace"), commands):
         assert_tool_roles(stage, command)
     with pytest.raises(PilotError, match="both sequence"):
@@ -180,7 +211,16 @@ def test_partition_focus_is_exact_subset_of_native_impg_rows(tmp_path):
     native.write_text("h1\t0\t50\tp0\nh1\t50\t100\tp1\nh1\t100\t150\tp2\n")
     selected = select_native_partitions(native, [Interval("h1", 70, 120)], focus)
     assert selected == [(Interval("h1", 50, 100), "p1"), (Interval("h1", 100, 150), "p2")]
-    assert focus.read_text().splitlines() == ["h1\t50\t100\tp1", "h1\t100\t150\tp2"]
+    assert focus.read_text().splitlines() == [
+        "h1\t50\t100\tquery000000000\tp1",
+        "h1\t100\t150\tquery000000001\tp2",
+    ]
+    duplicate = tmp_path / "duplicate-native-id.bed"
+    duplicate.write_text("h1\t0\t10\tp0\nh1\t20\t30\tp0\n")
+    select_native_partitions(duplicate, [Interval("h1", 0, 30)], focus)
+    rows = [line.split("\t") for line in focus.read_text().splitlines()]
+    assert [row[3] for row in rows] == ["query000000000", "query000000001"]
+    assert [row[4] for row in rows] == ["p0", "p0"]
     malformed = tmp_path / "user-windows.bed"
     malformed.write_text("h1\t0\t10\n")
     with pytest.raises(PilotError, match="partition identifier"):
@@ -252,6 +292,34 @@ def test_regional_h2_reconstruction_is_manifest_bound(tmp_path):
             "h2_contig": "h2", "h2_start": 0, "h2_end": 20, "strand": "+"}])
 
 
+def test_exact_paf_records_define_h1_h2_concordance_regions(tmp_path):
+    paf = tmp_path / "exact.paf"
+    paf.write_text("h2\t20\t2\t12\t-\th1\t30\t5\t15\t10\t10\t60\tcg:Z:10=\n")
+    assert paf_concordance_regions(parse_paf(paf)) == [{
+        "h1_contig": "h1", "h1_start": 5, "h1_end": 15,
+        "h2_contig": "h2", "h2_start": 2, "h2_end": 12, "strand": "-",
+        "cigar": "10=",
+    }]
+
+
+def test_exact_paf_cigar_emits_reconstructing_h1_reference_vcf(tmp_path):
+    h1_path, h2_path, paf, vcf = (tmp_path / name for name in ("h1.fa", "h2.fa", "exact.paf", "exact.vcf"))
+    write_fasta(h1_path, {"h1": "AACCGGTT"})
+    write_fasta(h2_path, {"h2": "AATCAGGTT"})
+    paf.write_text("h2\t9\t0\t9\t+\th1\t8\t0\t8\t7\t9\t60\tcg:Z:2=1X1=1I4=\n")
+    audit = paf_to_exact_vcf(paf, h1_path, h2_path, vcf)
+    variants = parse_vcf(vcf)
+    assert variants == [Variant("h1", 2, "C", "T"), Variant("h1", 3, "C", "CA")]
+    assert apply("AACCGGTT", variants) == "AATCAGGTT"
+    assert audit["paf_records_reconstructed"] == 1
+    assert audit["reconstruction_failures"] == 0
+    paf.write_text("h2\t8\t0\t8\t+\th1\t8\t0\t8\t8\t8\t60\tcg:Z:8X\n")
+    write_fasta(h2_path, {"h2": "AACCGGTT"})
+    audit = paf_to_exact_vcf(paf, h1_path, h2_path, vcf)
+    assert parse_vcf(vcf) == []
+    assert audit["zero_effect_blocks_removed"] == 1
+
+
 def test_diploid_consensus_iupac_indel_mask_and_noncallable_N(tmp_path):
     sequence, variants, h1_path, _, _ = truth(tmp_path)
     h1 = parse_fasta(h1_path)
@@ -263,8 +331,27 @@ def test_diploid_consensus_iupac_indel_mask_and_noncallable_N(tmp_path):
     assert set(consensus["h1"][30:51]) == {"N"}  # insertion anchor +/- 10
     assert set(consensus["h1"][60:83]) == {"N"}  # deletion REF span +/- 10
     assert qc["non_callable_bases_encoded_homozygous_reference"] == 0
-    with pytest.raises(PilotError, match="callable"):
-        build_diploid_consensus(h1, [Interval("h1", 20, 290)], variants)
+    masked_consensus, masked_qc = build_diploid_consensus(
+        h1, [Interval("h1", 20, 290)], variants
+    )
+    assert masked_qc["variants_excluded_by_callable_mask"] > 0
+    assert set(masked_consensus["h1"][:20]) == {"N"}
+    overlap_variants = [Variant("h1", 40, "A", "ATT"), Variant("h1", 45, "C", "T")]
+    overlap_consensus, overlap_qc = build_diploid_consensus(
+        h1, [Interval("h1", 5, 90)], overlap_variants
+    )
+    assert overlap_consensus["h1"][45] == "N"
+    assert overlap_qc["callable_snps_masked_by_indel_flank"] == 1
+
+
+def test_callable_containment_uses_indexed_lookup_not_linear_iteration():
+    class IndexedOnly(list):
+        def __iter__(self):
+            raise AssertionError("callable containment performed a linear scan")
+
+    intervals = {"h1": IndexedOnly([(0, 10), (20, 30), (40, 50)])}
+    assert _contained(intervals, "h1", 22, 29)
+    assert not _contained(intervals, "h1", 9, 21)
 
 
 def test_psmcfa_preserves_mask_and_heterozygous_bins():
@@ -300,6 +387,11 @@ def test_unscaled_trajectory_and_scaling_scenarios_remain_separate():
     assert "scenario_id" not in unscaled[0]
     assert scaled[0]["scenario_id"] == "s1"
     assert scaled[0]["mutation_rate_source"] == "doi:mu"
+    assert scaled[0]["psmc_bin_size_bp"] == 100
+    assert scaled[0]["effective_size"] == pytest.approx(500.0)
+    assert scaled[0]["time_years"] == pytest.approx(1250.0)
+    with pytest.raises(PilotError, match="bin size"):
+        scale_unscaled_trajectory(source, scenarios, bin_size_bp=0)
 
 
 def test_psmc_parser_selects_final_unscaled_iteration_and_theta(tmp_path):
@@ -317,6 +409,26 @@ def test_psmc_parser_selects_final_unscaled_iteration_and_theta(tmp_path):
     output.write_text("RS\t25\t0\t0.2\t1.5\n")
     with pytest.raises(PilotError, match="theta"):
         parse_psmc_unscaled(output)
+
+
+def test_psmc_parser_reads_pinned_native_rd_tr_rs_format_and_ignores_messages(tmp_path):
+    output = tmp_path / "native.psmc"
+    output.write_text(
+        "MM\tVersion: 0.6.5-r67\n"
+        "RD\t0\nTR\t0.001\t0.01\n"
+        "MM\tC_pi: 1.000000, n_recomb: 12.5\n"
+        "RS\t0\t0.1\t1.0\t2.0\t0.1\t0.0\n"
+        "RD\t25\nTR\t0.002\t0.02\n"
+        "MM\tC_pi: 4.999967, n_recomb: 42.0\n"
+        "RS\t1\t0.5\t2.0\t3.0\t0.2\t0.1\n"
+        "RS\t0\t0.2\t1.5\t4.0\t0.3\t0.2\n"
+    )
+    rows, theta = parse_psmc_unscaled(output)
+    assert theta == 0.002
+    assert rows == [
+        {"interval": 0, "time_2N0": 0.2, "lambda": 1.5},
+        {"interval": 1, "time_2N0": 0.5, "lambda": 2.0},
+    ]
 
 
 def test_exact_annotation_accession_dictionary_or_validated_liftover_only(tmp_path):
@@ -476,6 +588,24 @@ def test_materialized_join_proves_concordance_mask_consensus_and_200_bootstraps(
     assert (output / "consensus/bootstrap_units.10mb.bed").is_file()
 
 
+def test_emit_bootstrap_accepts_explicit_fragmented_mask_manifest_field(tmp_path):
+    consensus, units, manifest, output = (tmp_path / name for name in (
+        "consensus.fa", "units.bed", "manifest.tsv", "replicate.psmcfa"
+    ))
+    consensus.write_text(">h1\nACGTACGTAC\n")
+    units.write_text("h1\t0\t10\n")
+    sampled = ",".join(["0"] * 70_000)
+    manifest.write_text(
+        "replicate\tblock_bp\tseed\tunit_count\tsampled_unit_indices\n"
+        f"1\t5000000\t1\t70000\t{sampled}\n"
+    )
+    subprocess.run([
+        os.environ.get("PYTHON", "python3"), "-m", "analysis.vgp_10_pilot", "emit-bootstrap",
+        str(consensus), str(units), str(manifest), "1", str(output),
+    ], cwd=ROOT, check=True, capture_output=True, text=True)
+    assert output.stat().st_size > 700_000
+
+
 def test_output_schema_is_valid_and_annotation_absence_is_nonblocking():
     schema = json.loads((ROOT / "analysis/vgp_10_pilot_output_schema.json").read_text())
     jsonschema.Draft202012Validator.check_schema(schema)
@@ -494,13 +624,65 @@ def test_slurm_entrypoints_are_resumable_atomic_ordered_and_have_no_global_memor
                   "bcftools\" norm", "-d exact", "materialize_mask_consensus_psmc"):
         assert token in pair
     assert pair.index('"$impg" index') < pair.index('"$impg" partition') < pair.index('"$impg" query') < pair.index('"$impg" lace')
+    split_index = '"$bcftools" index -f -t "$VGP_STAGE_PARTIAL/split.vcf.gz"'
+    assert split_index in pair
+    assert "paf-vcf" in pair and "paf_variant_audit.json" in pair
+    assert "impg.normalized.vcf.gz" in pair
+    assert pair.index("impg.normalized.vcf.gz") < pair.index("paf-vcf")
+    assert pair.index('"$bcftools" norm -f "$h1" -m -any') < pair.index(split_index)
+    assert pair.find('"$bcftools" view -R', pair.index(split_index)) > pair.index(split_index)
+    assert '"$input_dir/h1_universe.bed" "$VGP_STAGE_PARTIAL/focus.native.bed"' in pair
+    assert '"$input_dir/eligible_query_regions.bed" "$VGP_STAGE_PARTIAL/focus.native.bed"' not in pair
+    assert "regional_vcf_audit.json" in pair
+    assert pair.index('regional_vcf_audit.json') < pair.index('"$impg" lace') < pair.index('rm -rf -- "$VGP_STAGE_PARTIAL/calls"')
     assert ".complete.json" in common and "atomic_promote" in common and "record_telemetry" in common
     assert "--dry-run" in submit and "--submit" in submit and "resources.json" in submit
     assert "#SBATCH --mem" not in pair and "#SBATCH --mem" not in psmc
     assert "emit-bootstrap" in psmc and "SLURM_ARRAY_TASK_ID" in psmc
+    assert psmc.index('"$psmc" -b') < psmc.index('rm -- "$unit"') < psmc.index("promote_stage")
     assert "--array=0-200%20" in submit and "psmc_finalize.sh" in submit
     for script in SLURM.glob("*.sh"):
         subprocess.run(["bash", "-n", str(script)], check=True)
+
+
+def test_p07_impg_rescue_uses_boundary_safe_hierarchical_lacing():
+    rescue = (SLURM / "authorized/v2.0.0/P07.impg-rescue.sbatch").read_text()
+    assert "rescue_path_rebinding.json" in rescue
+    assert "rescued_vcf_list_rebound" in rescue
+    assert "path.name" in rescue
+    assert "worker_threads=2" in rescue
+    assert '-t "$worker_threads"' in rescue
+    assert "-t 1" not in rescue
+    assert "SCRATCH_BASE=/scratch" in rescue
+    assert "minimum_scratch_kib" in rescue
+    assert 'cp "$RESCUE"' not in rescue
+    assert "hierarchical_lace_audit.json" in rescue
+    assert "lace-chunks" in rescue
+    assert "chunk-lists" in rescue
+    assert "wait \"$pid\"" in rescue
+    assert rescue.count('"$impg" lace') == 1
+    assert 'verify_tool bcftools' in rescue
+    assert "h2_sample_projection.json" in rescue
+    assert "h2_sample_count" in rescue
+    assert '"$bcftools" view --samples-file' in rescue
+    assert "--trim-alt-alleles --min-ac 1:nref" in rescue
+    assert '"$bcftools" view --drop-genotypes' in rescue
+    assert '"$bcftools" index -f -t' in rescue
+    assert '"site_only_projection":True' in rescue
+    assert '"$bcftools" concat -a -d exact' in rescue
+    assert '"$bcftools" sort' in rescue
+    assert rescue.count("--temp-dir") == 2
+    assert rescue.index("chunk-lists") < rescue.index("lace-chunks")
+    assert rescue.index("lace-chunks") < rescue.index('"$bcftools" concat')
+    assert rescue.index('[[ -s $partial/laced.vcf ]]') < rescue.index('rm -rf -- "$partial/calls"')
+
+
+def test_authorized_canary_runs_psmc_in_checkpointed_inallocation_batches():
+    canary = (SLURM / "authorized/v2.0.0/run_canary.sh").read_text()
+    assert "P07_CANARY_PSMC_PARALLELISM:=20" in canary
+    assert "psmc_pids" in canary
+    assert 'wait "$pid"' in canary
+    assert canary.index('wait "$pid"') < canary.index("checkpoint", canary.index("psmc_pids"))
 
 
 def test_cli_plan_is_h1_reference_h2_query_and_has_exact_stage_order(tmp_path):

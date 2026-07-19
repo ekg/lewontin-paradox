@@ -42,8 +42,19 @@ def test_committed_manifest_is_deterministic_and_has_real_generous_packets():
         text = (ROOT / relative).read_text()
         assert "#SBATCH --mem=" in text and "#SBATCH --partition=highmem" in text
         assert "run_canary.sh" in text
+        # Slurm executes a copied batch script from its spool directory, so $0
+        # cannot be used to locate repository siblings at runtime.
+        assert '"${SLURM_SUBMIT_DIR:?submit from the repository root}"' in text
+        assert 'dirname -- "$0"' not in text
     worker = (auth.PACKET_DIR / "run_canary.sh").read_text()
     assert "SLURM_TMPDIR" in worker and "checkpoint" in worker
+    assert "VGP_NODE_LOCAL_BASE" in worker
+    assert "mktemp -d" in worker
+    assert "node_local_filesystem_type" in worker
+    assert 'export TMPDIR="$SLURM_TMPDIR"' in worker
+    pair_stage = (ROOT / "analysis/slurm/vgp_10_pilot/pair_stage.sh").read_text()
+    assert "--num-mappings 1:1" in pair_stage
+    assert any("--overlap 0 \\" in line for line in pair_stage.splitlines())
 
 
 def test_active_authorization_and_execution_paths_use_canonical_shared_root():
@@ -126,3 +137,19 @@ def test_shell_packets_are_syntax_valid():
         subprocess.run(["bash", "-n", str(script)], check=True)
     for script in auth.PACKET_DIR.glob("*.sbatch"):
         subprocess.run(["bash", "-n", str(script)], check=True)
+
+
+def test_psmc_sensitivity_grid_is_factorial_labeled_and_not_species_calibrated(tmp_path):
+    path = tmp_path / "psmc_scaling_scenarios.tsv"
+    auth.write_psmc_scaling_scenarios(path)
+    rows = auth.read_tsv(path)
+    assert len(rows) == 9
+    assert len({row["scenario_id"] for row in rows}) == 9
+    assert {float(row["mutation_rate_per_generation"]) for row in rows} == {5e-9, 1e-8, 2e-8}
+    assert {float(row["generation_time_years"]) for row in rows} == {1.0, 2.0, 4.0}
+    assert {row["mutation_rate_source"] for row in rows} == {
+        "predeclared_generic_sensitivity_grid_not_species_calibration"
+    }
+    assert {row["generation_time_source"] for row in rows} == {
+        "predeclared_generic_sensitivity_grid_not_species_calibration"
+    }

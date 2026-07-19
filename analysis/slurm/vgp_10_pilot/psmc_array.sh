@@ -29,5 +29,6 @@ else
         >"$VGP_STAGE_PARTIAL/bootstrap_input.json"
     "$psmc" -b -N25 -t15 -r5 -p '4+25*2+4+6' \
         -o "$VGP_STAGE_PARTIAL/bootstrap.unscaled.psmc" "$unit"
+    rm -- "$unit"
 fi
 promote_stage

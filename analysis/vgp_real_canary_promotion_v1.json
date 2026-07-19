@@ -1,0 +1,18 @@
+{
+  "atomic_same_filesystem_rename": true,
+  "authorization_id": "vgp10-auth-20260718-v2",
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "checkpoint_source": "/moosefs/erikg/vgp/pilot/authorized-checkpoints/vgp10-auth-20260718-v2/P07/run",
+  "promotion_manifest_sha256": "c7fc4a45213b7113b5b63d8ccb47812e968dee13c5419c54a108d968ed7d9bc1",
+  "promotion_target": "/moosefs/erikg/vgp/pilot/outputs/vgp10-auth-20260718-v2/P07/core",
+  "schema_version": "vgp-real-canary-promotion-v1",
+  "selection_id": "P07",
+  "slurm_job_id": "1781798",
+  "source_preserved": true,
+  "stage_sentinels": 207,
+  "status": "promoted",
+  "target": "/moosefs/erikg/vgp/pilot/outputs/vgp10-auth-20260718-v2/P07/core",
+  "task_id": "run-vgp-real-canary",
+  "verified_payload_bytes": 1267400116,
+  "verified_payload_files": 468
+}

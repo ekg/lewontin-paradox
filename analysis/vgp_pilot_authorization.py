@@ -80,6 +80,9 @@ CONFIDENCE_COVARIATES = (
     "annotation",
     "independent_ne_evidence",
 )
+PSMC_SENSITIVITY_MUTATION_RATES = (5e-9, 1e-8, 2e-8)
+PSMC_SENSITIVITY_GENERATION_YEARS = (1.0, 2.0, 4.0)
+PSMC_SENSITIVITY_SOURCE = "predeclared_generic_sensitivity_grid_not_species_calibration"
 
 
 class AuthorizationError(RuntimeError):
@@ -89,6 +92,33 @@ class AuthorizationError(RuntimeError):
 def read_tsv(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as handle:
         return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def write_psmc_scaling_scenarios(path: Path) -> None:
+    """Freeze a labeled factorial sensitivity grid without implying calibration."""
+
+    fields = (
+        "scenario_id", "mutation_rate_per_generation", "generation_time_years",
+        "mutation_rate_source", "generation_time_source",
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    partial = path.with_suffix(path.suffix + ".partial")
+    with partial.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, delimiter="\t", lineterminator="\n")
+        writer.writeheader()
+        for mutation_rate in PSMC_SENSITIVITY_MUTATION_RATES:
+            for generation_years in PSMC_SENSITIVITY_GENERATION_YEARS:
+                writer.writerow({
+                    "scenario_id": (
+                        f"SENS_MU{mutation_rate:.1E}_G{generation_years:g}Y"
+                        .replace("+", "")
+                    ),
+                    "mutation_rate_per_generation": f"{mutation_rate:.8g}",
+                    "generation_time_years": f"{generation_years:g}",
+                    "mutation_rate_source": PSMC_SENSITIVITY_SOURCE,
+                    "generation_time_source": PSMC_SENSITIVITY_SOURCE,
+                })
+    partial.replace(path)
 
 
 def _one(rows: Iterable[dict[str, str]], **keys: str) -> dict[str, str]:
@@ -447,6 +477,7 @@ def materialize_input(value: Mapping[str, Any], selection_id: str, data_root: Pa
     }
     (input_dir / "input-manifest.json").write_text(canonical_json(manifest), encoding="utf-8")
     (input_dir / "resources.json").write_text(canonical_json(pair["resources"]), encoding="utf-8")
+    write_psmc_scaling_scenarios(input_dir / "psmc_scaling_scenarios.tsv")
     return {"selection_id": selection_id, "input_dir": str(input_dir), "assets": assets}
 
 

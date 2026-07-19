@@ -32,7 +32,7 @@ else:
 for row in scenarios: row["theta_0"]=theta
 _,scaled=scale_unscaled_trajectory(rows,scenarios)
 fields=("scenario_id","interval","time_years","effective_size","mutation_rate_per_generation",
-        "generation_time_years","mutation_rate_source","generation_time_source")
+        "generation_time_years","psmc_bin_size_bp","mutation_rate_source","generation_time_source")
 with (out/"scenario_scaled_trajectories.tsv").open("w",newline="") as handle:
     writer=csv.DictWriter(handle,fieldnames=fields,delimiter="\t",lineterminator="\n")
     writer.writeheader(); writer.writerows(scaled)

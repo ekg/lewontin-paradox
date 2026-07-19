@@ -11,4 +11,7 @@
 #SBATCH --error=/moosefs/erikg/vgp/pilot/logs/vgp10-auth-v2-P07-%j.err
 set -euo pipefail
 export VGP_RETRY=0
-exec bash "$(dirname -- "$0")/run_canary.sh"
+SUBMIT_ROOT="${SLURM_SUBMIT_DIR:?submit from the repository root}"
+CANARY_WORKER="$SUBMIT_ROOT/analysis/slurm/vgp_10_pilot/authorized/v2.0.0/run_canary.sh"
+[[ -f $CANARY_WORKER ]] || { echo "canary worker absent: $CANARY_WORKER" >&2; exit 2; }
+exec bash "$CANARY_WORKER"

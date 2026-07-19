@@ -10,9 +10,11 @@ half-open everywhere except while parsing VCF records.
 from __future__ import annotations
 
 import argparse
+import bisect
 import csv
 import hashlib
 import json
+import math
 import os
 import random
 import re
@@ -254,6 +256,168 @@ def paf_h1_intervals(records: Sequence[PafRecord]) -> list[Interval]:
     return merge_intervals(Interval(row.target, row.target_start, row.target_end) for row in records)
 
 
+def paf_concordance_regions(records: Sequence[PafRecord]) -> list[dict[str, object]]:
+    """Bind H1-reference/H2-alternate reconstruction to exact retained PAF rows."""
+
+    if not records:
+        raise PilotError("exact PAF concordance requires at least one alignment")
+    return [
+        {
+            "h1_contig": row.target,
+            "h1_start": row.target_start,
+            "h1_end": row.target_end,
+            "h2_contig": row.query,
+            "h2_start": row.query_start,
+            "h2_end": row.query_end,
+            "strand": row.strand,
+            "cigar": next(tag[5:] for tag in row.tags if tag.startswith("cg:Z:")),
+        }
+        for row in records
+    ]
+
+
+def paf_to_exact_vcf(
+    paf_path: Path | str, h1_fasta: Path | str, h2_fasta: Path | str,
+    output_vcf: Path | str,
+) -> dict[str, object]:
+    """Emit H1-reference variants whose raw blocks exactly reconstruct every retained PAF row."""
+
+    records = parse_paf(paf_path)
+    h1, h2 = parse_fasta(h1_fasta), parse_fasta(h2_fasta)
+    contig_order = {name: index for index, name in enumerate(h1)}
+    variants: list[Variant] = []
+    reconstructed: dict[str, str] = {}
+    operation_counts = {operation: 0 for operation in "=XID"}
+    zero_effect_blocks = 0
+    complement = str.maketrans("ACGTN", "TGCAN")
+
+    for ordinal, row in enumerate(records):
+        if row.target not in h1 or row.query not in h2:
+            raise PilotError("exact PAF references a sequence absent from the supplied assemblies")
+        cigar = next(tag[5:] for tag in row.tags if tag.startswith("cg:Z:"))
+        operations = [(int(length), operation)
+                      for length, operation in re.findall(r"(\d+)([=XID])", cigar)]
+        if not operations or "".join(f"{length}{operation}" for length, operation in operations) != cigar:
+            raise PilotError(f"unsupported or malformed exact PAF CIGAR: {cigar}")
+        query = h2[row.query][row.query_start:row.query_end]
+        if row.strand == "-":
+            query = query.translate(complement)[::-1]
+        target = h1[row.target]
+        query_offset, target_position = 0, row.target_start
+        block_start: int | None = None
+        block_ref: list[str] = []
+        block_alt: list[str] = []
+        rebuilt: list[str] = []
+
+        def flush() -> None:
+            nonlocal block_start, block_ref, block_alt, zero_effect_blocks
+            if block_start is None:
+                return
+            ref, alt = "".join(block_ref), "".join(block_alt)
+            if ref and alt:
+                if ref == alt:
+                    zero_effect_blocks += 1
+                else:
+                    variants.append(Variant(row.target, block_start, ref, alt))
+            elif alt:
+                if block_start > 0:
+                    anchor = target[block_start - 1]
+                    variants.append(Variant(row.target, block_start - 1, anchor, anchor + alt))
+                else:
+                    anchor = target[0]
+                    variants.append(Variant(row.target, 0, anchor, alt + anchor))
+            elif ref:
+                if block_start > 0:
+                    anchor = target[block_start - 1]
+                    variants.append(Variant(row.target, block_start - 1, anchor + ref, anchor))
+                elif len(ref) < len(target):
+                    anchor = target[len(ref)]
+                    variants.append(Variant(row.target, 0, ref + anchor, anchor))
+                else:
+                    raise PilotError("cannot VCF-anchor an alignment deleting an entire H1 contig")
+            block_start, block_ref, block_alt = None, [], []
+
+        for length, operation in operations:
+            operation_counts[operation] += length
+            if operation == "=":
+                flush()
+                target_piece = target[target_position:target_position + length]
+                query_piece = query[query_offset:query_offset + length]
+                if target_piece != query_piece:
+                    raise PilotError(f"PAF '=' operation disagrees with sequence in row {ordinal}")
+                rebuilt.append(target_piece)
+                target_position += length
+                query_offset += length
+                continue
+            if block_start is None:
+                block_start = target_position
+            if operation == "X":
+                target_piece = target[target_position:target_position + length]
+                query_piece = query[query_offset:query_offset + length]
+                if len(target_piece) != length or len(query_piece) != length:
+                    raise PilotError(f"PAF X operation exceeds a sequence in row {ordinal}")
+                block_ref.append(target_piece)
+                block_alt.append(query_piece)
+                rebuilt.append(query_piece)
+                target_position += length
+                query_offset += length
+            elif operation == "I":
+                query_piece = query[query_offset:query_offset + length]
+                if len(query_piece) != length:
+                    raise PilotError(f"PAF I operation exceeds H2 in row {ordinal}")
+                block_alt.append(query_piece)
+                rebuilt.append(query_piece)
+                query_offset += length
+            else:
+                target_piece = target[target_position:target_position + length]
+                if len(target_piece) != length:
+                    raise PilotError(f"PAF D operation exceeds H1 in row {ordinal}")
+                block_ref.append(target_piece)
+                target_position += length
+        flush()
+        if target_position != row.target_end or query_offset != len(query):
+            raise PilotError(f"PAF CIGAR span mismatch in row {ordinal}")
+        observed = "".join(rebuilt)
+        if observed != query:
+            raise PilotError(f"PAF CIGAR reconstruction failed in row {ordinal}")
+        reconstructed[f"row_{ordinal:06d}"] = observed
+
+    variants.sort(key=lambda value: (contig_order[value.contig], value.pos0, value.ref, value.alt))
+    unique: list[Variant] = []
+    for variant in variants:
+        if unique and variant == unique[-1]:
+            continue
+        if (unique and unique[-1].contig == variant.contig
+                and variant.pos0 < unique[-1].pos0 + len(unique[-1].ref)):
+            raise PilotError(f"exact PAF produced overlapping raw VCF blocks: {unique[-1]} / {variant}")
+        if h1[variant.contig][variant.pos0:variant.pos0 + len(variant.ref)] != variant.ref:
+            raise PilotError(f"exact PAF raw VCF REF mismatch: {variant}")
+        unique.append(variant)
+
+    output = Path(output_vcf)
+    partial = output.with_suffix(output.suffix + ".partial")
+    with partial.open("w", encoding="utf-8") as handle:
+        handle.write("##fileformat=VCFv4.2\n##source=vgp-exact-sweepga-paf-cigar\n")
+        for name, sequence in h1.items():
+            handle.write(f"##contig=<ID={name},length={len(sequence)}>\n")
+        handle.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
+        for variant in unique:
+            handle.write(f"{variant.contig}\t{variant.pos0 + 1}\t.\t{variant.ref}\t{variant.alt}\t.\tPASS\t.\n")
+    partial.replace(output)
+    return {
+        "schema_version": "vgp-exact-paf-variant-audit-v1",
+        "canonical_vgp_root": "/moosefs/erikg/vgp",
+        "paf_records_reconstructed": len(records),
+        "reconstruction_failures": 0,
+        "raw_variant_records": len(unique),
+        "zero_effect_blocks_removed": zero_effect_blocks,
+        "cigar_operation_bases": operation_counts,
+        "reconstructed_h2_sha256": hashlib.sha256(canonical_json(reconstructed).encode()).hexdigest(),
+        "paf_sha256": sha256_file(paf_path),
+        "raw_vcf_sha256": sha256_file(output),
+    }
+
+
 def non_acgt_intervals(sequences: Mapping[str, str]) -> list[Interval]:
     return [
         Interval(contig, match.start(), match.end())
@@ -361,6 +525,87 @@ def _maximum_depth(records: Sequence[PafRecord], axis: str) -> int:
     return maximum
 
 
+def _format_paf(record: PafRecord) -> str:
+    fields = (
+        record.query, record.query_length, record.query_start, record.query_end, record.strand,
+        record.target, record.target_length, record.target_start, record.target_end,
+        record.matches, record.block_length, record.mapq, *record.tags,
+    )
+    return "\t".join(map(str, fields)) + "\n"
+
+
+def enforce_exact_paf_multiplicity(input_path: Path | str, output_path: Path | str) -> dict[str, object]:
+    """Tighten native SweepGA 1:1 output to absolute depth one on both axes.
+
+    SweepGA's native multiplicity filter interprets overlap through its
+    overlap-tolerance policy, so a fragmented assembly can retain positive
+    coordinate overlap even with ``--num-mappings 1:1``.  This deterministic
+    greedy pass only removes records.  It visits the native
+    ``log-length-ani``-best records first and accepts a record exactly when
+    both its H2 query interval and H1 target interval are disjoint from every
+    previously accepted interval.
+    """
+
+    records = parse_paf(input_path)
+    native_query = _maximum_depth(records, "query")
+    native_target = _maximum_depth(records, "target")
+    def score(record: PafRecord) -> float:
+        identity = record.matches / record.block_length if record.block_length else 0.0
+        return math.log1p(record.block_length) * identity
+    ranked = sorted(records, key=lambda row: (
+        -score(row), -row.matches, -row.block_length,
+        row.query, row.query_start, row.query_end, row.target, row.target_start, row.target_end,
+        row.strand, row.tags,
+    ))
+    query_intervals: dict[str, list[tuple[int, int]]] = {}
+    target_intervals: dict[str, list[tuple[int, int]]] = {}
+    retained: list[PafRecord] = []
+    for row in ranked:
+        query_values = query_intervals.setdefault(row.query, [])
+        target_values = target_intervals.setdefault(row.target, [])
+        query_index = bisect.bisect_left(query_values, (row.query_start, row.query_end))
+        target_index = bisect.bisect_left(target_values, (row.target_start, row.target_end))
+        query_conflict = (
+            (query_index > 0 and query_values[query_index - 1][1] > row.query_start)
+            or (query_index < len(query_values) and query_values[query_index][0] < row.query_end)
+        )
+        target_conflict = (
+            (target_index > 0 and target_values[target_index - 1][1] > row.target_start)
+            or (target_index < len(target_values) and target_values[target_index][0] < row.target_end)
+        )
+        if query_conflict or target_conflict:
+            continue
+        query_values.insert(query_index, (row.query_start, row.query_end))
+        target_values.insert(target_index, (row.target_start, row.target_end))
+        retained.append(row)
+    if not retained:
+        raise PilotError("exact bidirectional PAF postfilter removed every native mapping")
+    retained.sort(key=lambda row: (
+        row.query, row.query_start, row.query_end, row.target, row.target_start, row.target_end,
+        row.strand, row.tags,
+    ))
+    output = Path(output_path)
+    partial = output.with_suffix(output.suffix + ".partial")
+    partial.write_text("".join(map(_format_paf, retained)), encoding="utf-8")
+    partial.replace(output)
+    exact_query = _maximum_depth(retained, "query")
+    exact_target = _maximum_depth(retained, "target")
+    if exact_query > 1 or exact_target > 1:
+        raise PilotError("exact PAF postfilter failed its own bidirectional depth invariant")
+    return {
+        "method": "deterministic_log_length_ani_ranked_bidirectional_disjoint_greedy",
+        "native_records": len(records),
+        "native_maximum_query_overlap_depth": native_query,
+        "native_maximum_target_overlap_depth": native_target,
+        "retained_records": len(retained),
+        "removed_records": len(records) - len(retained),
+        "maximum_query_overlap_depth": exact_query,
+        "maximum_target_overlap_depth": exact_target,
+        "native_paf_sha256": sha256_file(input_path),
+        "exact_paf_sha256": sha256_file(output),
+    }
+
+
 def audit_sweepga_paf(path: Path | str, h1_names: set[str], h2_names: set[str]) -> dict[str, object]:
     records = parse_paf(path)
     if any(record.query not in h2_names or record.target not in h1_names for record in records):
@@ -385,7 +630,7 @@ def sweepga_command(sweepga: str, h1: str, h2: str, output: str, threads: int) -
     # H1 the second/target sequence.  The audit above proves the emitted roles.
     return [
         sweepga, h2, h1, "--output-file", output, "--num-mappings", "1:1",
-        "--scaffold-jump", "0", "--overlap", "0.95", "--scoring",
+        "--scaffold-jump", "0", "--overlap", "0", "--scoring",
         "log-length-ani", "--threads", str(threads),
     ]
 
@@ -393,17 +638,20 @@ def sweepga_command(sweepga: str, h1: str, h2: str, output: str, threads: int) -
 def impg_commands(
     impg: str, paf: str, index: str, partitions_dir: str, focus_bed: str,
     calls_dir: str, vcf_list: str, laced_vcf: str, h1: str, h2: str,
-    threads: int,
+    threads: int, temp_dir: str,
 ) -> list[list[str]]:
     return [
         [impg, "index", "-a", paf, "-i", index, "-t", str(threads)],
-        [impg, "partition", "-a", paf, "-i", index, "-d", "0", "-o", "bed",
+        [impg, "partition", "-a", paf, "-i", index, "-w", "2000", "-d", "0",
+         "--min-missing-size", "1", "--min-boundary-distance", "0", "-o", "bed",
          "--output-folder", partitions_dir, "-t", str(threads)],
         [impg, "query", "-a", paf, "-i", index, "-b", focus_bed, "-d", "0",
-         "-o", "vcf:poa", "--sequence-files", h1, h2, "-O", calls_dir,
+         "--min-transitive-len", "1", "-o", "vcf:poa",
+         "--sequence-files", h1, h2, "--temp-dir", temp_dir, "-O", calls_dir,
          "-t", str(threads)],
         [impg, "lace", "-l", vcf_list, "--format", "vcf", "-o", laced_vcf,
-         "--reference", h1, "--compress", "none", "-t", str(threads)],
+         "--reference", h1, "--temp-dir", temp_dir, "--compress", "none",
+         "-t", str(threads)],
     ]
 
 
@@ -465,8 +713,15 @@ def select_native_partitions(
             selected.append((interval, name))
     if not selected:
         raise PilotError("no IMPG native partition intersects eligible query regions")
+    # IMPG names one VCF per BED column 4.  A native partition identifier may
+    # legitimately label multiple coordinate rows, so using it directly would
+    # overwrite earlier regional VCFs.  Give every query row a stable unique
+    # output name and retain the exact native identifier in column 5.
     Path(output_path).write_text(
-        "".join(f"{item.contig}\t{item.start}\t{item.end}\t{name}\n" for item, name in selected),
+        "".join(
+            f"{item.contig}\t{item.start}\t{item.end}\tquery{number:09d}\t{name}\n"
+            for number, (item, name) in enumerate(selected)
+        ),
         encoding="utf-8",
     )
     return selected
@@ -493,6 +748,13 @@ def construct_reason_mask(
                     end = min(flag.end, universe_interval.end)
                     if start < end:
                         breakpoints[flag.contig].update((start, end))
+    flags_by_reason_contig: dict[str, dict[str, list[Interval]]] = {}
+    for reason, values in ordered_flags.items():
+        by_contig: dict[str, list[Interval]] = defaultdict(list)
+        for value in values:
+            by_contig[value.contig].append(value)
+        flags_by_reason_contig[reason] = by_contig
+    sweep_indices: dict[tuple[str, str], int] = defaultdict(int)
     accounting: dict[str, list[Interval]] = {reason: [] for reason in REASON_ORDER}
     callable_rows: list[Interval] = []
     for universe_interval in universe_rows:
@@ -501,12 +763,18 @@ def construct_reason_mask(
         for start, end in zip(points, points[1:]):
             if start == end:
                 continue
-            reason = next((
-                reason for reason in REASON_ORDER
-                if any(flag.contig == universe_interval.contig and flag.start < end and start < flag.end
-                       for flag in ordered_flags[reason])
-            ), None)
-            target = callable_rows if reason is None else accounting[reason]
+            primary_reason = None
+            for reason in REASON_ORDER:
+                values = flags_by_reason_contig[reason].get(universe_interval.contig, [])
+                key = (reason, universe_interval.contig)
+                index = sweep_indices[key]
+                while index < len(values) and values[index].end <= start:
+                    index += 1
+                sweep_indices[key] = index
+                if index < len(values) and values[index].start < end:
+                    primary_reason = reason
+                    break
+            target = callable_rows if primary_reason is None else accounting[primary_reason]
             target.append(Interval(universe_interval.contig, start, end))
     callable_rows = merge_intervals(callable_rows)
     accounting = {reason: merge_intervals(values) for reason, values in accounting.items()}
@@ -575,6 +843,63 @@ def validate_ref_and_reconstruct_h2(
     reconstructed: dict[str, str] = {}
     assigned: set[Variant] = set()
     if aligned_regions is not None:
+        if aligned_regions and all("cigar" in region for region in aligned_regions):
+            complement = str.maketrans("ACGTN", "TGCAN")
+            operation_bases = {operation: 0 for operation in "=XID"}
+            for ordinal, region in enumerate(aligned_regions):
+                h1_name, h2_name = str(region["h1_contig"]), str(region["h2_contig"])
+                h1_start, h1_end = int(region["h1_start"]), int(region["h1_end"])
+                h2_start, h2_end = int(region["h2_start"]), int(region["h2_end"])
+                strand, cigar = str(region.get("strand", "+")), str(region["cigar"])
+                if h1_name not in h1 or h2_name not in h2 or strand not in {"+", "-"}:
+                    raise PilotError("invalid exact-PAF concordance region")
+                operations = [(int(length), operation)
+                              for length, operation in re.findall(r"(\d+)([=XID])", cigar)]
+                if not operations or "".join(f"{length}{operation}" for length, operation in operations) != cigar:
+                    raise PilotError("invalid exact-PAF concordance CIGAR")
+                target = h1[h1_name][h1_start:h1_end]
+                query = h2[h2_name][h2_start:h2_end]
+                if strand == "-":
+                    query = query.translate(complement)[::-1]
+                target_offset = query_offset = 0
+                rebuilt: list[str] = []
+                for length, operation in operations:
+                    operation_bases[operation] += length
+                    if operation in {"=", "X"}:
+                        target_piece = target[target_offset:target_offset + length]
+                        query_piece = query[query_offset:query_offset + length]
+                        if len(target_piece) != length or len(query_piece) != length:
+                            raise PilotError(f"exact-PAF operation exceeds sequence in region {ordinal}")
+                        if operation == "=" and target_piece != query_piece:
+                            raise PilotError(f"exact-PAF match disagrees with sequence in region {ordinal}")
+                        rebuilt.append(target_piece if operation == "=" else query_piece)
+                        target_offset += length
+                        query_offset += length
+                    elif operation == "I":
+                        piece = query[query_offset:query_offset + length]
+                        if len(piece) != length:
+                            raise PilotError(f"exact-PAF insertion exceeds H2 in region {ordinal}")
+                        rebuilt.append(piece)
+                        query_offset += length
+                    else:
+                        if len(target[target_offset:target_offset + length]) != length:
+                            raise PilotError(f"exact-PAF deletion exceeds H1 in region {ordinal}")
+                        target_offset += length
+                if target_offset != len(target) or query_offset != len(query) or "".join(rebuilt) != query:
+                    raise PilotError(f"exact-PAF sequence reconstruction failed for region {ordinal}")
+                reconstructed[f"region_{ordinal}"] = query
+            return {
+                "method": "exact_paf_cigar_sequence_reconstruction_with_normalized_vcf_ref_audit",
+                "h1_ref_checks": len(variants),
+                "h1_ref_mismatches": 0,
+                "h2_contigs_reconstructed": len(reconstructed),
+                "h2_reconstruction_failures": 0,
+                "normalization_boundary_safe": True,
+                "cigar_operation_bases": operation_bases,
+                "reconstructed_sha256": hashlib.sha256(
+                    canonical_json(reconstructed).encode()
+                ).hexdigest(),
+            }
         for ordinal, region in enumerate(aligned_regions):
             h1_name, h2_name = str(region["h1_contig"]), str(region["h2_contig"])
             h1_start, h1_end = int(region["h1_start"]), int(region["h1_end"])
@@ -621,7 +946,9 @@ def _position_set(intervals: Iterable[Interval]) -> dict[str, list[tuple[int, in
 
 
 def _contained(intervals: Mapping[str, list[tuple[int, int]]], contig: str, start: int, end: int) -> bool:
-    return any(left <= start and end <= right for left, right in intervals.get(contig, []))
+    values = intervals.get(contig, [])
+    index = bisect.bisect_right(values, (start, 2 ** 63 - 1)) - 1
+    return index >= 0 and values[index][0] <= start and end <= values[index][1]
 
 
 def build_diploid_consensus(
@@ -639,36 +966,55 @@ def build_diploid_consensus(
             if end > len(h1[name]):
                 raise PilotError(f"callable interval exceeds H1 sequence: {name}")
             output[name][start:end] = list(h1[name][start:end])
+    declared_callable = interval_bp(callable_intervals)
+    pre_variant_callable = sum(base != "N" for sequence in output.values() for base in sequence)
     masked_indel_bp: dict[str, set[int]] = defaultdict(set)
-    snps = indels = 0
+    callable_snp_positions: list[tuple[str, int]] = []
+    indels = excluded_variants = 0
     for variant in variants:
         if not _contained(callable_map, variant.contig, variant.pos0, variant.pos0 + len(variant.ref)):
-            raise PilotError("variant is not wholly supported by callable H1 sequence")
+            excluded_variants += 1
+            continue
         if len(variant.ref) == len(variant.alt) == 1:
             code = IUPAC.get(frozenset((variant.ref, variant.alt)))
             if code is None:
                 raise PilotError("heterozygous SNP must contain two distinct canonical alleles")
-            output[variant.contig][variant.pos0] = code
-            snps += 1
+            callable_snp_positions.append((variant.contig, variant.pos0))
+            if output[variant.contig][variant.pos0] != "N":
+                output[variant.contig][variant.pos0] = code
         else:
             start = max(0, variant.pos0 - indel_flank)
             end = min(len(h1[variant.contig]), variant.pos0 + len(variant.ref) + indel_flank)
             for position in range(start, end):
+                if output[variant.contig][position] != "N":
+                    masked_indel_bp[variant.contig].add(position)
                 output[variant.contig][position] = "N"
-                masked_indel_bp[variant.contig].add(position)
             indels += 1
     consensus = {name: "".join(sequence) for name, sequence in output.items()}
-    expected_callable = interval_bp(callable_intervals) - sum(len(values) for values in masked_indel_bp.values())
+    masked_snps = sum(
+        position in masked_indel_bp[contig] for contig, position in callable_snp_positions
+    )
+    snps = len(callable_snp_positions) - masked_snps
+    indel_masked = sum(len(values) for values in masked_indel_bp.values())
+    expected_callable = declared_callable - indel_masked
     observed_callable = sum(base != "N" for sequence in consensus.values() for base in sequence)
     if observed_callable != expected_callable:
-        raise PilotError("diploid consensus callable positions do not reconcile to mask and indel policy")
+        raise PilotError(
+            "diploid consensus callable positions do not reconcile to mask and indel policy: "
+            f"declared={declared_callable}, pre_variant={pre_variant_callable}, "
+            f"indel_masked={indel_masked}, expected={expected_callable}, observed={observed_callable}"
+        )
     return consensus, {
         "masked_base_encoding": "N",
         "heterozygous_snp_encoding": "IUPAC",
         "heterozygous_snps": snps,
+        "callable_snps_masked_by_indel_flank": masked_snps,
         "heterozygous_indels": indels,
+        "input_variant_records": len(variants),
+        "variants_excluded_by_callable_mask": excluded_variants,
+        "callable_variant_records": len(callable_snp_positions) + indels,
         "indel_flank_bp": indel_flank,
-        "indel_masked_h1_bp": sum(len(values) for values in masked_indel_bp.values()),
+        "indel_masked_h1_bp": indel_masked,
         "consensus_callable_bp": observed_callable,
         "non_callable_bases_encoded_homozygous_reference": 0,
     }
@@ -754,8 +1100,11 @@ def bootstrap_manifest(
 
 
 def scale_unscaled_trajectory(
-    rows: Sequence[Mapping[str, float]], scenarios: Sequence[Mapping[str, object]]
+    rows: Sequence[Mapping[str, float]], scenarios: Sequence[Mapping[str, object]],
+    bin_size_bp: int = 100,
 ) -> tuple[list[dict[str, float]], list[dict[str, object]]]:
+    if bin_size_bp <= 0:
+        raise PilotError("PSMC scaling bin size must be positive")
     unscaled = [
         {"interval": int(row["interval"]), "time_2N0": float(row["time_2N0"]),
          "lambda": float(row["lambda"])} for row in rows
@@ -764,7 +1113,9 @@ def scale_unscaled_trajectory(
     for scenario in scenarios:
         mutation_rate = float(scenario["mutation_rate_per_generation"])
         generation_time = float(scenario["generation_time_years"])
-        n0 = float(scenario["theta_0"]) / (4.0 * mutation_rate)
+        # PSMC's theta_0 is fitted per PSMCFA bin, whereas the frozen scenario
+        # rate is per nucleotide per generation.
+        n0 = float(scenario["theta_0"]) / (4.0 * mutation_rate * bin_size_bp)
         for row in unscaled:
             scaled.append({
                 "scenario_id": str(scenario["scenario_id"]),
@@ -773,6 +1124,7 @@ def scale_unscaled_trajectory(
                 "effective_size": row["lambda"] * n0,
                 "mutation_rate_per_generation": mutation_rate,
                 "generation_time_years": generation_time,
+                "psmc_bin_size_bp": bin_size_bp,
                 "mutation_rate_source": str(scenario["mutation_rate_source"]),
                 "generation_time_source": str(scenario["generation_time_source"]),
             })
@@ -783,18 +1135,31 @@ def parse_psmc_unscaled(path: Path | str) -> tuple[list[dict[str, float]], float
     """Read the final PSMC iteration without applying mutation/time scaling."""
     by_iteration: dict[int, list[dict[str, float]]] = defaultdict(list)
     theta: dict[int, float] = {}
+    current_iteration: int | None = None
     with Path(path).open(encoding="utf-8") as handle:
         for number, line in enumerate(handle, 1):
             fields = line.split()
             if not fields:
                 continue
             try:
-                if fields[0] == "RS" and len(fields) >= 5:
+                if fields[0] == "RD" and len(fields) >= 2:
+                    current_iteration = int(fields[1])
+                elif fields[0] == "RS" and current_iteration is not None and len(fields) >= 4:
+                    # Native PSMC 0.6.5: RS k t_k lambda_k ...; RD owns the iteration.
+                    by_iteration[current_iteration].append({
+                        "interval": int(fields[1]), "time_2N0": float(fields[2]),
+                        "lambda": float(fields[3]),
+                    })
+                elif fields[0] == "TR" and current_iteration is not None and len(fields) >= 3:
+                    # Native PSMC 0.6.5: TR theta_0 rho_0.
+                    theta[current_iteration] = float(fields[1])
+                elif fields[0] == "RS" and len(fields) >= 5:
+                    # Retain the explicit-iteration fixture/interchange form.
                     by_iteration[int(fields[1])].append({
                         "interval": int(fields[2]), "time_2N0": float(fields[3]),
                         "lambda": float(fields[4]),
                     })
-                elif fields[0] == "TR" and len(fields) >= 3:
+                elif fields[0] == "TR" and len(fields) >= 4:
                     theta[int(fields[1])] = float(fields[2])
             except ValueError as error:
                 raise PilotError(f"{path}:{number}: malformed PSMC numeric record") from error
@@ -1182,6 +1547,7 @@ def _print_commands(selection_id: str, work_dir: str, threads: int) -> dict[str,
             "impg", paf, str(impg_dir / "h1_h2.impg"), str(impg_dir / "partitions"),
             str(impg_dir / "focus.native.bed"), str(impg_dir / "calls"),
             str(impg_dir / "vcf.list"), str(impg_dir / "laced.vcf"), h1, h2, threads,
+            str(base / "node-local-tmp"),
         ),
         "normalize": bcftools_commands(
             "bcftools", str(impg_dir / "laced.vcf"), h1,
@@ -1208,6 +1574,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     audit.add_argument("paf")
     audit.add_argument("h1_fasta")
     audit.add_argument("h2_fasta")
+    enforce = sub.add_parser(
+        "enforce-paf", help="tighten native SweepGA output to absolute bidirectional depth one"
+    )
+    enforce.add_argument("native_paf")
+    enforce.add_argument("exact_paf")
+    paf_vcf = sub.add_parser(
+        "paf-vcf", help="emit an exactly reconstructing H1-reference VCF from retained PAF CIGARs"
+    )
+    paf_vcf.add_argument("paf")
+    paf_vcf.add_argument("h1_fasta")
+    paf_vcf.add_argument("h2_fasta")
+    paf_vcf.add_argument("output_vcf")
+    paf_vcf.add_argument("audit_json")
     env = sub.add_parser("verify-environment", help="fail closed on uncaptured Guix identity")
     env.add_argument("--allow-unrealized", action="store_true")
     capture = sub.add_parser("verify-capture", help="verify a realized Guix capture against the lock")
@@ -1232,6 +1611,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = audit_sweepga_paf(
                 args.paf, set(parse_fasta(args.h1_fasta)), set(parse_fasta(args.h2_fasta))
             )
+        elif args.command == "enforce-paf":
+            result = enforce_exact_paf_multiplicity(args.native_paf, args.exact_paf)
+        elif args.command == "paf-vcf":
+            result = paf_to_exact_vcf(args.paf, args.h1_fasta, args.h2_fasta, args.output_vcf)
+            Path(args.audit_json).write_text(canonical_json(result), encoding="utf-8")
         elif args.command == "verify-environment":
             result = verify_environment_lock(require_realized=not args.allow_unrealized)
         elif args.command == "verify-capture":
@@ -1248,6 +1632,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             sequences = parse_fasta(args.consensus_fasta)
             units = read_bed(args.units_bed)
+            csv.field_size_limit(2 ** 31 - 1)
             with Path(args.manifest_tsv).open(newline="", encoding="utf-8") as handle:
                 matches = [row for row in csv.DictReader(handle, delimiter="\t")
                            if int(row["replicate"]) == args.replicate]

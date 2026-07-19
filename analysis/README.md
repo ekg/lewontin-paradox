@@ -34,6 +34,20 @@ project-named root is migration input only; verified objects were hard-linked
 into the canonical CAS without redownload as recorded in
 `vgp_data_root_migration_v1.json`.
 
+### Completed real P07 canary
+
+The authorized P07 *Spinachia spinachia* canary completed on real Slurm jobs
+through the pinned Guix environment. See `vgp_real_canary_report_v1.md` for
+the scientific and operational report and `vgp_real_canary_execution_v1.json`
+for the machine-readable independent audit. The small independent variant
+subset, authoritative allocation telemetry, and atomic-promotion receipt are
+`vgp_real_canary_variant_subset_v1.tsv`, `vgp_real_canary_sacct_v1.tsv`, and
+`vgp_real_canary_promotion_v1.json`. The promoted biological payload remains
+under `/moosefs/erikg/vgp/pilot/outputs/vgp10-auth-20260718-v2/P07/`; it is not
+duplicated in Git.
+
+### Independent validation reads
+
 The independent raw-read validation subset is frozen in
 `vgp_validation_read_plan_v1.json`: P07 is the small later-generation fish,
 P09 is the very large/repeat-sensitive shark, and P04 is the early CLR/
