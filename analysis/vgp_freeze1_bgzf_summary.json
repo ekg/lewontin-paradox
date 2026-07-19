@@ -1,0 +1,28 @@
+{
+  "closed_world": true,
+  "compression_ratio_bgzf_to_decompressed": 0.31875894283912176,
+  "config_value": "/moosefs/erikg/vgp/derived/freeze1-bgzf/objects",
+  "config_variable": "VGP_FREEZE1_ASSEMBLY_BGZF_ROOT",
+  "counts": {
+    "converted": 581
+  },
+  "cpu_hours": 68.16252788583341,
+  "elapsed_hours_sum": 25.55489021805555,
+  "failures": 0,
+  "generated_at_utc": "2026-07-19T19:45:57.255072Z",
+  "inventory_path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-323/analysis/vgp_freeze1_bgzf_inventory.tsv",
+  "inventory_rows": 581,
+  "inventory_sha256": "6535f79d17f37c649f74b7011edff16ef5160dcc1df43627f5ee2bf885f94896",
+  "peak_memory_bytes_max": 46903296,
+  "peak_scratch_bytes_max": 13154026237,
+  "reason_counts": {
+    "STREAM_CONVERTED_VERIFIED": 581
+  },
+  "retries": 30,
+  "schema_version": 1,
+  "shared_manifest_path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-323/analysis/vgp_freeze1_bgzf_manifest.tsv",
+  "total_derived_bgzf_bytes": 397455489066,
+  "total_index_bytes": 320131666,
+  "total_source_compressed_bytes": 388785172570,
+  "total_source_decompressed_bytes": 1246884198843
+}
