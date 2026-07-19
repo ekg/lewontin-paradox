@@ -31,13 +31,18 @@ def test_exact_h01_h02_accessions_and_roles_are_frozen():
         assert sum(taxon[1] == "close_ingroup" for taxon in taxa) == 2
 
 
-def test_upstream_audit_proves_zero_verified_sequence():
+def test_upstream_audit_sees_completed_verified_sequence_mirror():
     audit = pilot.audit_upstream()
     assert {row["accession_version"] for row in audit["source_sequences"]} == {
         "GCA_048126635.1", "GCA_048301445.1", "GCA_963210335.1", "GCA_964276395.1"
     }
     assert len(audit["source_sequences"]) == 8
-    assert all(row["state"] == "planned" and row["observed_bytes"] == "0" for row in audit["mirror_sequences"])
+    assert all(
+        row["state"] in {"verified", "reused"}
+        and row["observed_bytes"] == row["size_bytes"]
+        and len(row["local_sha256"]) == 64
+        for row in audit["mirror_sequences"]
+    )
 
 
 def test_write_requires_pinned_guix_and_slurm(monkeypatch):

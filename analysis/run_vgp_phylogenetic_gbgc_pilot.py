@@ -117,16 +117,19 @@ def audit_upstream() -> dict[str, object]:
         raise ValueError("VGP Freeze 1 catalog identity drift")
     if release["guix_channel_commit"] != CHANNEL_COMMIT:
         raise ValueError("pinned Guix channel drift")
-    if summary["bulk_launch"] != {
-        "launched": False,
-        "reason": "quota_visibility_unavailable_fail_closed",
-        "slurm_jobs_launched": 0,
-    }:
-        raise ValueError("mirror launch disposition drift")
-    if summary["state_accounting"]["verified"]["objects"] != 0:
-        raise ValueError("verified objects now exist; blocked-output generator is no longer valid")
-    if summary["state_accounting"]["transferred"]["objects"] != 0:
-        raise ValueError("transferred objects now exist; blocked-output generator is no longer valid")
+    launch = summary["bulk_launch"]
+    storage = summary["storage"]
+    if (
+        summary.get("canonical_vgp_root") != "/moosefs/erikg/vgp"
+        or summary.get("mirror_root") != "/moosefs/erikg/vgp/freeze1"
+        or launch.get("slurm_jobs_launched") != 0
+        or not str(launch.get("reason", "")).startswith(
+            "capacity_write_and_inode_headroom_verified"
+        )
+        or storage.get("adequate") is not True
+        or storage.get("quota_visibility_is_policy_gate") is not False
+    ):
+        raise ValueError("canonical mirror execution contract drift")
 
     _, source_rows = read_tsv(SOURCE_INVENTORY)
     _, mirror_rows = read_tsv(MIRROR_MANIFEST)
@@ -141,8 +144,12 @@ def audit_upstream() -> dict[str, object]:
         if row["accession_version"] in wanted
         and row["sequence_subset"] in {"assembly_fasta", "assembly_2bit"}
     ]
-    if any(row["state"] != "planned" or row["observed_bytes"] != "0" for row in mirror_sequences):
-        raise ValueError("pilot sequence mirror state is no longer uniformly planned/zero-byte")
+    if any(
+        row.get("canonical_vgp_root") != "/moosefs/erikg/vgp"
+        or row.get("mirror_root") != "/moosefs/erikg/vgp/freeze1"
+        for row in mirror_sequences
+    ):
+        raise ValueError("pilot sequence paths escaped the canonical mirror root")
     return {
         "summary": summary,
         "source_sequences": source_sequences,

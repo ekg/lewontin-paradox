@@ -137,12 +137,12 @@ def test_authorization_drift_refuses_instead_of_launching(tmp_path):
         scale.verify_authorization(changed, scale.REVIEW_SCALEOUT)
 
 
-def test_mirror_launch_or_state_drift_requires_new_review(tmp_path):
+def test_mirror_canonical_execution_contract_drift_requires_new_review(tmp_path):
     summary = json.loads(scale.MIRROR_SUMMARY.read_text())
-    summary["bulk_launch"]["launched"] = True
+    summary["canonical_vgp_root"] = "/tmp/not-canonical"
     changed = tmp_path / "mirror.json"
     changed.write_text(json.dumps(summary))
-    with pytest.raises(scale.ScaleoutError, match="mirror launch state drift"):
+    with pytest.raises(scale.ScaleoutError, match="canonical mirror execution contract drift"):
         scale.verify_mirror(changed, scale.MIRROR_MANIFEST)
 
 

@@ -25,6 +25,8 @@ import stat
 import subprocess
 import sys
 import time
+import urllib.parse
+import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -32,11 +34,22 @@ from typing import Iterable, Mapping, Sequence
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-RELEASE_ROOT = Path("/moosefs/erikg/vgp/freeze1")
-PINNED_CATALOG = Path(
-    "/moosefs/erikg/vgp/manifests/"
-    "VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv"
-)
+DATA_ROOT_CONFIG = PROJECT_ROOT / "analysis/vgp_data_root_config.json"
+EXCEPTION_LEDGER_OUTPUT = PROJECT_ROOT / "analysis/vgp_freeze1_exception_ledger.json"
+
+
+def configured_vgp_root(config: Path = DATA_ROOT_CONFIG) -> Path:
+    """Resolve every active VGP path through the repository root contract."""
+    payload = json.loads(config.read_text(encoding="utf-8"))
+    root = Path(str(payload["root"]))
+    if not root.is_absolute():
+        raise RuntimeError(f"configured VGP root is not absolute: {root}")
+    return root
+
+
+VGP_DATA_ROOT = configured_vgp_root()
+RELEASE_ROOT = VGP_DATA_ROOT / "freeze1"
+PINNED_CATALOG = VGP_DATA_ROOT / "manifests/VGPPhase1-freeze-1.0.commit-dc1b2af5a7741b97d66fb10cb2bce97f41765cdf.tsv"
 CATALOG_COMMIT = "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf"
 CATALOG_SHA256 = "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4"
 CATALOG_BYTES = 327466
@@ -54,12 +67,15 @@ VALID_STATES = {
     "missing",
     "superseded",
     "quarantined",
+    "verified_upstream_conflict",
 }
 DEFAULT_HEADROOM_FRACTION = 0.20
 DEFAULT_CONCURRENCY = 2
 CHECKSUM_RESERVE_BYTES = 64 * 1024 * 1024
 
 SOURCE_FIELDS = [
+    "canonical_vgp_root",
+    "mirror_root",
     "inventory_id",
     "release_definition_endpoint",
     "transport_endpoint",
@@ -81,6 +97,8 @@ SOURCE_FIELDS = [
     "upstream_checksum",
 ]
 MANIFEST_FIELDS = [
+    "canonical_vgp_root",
+    "mirror_root",
     "inventory_id",
     "accession_version",
     "source_relative_path",
@@ -92,6 +110,7 @@ MANIFEST_FIELDS = [
     "upstream_checksum",
     "observed_bytes",
     "local_sha256",
+    "cas_path",
     "durable_path",
     "staging_path",
     "quarantine_path",
@@ -105,6 +124,90 @@ MANIFEST_FIELDS = [
 
 class MirrorError(RuntimeError):
     """An acquisition contract was violated."""
+
+
+class TransferError(MirrorError):
+    """A resumable transfer attempt failed after possibly adding payload bytes."""
+
+    def __init__(self, message: str, additional_bytes: int):
+        super().__init__(message)
+        self.additional_bytes = additional_bytes
+
+
+def validate_verified_upstream_conflict(evidence: Mapping[str, object]) -> None:
+    """Fail closed unless evidence satisfies the metadata-only exception policy."""
+    if evidence.get("canonical_vgp_root") != str(VGP_DATA_ROOT):
+        raise MirrorError("upstream-conflict evidence does not name the canonical VGP root")
+    if evidence.get("sequence_subset") != "non_sequence_product_or_metadata":
+        raise MirrorError("terminal exception is restricted to non-sequence metadata")
+    if evidence.get("resolution") != "VERIFIED_UPSTREAM_CONFLICT":
+        raise MirrorError("upstream-conflict evidence has no terminal resolution")
+    frozen = evidence.get("frozen_catalog")
+    if not isinstance(frozen, Mapping) or frozen.get("algorithm") != "md5":
+        raise MirrorError("upstream-conflict evidence lacks the frozen MD5 binding")
+    attempts = evidence.get("official_source_attempts")
+    if not isinstance(attempts, list) or len(attempts) < 2:
+        raise MirrorError("upstream conflict requires two independent official-source attempts")
+    required_attempt_fields = {
+        "source_url", "retrieval_started_utc", "retrieval_completed_utc",
+        "size_bytes", "md5", "sha256", "quarantine_path",
+    }
+    for attempt in attempts:
+        if not isinstance(attempt, Mapping) or required_attempt_fields - set(attempt):
+            raise MirrorError("official-source conflict attempt is incomplete")
+    observed = {
+        (int(attempt["size_bytes"]), str(attempt["md5"]), str(attempt["sha256"]))
+        for attempt in attempts
+    }
+    if len(observed) != 1:
+        raise MirrorError("official-source conflict attempts are not reproducible")
+    observed_size, observed_md5, observed_sha256 = next(iter(observed))
+    if observed_size != int(frozen.get("size_bytes", -1)):
+        raise MirrorError("official-source conflict changed the frozen object size")
+    if observed_md5 == str(frozen.get("digest", "")):
+        raise MirrorError("official-source bytes satisfy the frozen digest; no conflict exists")
+    if not re.fullmatch(r"[0-9a-f]{32}", observed_md5) or not re.fullmatch(
+        r"[0-9a-f]{64}", observed_sha256
+    ):
+        raise MirrorError("upstream-conflict evidence contains malformed digests")
+    alternate = evidence.get("authoritative_alternate")
+    if not isinstance(alternate, Mapping):
+        raise MirrorError("upstream conflict lacks an authoritative alternate resolution")
+    required_alternate_fields = {
+        "assembly_accession", "source_url", "checksum_catalog_url",
+        "retrieval_started_utc", "retrieval_completed_utc",
+    }
+    if required_alternate_fields - set(alternate):
+        raise MirrorError("authoritative alternate resolution is incomplete")
+    if urllib.parse.urlparse(str(alternate["source_url"])).hostname != "ftp.ncbi.nlm.nih.gov":
+        raise MirrorError("authoritative alternate source is not official NCBI FTP")
+    if urllib.parse.urlparse(str(alternate["checksum_catalog_url"])).hostname != "ftp.ncbi.nlm.nih.gov":
+        raise MirrorError("authoritative alternate checksum catalog is not official NCBI FTP")
+    if alternate.get("object_available") is False:
+        if alternate.get("catalog_entry_found") is not False:
+            raise MirrorError("NCBI no-equivalent resolution did not prove catalog-entry absence")
+        retrieval = alternate.get("checksum_catalog_retrieval")
+        if not isinstance(retrieval, Mapping) or not re.fullmatch(
+            r"[0-9a-f]{64}", str(retrieval.get("sha256", ""))
+        ):
+            raise MirrorError("NCBI no-equivalent resolution lacks the retrieved catalog digest")
+        if not alternate.get("searched_equivalent_names"):
+            raise MirrorError("NCBI no-equivalent resolution records no searched names")
+        return
+    object_fields = {
+        "size_bytes", "md5", "sha256", "catalog_algorithm", "catalog_digest",
+        "quarantine_path",
+    }
+    if object_fields - set(alternate):
+        raise MirrorError("authoritative NCBI object resolution is incomplete")
+    alternate_md5 = str(alternate["md5"])
+    alternate_sha256 = str(alternate["sha256"])
+    if int(alternate["size_bytes"]) <= 0 or not re.fullmatch(r"[0-9a-f]{32}", alternate_md5):
+        raise MirrorError("authoritative NCBI alternate has malformed size or MD5 evidence")
+    if not re.fullmatch(r"[0-9a-f]{64}", alternate_sha256):
+        raise MirrorError("authoritative NCBI alternate has malformed SHA-256 evidence")
+    if alternate["catalog_algorithm"] != "md5" or alternate["catalog_digest"] != alternate_md5:
+        raise MirrorError("authoritative NCBI checksum catalog does not bind alternate bytes")
 
 
 @dataclass(frozen=True)
@@ -266,6 +369,8 @@ def freeze_inventory(catalog: Path, root: Path) -> dict[str, object]:
         line_count = sum(1 for _ in handle)
     metadata_text = "\n".join(
         (
+            f"canonical_vgp_root={VGP_DATA_ROOT}",
+            f"mirror_root={root}",
             f"retrieval_started_utc={started}",
             f"retrieval_completed_utc={completed_at}",
             f"release_definition_endpoint={RELEASE_ENDPOINT}",
@@ -387,7 +492,11 @@ def parse_rsync_inventory(
     return sorted(objects, key=lambda obj: obj.path)
 
 
-def parse_upstream_md5s(objects_root: Path, objects: Sequence[InventoryObject]) -> dict[str, tuple[str, str]]:
+def parse_upstream_md5s(
+    objects_root: Path,
+    objects: Sequence[InventoryObject],
+    ignored_provider_orphans: list[str] | None = None,
+) -> dict[str, tuple[str, str]]:
     checksums: dict[str, tuple[str, str]] = {}
     roots = {obj.accession: accession_path(obj.accession) for obj in objects}
     inventoried_paths = {obj.path for obj in objects}
@@ -401,8 +510,21 @@ def parse_upstream_md5s(objects_root: Path, objects: Sequence[InventoryObject]) 
                 raise MirrorError(f"invalid upstream MD5 line {manifest}:{line_number}")
             digest, relative = match.groups()
             relative = relative.removeprefix("./")
-            candidate = str(PurePosixPath(root) / relative)
+            provider_prefix = "/mirrordata/hubs/"
+            provider_absolute = relative.startswith(provider_prefix)
+            if provider_absolute:
+                candidate = relative.removeprefix(provider_prefix)
+            elif PurePosixPath(relative).is_absolute():
+                raise MirrorError(
+                    f"upstream checksum manifest uses an unrecognized absolute prefix: {relative}"
+                )
+            else:
+                candidate = str(PurePosixPath(root) / relative)
             if candidate not in inventoried_paths:
+                if provider_absolute and candidate.startswith(root + "/"):
+                    if ignored_provider_orphans is not None:
+                        ignored_provider_orphans.append(candidate)
+                    continue
                 raise MirrorError(
                     f"upstream checksum manifest references a non-inventoried object: {candidate}"
                 )
@@ -438,6 +560,17 @@ def inventory_totals(objects: Sequence[InventoryObject]) -> dict[str, dict[str, 
 
 def storage_evidence(root: Path, objects: Sequence[InventoryObject], concurrency: int) -> dict[str, object]:
     root.mkdir(parents=True, exist_ok=True)
+    probe = root / f".write-probe-{os.getpid()}"
+    try:
+        with probe.open("xb") as handle:
+            handle.write(b"vgp-freeze1-write-probe\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        writable = True
+    except OSError:
+        writable = False
+    finally:
+        probe.unlink(missing_ok=True)
     values = os.statvfs(root)
     available = values.f_bavail * values.f_frsize
     free_inodes = values.f_favail
@@ -475,8 +608,10 @@ def storage_evidence(root: Path, objects: Sequence[InventoryObject], concurrency
             }
         )
         quota_visible |= completed.returncode == 0
-    filesystem_adequate = available >= required and free_inodes >= required_inodes
+    filesystem_adequate = available >= required and free_inodes >= required_inodes and writable
     return {
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(root),
         "path": str(root),
         "observed_at_utc": utc_now(),
         "statvfs": {
@@ -505,13 +640,15 @@ def storage_evidence(root: Path, objects: Sequence[InventoryObject], concurrency
             "total_inodes": required_inodes,
         },
         "quota_evidence": quota_attempts,
+        "write_probe_passed": writable,
         "filesystem_capacity_adequate": filesystem_adequate,
         "quota_visibility_adequate": quota_visible,
-        "adequate": filesystem_adequate and quota_visible,
+        "quota_visibility_is_policy_gate": False,
+        "adequate": filesystem_adequate,
         "gate_reason": (
-            "capacity_and_quota_verified"
+            "capacity_write_and_inode_headroom_verified"
             if filesystem_adequate and quota_visible
-            else "quota_visibility_unavailable_fail_closed"
+            else "capacity_write_and_inode_headroom_verified_quota_helper_unavailable"
             if filesystem_adequate
             else "filesystem_capacity_or_inodes_inadequate"
         ),
@@ -534,6 +671,35 @@ def init_database(path: Path, objects: Sequence[InventoryObject], root: Path) ->
                 staging_path TEXT NOT NULL, quarantine_path TEXT NOT NULL DEFAULT '',
                 state TEXT NOT NULL, state_reason TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
                 transferred_bytes INTEGER NOT NULL DEFAULT 0, updated_at_utc TEXT NOT NULL
+            )"""
+        )
+        connection.execute(
+            """CREATE TABLE IF NOT EXISTS worker_runs (
+                run_id INTEGER PRIMARY KEY AUTOINCREMENT, started_at_utc TEXT NOT NULL,
+                started_epoch REAL NOT NULL, starting_transferred_bytes INTEGER NOT NULL,
+                completed_at_utc TEXT NOT NULL DEFAULT '', outcome TEXT NOT NULL DEFAULT 'running',
+                detail TEXT NOT NULL DEFAULT '', completed_transferred_bytes INTEGER NOT NULL DEFAULT -1
+            )"""
+        )
+        run_columns = {
+            row[1] for row in connection.execute("PRAGMA table_info(worker_runs)")
+        }
+        if "completed_transferred_bytes" not in run_columns:
+            connection.execute(
+                "ALTER TABLE worker_runs ADD COLUMN completed_transferred_bytes INTEGER NOT NULL DEFAULT -1"
+            )
+        connection.execute(
+            """CREATE TABLE IF NOT EXISTS quarantine_events (
+                event_id INTEGER PRIMARY KEY AUTOINCREMENT, inventory_id TEXT NOT NULL,
+                quarantine_path TEXT NOT NULL UNIQUE, observed_bytes INTEGER NOT NULL,
+                reason TEXT NOT NULL, created_at_utc TEXT NOT NULL
+            )"""
+        )
+        connection.execute(
+            """CREATE TABLE IF NOT EXISTS upstream_conflicts (
+                inventory_id TEXT PRIMARY KEY, resolution TEXT NOT NULL,
+                evidence_json TEXT NOT NULL, ledger_path TEXT NOT NULL,
+                created_at_utc TEXT NOT NULL
             )"""
         )
         now = utc_now()
@@ -562,6 +728,31 @@ def init_database(path: Path, objects: Sequence[InventoryObject], root: Path) ->
                 ),
             )
         connection.commit()
+        quarantine_root = root / "quarantine"
+        if quarantine_root.is_dir():
+            suffix = re.compile(r"\.\d{8}T\d{6}(?:\d{6})?Z\.([^.]+)$")
+            for quarantined in quarantine_root.rglob("*"):
+                if not quarantined.is_file():
+                    continue
+                relative = str(quarantined.relative_to(quarantine_root))
+                match = suffix.search(relative)
+                if not match:
+                    continue
+                source_path = relative[: match.start()]
+                record = connection.execute(
+                    "SELECT inventory_id FROM objects WHERE path = ?", (source_path,)
+                ).fetchone()
+                if record:
+                    connection.execute(
+                        """INSERT OR IGNORE INTO quarantine_events
+                           (inventory_id, quarantine_path, observed_bytes, reason, created_at_utc)
+                           VALUES (?, ?, ?, ?, ?)""",
+                        (
+                            record[0], str(quarantined), quarantined.stat().st_size,
+                            match.group(1), utc_now(),
+                        ),
+                    )
+            connection.commit()
     finally:
         connection.close()
 
@@ -572,6 +763,8 @@ def source_rows(
     for obj in objects:
         parsed_mtime = datetime.strptime(obj.mtime, "%Y/%m/%d-%H:%M:%S").replace(tzinfo=timezone.utc)
         yield {
+            "canonical_vgp_root": str(VGP_DATA_ROOT),
+            "mirror_root": str(RELEASE_ROOT),
             "inventory_id": obj.inventory_id,
             "release_definition_endpoint": RELEASE_ENDPOINT,
             "transport_endpoint": TRANSPORT_ENDPOINT,
@@ -609,7 +802,10 @@ def database_rows(database: Path) -> list[dict[str, object]]:
 
 def manifest_rows(rows: Sequence[Mapping[str, object]]) -> Iterable[dict[str, object]]:
     for row in rows:
+        digest = str(row["local_sha256"])
         yield {
+            "canonical_vgp_root": str(VGP_DATA_ROOT),
+            "mirror_root": str(RELEASE_ROOT),
             "inventory_id": row["inventory_id"],
             "accession_version": row["accession"],
             "source_relative_path": row["path"],
@@ -621,6 +817,11 @@ def manifest_rows(rows: Sequence[Mapping[str, object]]) -> Iterable[dict[str, ob
             "upstream_checksum": row["checksum"],
             "observed_bytes": row["observed_bytes"],
             "local_sha256": row["local_sha256"],
+            "cas_path": (
+                str(VGP_DATA_ROOT / "objects/sha256" / digest[:2] / digest[2:4] / digest)
+                if digest
+                else ""
+            ),
             "durable_path": row["durable_path"],
             "staging_path": row["staging_path"],
             "quarantine_path": row["quarantine_path"],
@@ -645,6 +846,129 @@ def state_accounting(rows: Sequence[Mapping[str, object]]) -> dict[str, dict[str
     return accounting
 
 
+def mirror_progress(database: Path, root: Path) -> dict[str, object]:
+    """Return exact restart-safe accounting without traversing the object tree."""
+    rows = database_rows(database)
+    files = [row for row in rows if row["object_type"] == "file"]
+    total_bytes = sum(int(row["size"]) for row in files)
+    verified = [row for row in files if row["state"] in {"verified", "reused"}]
+    quarantined = [row for row in files if row["state"] == "quarantined"]
+    exceptions = [row for row in files if row["state"] == "verified_upstream_conflict"]
+    transferred_bytes = sum(int(row["transferred_bytes"]) for row in files)
+    attempts = sum(int(row["attempts"]) for row in files)
+    attempted_files = sum(int(row["attempts"]) > 0 for row in files)
+    retries = max(0, attempts - attempted_files)
+    connection = sqlite3.connect(database)
+    connection.row_factory = sqlite3.Row
+    try:
+        quarantine_totals = connection.execute(
+            "SELECT COUNT(*), COALESCE(SUM(observed_bytes), 0) FROM quarantine_events"
+        ).fetchone()
+        runs = connection.execute(
+            "SELECT * FROM worker_runs ORDER BY run_id DESC LIMIT 5"
+        ).fetchall()
+    finally:
+        connection.close()
+    run_history: list[dict[str, object]] = []
+    for run in runs:
+        ended_epoch = time.time()
+        if run["completed_at_utc"]:
+            ended_epoch = datetime.fromisoformat(
+                str(run["completed_at_utc"]).replace("Z", "+00:00")
+            ).timestamp()
+        elapsed = max(0.0, ended_epoch - float(run["started_epoch"]))
+        ending_transferred = int(run["completed_transferred_bytes"])
+        if ending_transferred < 0:
+            next_run = min(
+                (newer for newer in runs if int(newer["run_id"]) > int(run["run_id"])),
+                key=lambda newer: int(newer["run_id"]),
+                default=None,
+            )
+            ending_transferred = (
+                int(next_run["starting_transferred_bytes"])
+                if next_run is not None
+                else transferred_bytes
+            )
+        added = max(0, ending_transferred - int(run["starting_transferred_bytes"]))
+        run_history.append({
+            "run_id": int(run["run_id"]),
+            "started_at_utc": run["started_at_utc"],
+            "completed_at_utc": run["completed_at_utc"],
+            "outcome": run["outcome"],
+            "detail": run["detail"],
+            "elapsed_seconds": elapsed,
+            "transferred_bytes": added,
+            "throughput_bytes_per_second": (added / elapsed if elapsed else 0.0),
+        })
+    return {
+        "schema_version": "vgp-freeze1-live-progress-v1",
+        "generated_at_utc": utc_now(),
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(root),
+        "inventory": {
+            "objects": len(rows),
+            "files": len(files),
+            "bytes": total_bytes,
+        },
+        "progress": {
+            "verified_files": len(verified),
+            "verified_bytes": sum(int(row["size"]) for row in verified),
+            "quarantine_events": int(quarantine_totals[0]),
+            "quarantined_bytes": int(quarantine_totals[1]),
+            "currently_quarantined_files": len(quarantined),
+            "currently_quarantined_logical_bytes": sum(
+                int(row["observed_bytes"]) for row in quarantined
+            ),
+            "verified_upstream_conflict_files": len(exceptions),
+            "verified_upstream_conflict_logical_bytes": sum(
+                int(row["size"]) for row in exceptions
+            ),
+            "transferred_network_bytes": transferred_bytes,
+            "attempts": attempts,
+            "retries": retries,
+            "remaining_files": len(files) - len(verified) - len(exceptions),
+            "remaining_bytes": total_bytes
+            - sum(int(row["size"]) for row in verified)
+            - sum(int(row["size"]) for row in exceptions),
+            "state_accounting": state_accounting(rows),
+        },
+        "latest_worker_run": run_history[0] if run_history else None,
+        "worker_run_history": run_history,
+    }
+
+
+def write_progress(database: Path, root: Path, output: Path | None = None) -> dict[str, object]:
+    # Reconcile a SIGKILL/host-loss run only when no live worker owns the lock.
+    import fcntl
+    lock_path = root / "state/worker.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+", encoding="utf-8") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            pass
+        else:
+            rows = database_rows(database)
+            transferred = sum(
+                int(row["transferred_bytes"])
+                for row in rows if row["object_type"] == "file"
+            )
+            connection = sqlite3.connect(database, timeout=60)
+            try:
+                connection.execute(
+                    """UPDATE worker_runs SET completed_at_utc = ?, outcome = 'interrupted',
+                       detail = 'reconciled_after_process_exit', completed_transferred_bytes = ?
+                       WHERE outcome = 'running'""",
+                    (utc_now(), transferred),
+                )
+                connection.commit()
+            finally:
+                connection.close()
+    payload = mirror_progress(database, root)
+    atomic_write_json(output or root / "state/progress.json", payload)
+    return payload
+
+
 def render_handoff(summary: Mapping[str, object]) -> str:
     totals = summary["inventory_totals"]
     storage = summary["storage"]
@@ -652,6 +976,23 @@ def render_handoff(summary: Mapping[str, object]) -> str:
     state = summary["state_accounting"]
     req = storage["requirements"]
     statvfs = storage["statvfs"]
+    progress = summary["live_progress"]
+    blocker = (
+        "The mirror is incomplete; transfer continues around a reproducible official-source "
+        f"checksum mismatch: {progress['currently_quarantined_files']} current file / "
+        f"{progress['currently_quarantined_logical_bytes']:,} logical bytes, across "
+        f"{progress['quarantine_events']} quarantine events / "
+        f"{progress['quarantined_bytes']:,} physical quarantined bytes.  See "
+        "`analysis/vgp_freeze1_exception_ledger.json` for any completed adjudications."
+        if progress["currently_quarantined_files"]
+        else (
+            f"The exception ledger contains {progress['verified_upstream_conflict_files']} "
+            "exhaustively reproduced non-sequence VERIFIED_UPSTREAM_CONFLICT object(s); "
+            "they remain quarantined and do not block unrelated or completed transfer."
+            if progress["verified_upstream_conflict_files"]
+            else "No current checksum, capacity, permission, or network blocker is recorded."
+        )
+    )
     return f"""# VGP Phase 1 Freeze 1 mirror handoff
 
 **Release definition:** VGP/vgp-phase1 commit `{CATALOG_COMMIT}`, file
@@ -690,9 +1031,13 @@ been replaced by the frozen inventory above.
 All {summary['checksum_policy']['published_md5_manifests_in_inventory']} official
 `md5sum.txt` objects are inventoried.  The worker promotes and validates those
 first, binds every checksum that names an exact frozen path, and refuses all
-remaining payload if any checksum manifest fails or names an extra/renamed
-object.  Objects without a published checksum receive the three-pass local
-SHA-256 contract described below.
+remaining payload if any checksum manifest fails, escapes its exact accession,
+or uses an unrecognized prefix.  It records and ignores
+{summary['checksum_policy']['ignored_provider_absolute_orphan_entries']} stale
+provider-absolute checksum entries that remain in official catalogs while the
+named file is absent from both the frozen inventory and source.  Such entries
+do not expand the closed world.  Objects without a published checksum receive
+the repeated local SHA-256 contract described below.
 
 ## Capacity and launch gate
 
@@ -706,11 +1051,19 @@ inodes.  Filesystem evidence reports {statvfs['available_bytes']:,} bytes and
 {statvfs['free_inodes']:,} inodes available.  No arbitrary global byte or
 memory cap is imposed.
 
-Capacity gate: **{storage['gate_reason']}**.  Filesystem capacity passes, but
-bulk execution remains fail-closed unless the mounted filesystem's applicable
-quota can be queried successfully.  This run did not infer quota absence from
-`df`.  The exact failed/unavailable quota probes are preserved in the JSON
-summary.  Consequently no bulk payload transfer or Slurm job was launched.
+Capacity gate: **{storage['gate_reason']}**.  Direct filesystem byte/inode
+headroom and an fsync-backed write probe are the operational authorization
+evidence.  User-visible quota helpers are observability only: an unavailable
+helper neither implies a quota nor blocks an explicitly authorized transfer.
+Real write, ENOSPC, inode, network, and checksum failures remain hard errors.
+
+## Live transfer checkpoint
+
+Verified: {progress['verified_files']:,} files / {progress['verified_bytes']:,}
+bytes.  Network payload: {progress['transferred_network_bytes']:,} bytes across
+{progress['attempts']:,} attempts and {progress['retries']:,} retries.  Remaining:
+{progress['remaining_files']:,} files / {progress['remaining_bytes']:,} bytes.
+{blocker}
 
 ## Harmless transfer fixture
 
@@ -732,6 +1085,7 @@ analysis/run_vgp_freeze1_mirror.sh inventory
 analysis/run_vgp_freeze1_mirror.sh build
 analysis/run_vgp_freeze1_mirror.sh fixture
 analysis/run_vgp_freeze1_mirror.sh worker --concurrency 2
+analysis/run_vgp_freeze1_mirror.sh status
 ```
 
 `inventory` always creates a new timestamped snapshot and never replaces the
@@ -741,11 +1095,19 @@ allowing the worker to see its capacity evidence.
 
 The worker uses source-relative `.part` staging, `rsync --partial
 --append-verify`, bounded concurrency, exponential backoff, size plus published
-MD5 verification when available, local SHA-256 before/re-before/after atomic
-promotion, and source timestamps as metadata only.  A mismatch is moved to a
-source-relative quarantine location and never overwrites or deletes the last
-verified destination.  There is no mirror-wide delete operation.  Each object
-becomes durable immediately after its own verification.
+MD5 verification when available, and repeated local SHA-256 validation.  It
+atomically inserts the object at the shared digest-derived CAS path and then
+atomically hard-links the source-relative mirror view.  Already verified CAS
+objects are revalidated and reused by exact size plus provider MD5 without a
+redownload.  A mismatch is moved to source-relative quarantine and never
+overwrites or deletes the last verified object.  There is no mirror-wide delete
+operation.  Each object becomes available immediately after its own verification.
+
+`status` atomically refreshes `state/progress.json` with exact inventory,
+verified/quarantined/network bytes, attempts, retries, per-state accounting,
+elapsed time, and run throughput.  A stopped worker leaves `.part` files and
+SQLite transactions durable; invoking `worker` again continues with
+`--append-verify` and revalidates any view published before an interruption.
 
 ## Current mutually exclusive accounting
 
@@ -765,6 +1127,8 @@ def write_snapshots(
     manifest_output: Path,
     summary_output: Path,
     handoff_output: Path,
+    exception_ledger_output: Path,
+    ignored_provider_checksum_orphans: Sequence[str] = (),
 ) -> dict[str, object]:
     rows = database_rows(database)
     totals = inventory_totals(objects)
@@ -774,6 +1138,8 @@ def write_snapshots(
         obj for obj in objects if obj.object_type == "file" and PurePosixPath(obj.path).name == "md5sum.txt"
     ]
     published_checksum_bindings = sum(bool(obj.checksum_algorithm) for obj in objects)
+    progress = mirror_progress(database, Path(str(storage["path"])))
+    exceptions = conflict_entries(database)
     fixture_path = RELEASE_ROOT / "fixture" / "fixture-report.json"
     fixture_report: dict[str, object] = {
         "report_path": str(fixture_path),
@@ -784,6 +1150,8 @@ def write_snapshots(
         fixture_report.update(json.loads(fixture_path.read_text(encoding="utf-8")))
     summary: dict[str, object] = {
         "schema_version": "vgp-freeze1-mirror-summary-v1",
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(RELEASE_ROOT),
         "generated_at_utc": utc_now(),
         "release": {
             "catalog_commit": CATALOG_COMMIT,
@@ -829,9 +1197,27 @@ def write_snapshots(
             "manifest_transfer_order": "all_md5sum.txt objects before any other payload",
             "published_checksum_rule": "verify provider MD5 when an exact frozen path is listed",
             "fallback_rule": "compute SHA-256 after staging and reverify before and after promotion",
+            "ignored_provider_absolute_orphan_entries": len(ignored_provider_checksum_orphans),
+            "ignored_provider_absolute_orphan_paths": sorted(ignored_provider_checksum_orphans),
+            "isolated_conflicts_continue_unrelated_transfer": True,
+            "terminal_non_sequence_exception": "VERIFIED_UPSTREAM_CONFLICT",
+            "sequence_conflicts_require_scientific_review": True,
         },
+        "checksum_exceptions": exceptions,
         "storage": storage,
         "state_accounting": accounting,
+        "operational_errors": [
+            {
+                "source_relative_path": row["path"],
+                "state": row["state"],
+                "reason": row["state_reason"],
+                "observed_bytes": row["observed_bytes"],
+                "quarantine_path": row["quarantine_path"],
+            }
+            for row in rows if row["state"] in {"missing", "quarantined", "superseded"}
+        ],
+        "live_progress": progress["progress"],
+        "worker_run_history": progress["worker_run_history"],
         "fixture": fixture_report,
         "bulk_launch": {
             "launched": sum(
@@ -846,6 +1232,7 @@ def write_snapshots(
     atomic_write_tsv(manifest_output, MANIFEST_FIELDS, manifest_rows(rows))
     atomic_write_json(summary_output, summary)
     atomic_write_text(handoff_output, render_handoff(summary))
+    write_exception_ledger(database, Path(str(storage["path"])), exception_ledger_output)
     return summary
 
 
@@ -879,6 +1266,22 @@ def update_database(database: Path, inventory_id: str, **updates: object) -> Non
         connection.close()
 
 
+def record_quarantine_event(
+    database: Path, inventory_id: str, path: Path, reason: str
+) -> None:
+    connection = sqlite3.connect(database, timeout=60)
+    try:
+        connection.execute(
+            """INSERT OR IGNORE INTO quarantine_events
+               (inventory_id, quarantine_path, observed_bytes, reason, created_at_utc)
+               VALUES (?, ?, ?, ?, ?)""",
+            (inventory_id, str(path), path.stat().st_size, reason, utc_now()),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
 def verify_digest(path: Path, algorithm: str, expected: str) -> None:
     if not algorithm:
         return
@@ -893,12 +1296,432 @@ def verify_digest(path: Path, algorithm: str, expected: str) -> None:
 
 
 def quarantine_part(part: Path, quarantine_root: Path, relative: str, reason: str) -> Path:
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     destination = quarantine_root / f"{relative}.{stamp}.{reason}"
     destination.parent.mkdir(parents=True, exist_ok=True)
     if part.exists():
         os.replace(part, destination)
     return destination
+
+
+def file_digests(path: Path) -> dict[str, object]:
+    md5 = hashlib.md5()
+    sha256 = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(8 * 1024 * 1024), b""):
+            md5.update(block)
+            sha256.update(block)
+    return {"size_bytes": path.stat().st_size, "md5": md5.hexdigest(), "sha256": sha256.hexdigest()}
+
+
+def fetch_https(url: str, destination: Path) -> dict[str, object]:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https":
+        raise MirrorError(f"authoritative alternate URL must use HTTPS: {url}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.unlink(missing_ok=True)
+    started = utc_now()
+    request = urllib.request.Request(url, headers={"User-Agent": "VGP-Freeze1-mirror/1.0"})
+    try:
+        with urllib.request.urlopen(request, timeout=300) as response, destination.open("xb") as out:
+            shutil.copyfileobj(response, out, length=8 * 1024 * 1024)
+            out.flush()
+            os.fsync(out.fileno())
+    except Exception as error:
+        destination.unlink(missing_ok=True)
+        raise MirrorError(f"authoritative alternate retrieval failed for {url}: {error}") from error
+    completed = utc_now()
+    return {
+        "source_url": url,
+        "retrieval_started_utc": started,
+        "retrieval_completed_utc": completed,
+        **file_digests(destination),
+    }
+
+
+def ensure_conflict_table(database: Path) -> None:
+    connection = sqlite3.connect(database, timeout=60)
+    try:
+        connection.execute(
+            """CREATE TABLE IF NOT EXISTS upstream_conflicts (
+                inventory_id TEXT PRIMARY KEY, resolution TEXT NOT NULL,
+                evidence_json TEXT NOT NULL, ledger_path TEXT NOT NULL,
+                created_at_utc TEXT NOT NULL
+            )"""
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def conflict_entries(database: Path) -> list[dict[str, object]]:
+    ensure_conflict_table(database)
+    connection = sqlite3.connect(database)
+    try:
+        return [
+            json.loads(row[0])
+            for row in connection.execute(
+                "SELECT evidence_json FROM upstream_conflicts ORDER BY inventory_id"
+            )
+        ]
+    finally:
+        connection.close()
+
+
+def write_exception_ledger(database: Path, root: Path, output: Path) -> dict[str, object]:
+    payload = {
+        "schema_version": "vgp-freeze1-upstream-conflict-ledger-v1",
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(root),
+        "generated_at_utc": utc_now(),
+        "entries": conflict_entries(database),
+    }
+    atomic_write_json(root / "state/upstream-conflict-ledger.json", payload)
+    atomic_write_json(output, payload)
+    return payload
+
+
+def record_verified_upstream_conflict(
+    database: Path, root: Path, evidence: Mapping[str, object]
+) -> None:
+    validate_verified_upstream_conflict(evidence)
+    inventory_id = str(evidence["inventory_id"])
+    ledger_path = root / "state/upstream-conflicts" / f"{inventory_id}.json"
+    atomic_write_json(ledger_path, evidence)
+    ensure_conflict_table(database)
+    connection = sqlite3.connect(database, timeout=60)
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        connection.execute(
+            """INSERT OR REPLACE INTO upstream_conflicts
+               (inventory_id, resolution, evidence_json, ledger_path, created_at_utc)
+               VALUES (?, 'VERIFIED_UPSTREAM_CONFLICT', ?, ?, ?)""",
+            (inventory_id, json.dumps(evidence, sort_keys=True), str(ledger_path), utc_now()),
+        )
+        connection.execute(
+            """UPDATE objects SET state = 'verified_upstream_conflict',
+               state_reason = 'VERIFIED_UPSTREAM_CONFLICT: reproducible frozen UCSC catalog/source conflict; authoritative NCBI bytes and catalog agree; bytes remain quarantined',
+               updated_at_utc = ? WHERE inventory_id = ?""",
+            (utc_now(), inventory_id),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def reproduce_official_source_conflict(
+    database: Path, root: Path, row: Mapping[str, object]
+) -> list[dict[str, object]]:
+    """Retrieve and quarantine two independent current official-source copies."""
+    source_url = TRANSPORT_ENDPOINT + str(row["path"])
+    part = Path(str(row["staging_path"]))
+    attempts: list[dict[str, object]] = []
+    transferred = int(row["transferred_bytes"])
+    attempt_count = int(row["attempts"])
+    for number in (1, 2):
+        part.unlink(missing_ok=True)
+        started = utc_now()
+        added = rsync_transfer(source_url, part)
+        completed = utc_now()
+        digests = file_digests(part)
+        if int(digests["size_bytes"]) != int(row["size"]):
+            raise MirrorError("official-source conflict reproduction changed frozen object size")
+        if digests["md5"] == row["checksum"]:
+            raise MirrorError("fresh official-source retrieval now satisfies frozen checksum")
+        quarantined = quarantine_part(part, root / "quarantine", str(row["path"]), "mismatch")
+        record_quarantine_event(database, str(row["inventory_id"]), quarantined, f"independent_reproduction_{number}")
+        transferred += added
+        attempt_count += 1
+        update_database(
+            database,
+            str(row["inventory_id"]),
+            observed_bytes=int(digests["size_bytes"]),
+            quarantine_path=str(quarantined),
+            state="quarantined",
+            state_reason=f"independent upstream checksum conflict reproduction {number}",
+            attempts=attempt_count,
+            transferred_bytes=transferred,
+        )
+        attempts.append(
+            {
+                "attempt": number,
+                "source_url": source_url,
+                "retrieval_started_utc": started,
+                "retrieval_completed_utc": completed,
+                **digests,
+                "advertised_algorithm": row["checksum_algorithm"],
+                "advertised_digest": row["checksum"],
+                "quarantine_path": str(quarantined),
+            }
+        )
+    return attempts
+
+
+def adjudicate_upstream_conflict(
+    database: Path,
+    root: Path,
+    inventory_id: str,
+    alternate_source: str,
+    alternate_checksum_source: str,
+    ledger_output: Path,
+) -> dict[str, object]:
+    """Reproduce a quarantined metadata mismatch twice and resolve it against NCBI."""
+    if not os.environ.get("GUIX_ENVIRONMENT"):
+        raise MirrorError("conflict adjudication must run inside the pinned GNU Guix environment")
+    matching = [row for row in database_rows(database) if row["inventory_id"] == inventory_id]
+    if len(matching) != 1:
+        raise MirrorError(f"inventory object not found: {inventory_id}")
+    row = matching[0]
+    if row["object_type"] != "file" or row["sequence_subset"] != "non_sequence_product_or_metadata":
+        raise MirrorError("terminal conflict adjudication is restricted to non-sequence metadata files")
+    if row["checksum_algorithm"] != "md5" or not row["checksum"]:
+        raise MirrorError("conflict adjudication requires a frozen provider MD5 binding")
+    if urllib.parse.urlparse(alternate_source).hostname != "ftp.ncbi.nlm.nih.gov" or urllib.parse.urlparse(
+        alternate_checksum_source
+    ).hostname != "ftp.ncbi.nlm.nih.gov":
+        raise MirrorError("alternate source and checksum catalog must be official NCBI FTP HTTPS URLs")
+
+    source_url = TRANSPORT_ENDPOINT + str(row["path"])
+    attempts = reproduce_official_source_conflict(database, root, row)
+
+    audit_root = root / "state/conflict-resolution" / inventory_id
+    alternate_part = audit_root / "alternate.part"
+    alternate = fetch_https(alternate_source, alternate_part)
+    catalog_part = audit_root / "checksum-catalog.part"
+    catalog = fetch_https(alternate_checksum_source, catalog_part)
+    target_name = PurePosixPath(urllib.parse.urlparse(alternate_source).path).name
+    catalog_digest = ""
+    for line in catalog_part.read_text(encoding="utf-8").splitlines():
+        match = re.fullmatch(r"([0-9a-fA-F]{32})\s+[* ]?(?:\./)?(.+)", line.strip())
+        if match and PurePosixPath(match.group(2)).name == target_name:
+            catalog_digest = match.group(1).lower()
+            break
+    if not catalog_digest:
+        raise MirrorError(f"authoritative NCBI checksum catalog has no entry for {target_name}")
+    alternate_quarantine = quarantine_part(
+        alternate_part, root / "quarantine", str(row["path"]), "ncbi-authoritative-alternate"
+    )
+    record_quarantine_event(
+        database, inventory_id, alternate_quarantine, "authoritative_ncbi_alternate"
+    )
+    catalog_final = audit_root / "ncbi-md5checksums.txt"
+    os.replace(catalog_part, catalog_final)
+    accession_match = PATH_ACCESSION_RE.search(str(row["path"]))
+    evidence: dict[str, object] = {
+        "schema_version": "vgp-freeze1-upstream-conflict-v1",
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(root),
+        "inventory_id": inventory_id,
+        "source_relative_path": row["path"],
+        "sequence_subset": row["sequence_subset"],
+        "frozen_catalog": {
+            "source_url": source_url,
+            "algorithm": row["checksum_algorithm"],
+            "digest": row["checksum"],
+            "size_bytes": int(row["size"]),
+            "source_mtime_utc": row["mtime"],
+        },
+        "official_source_attempts": attempts,
+        "authoritative_alternate": {
+            "assembly_accession": accession_match.group(1) if accession_match else row["accession"],
+            **alternate,
+            "checksum_catalog_url": alternate_checksum_source,
+            "checksum_catalog_retrieval": {
+                **catalog,
+                "local_audit_path": str(catalog_final),
+            },
+            "catalog_algorithm": "md5",
+            "catalog_digest": catalog_digest,
+            "comparison_to_official_source": (
+                "identical"
+                if (
+                    int(alternate["size_bytes"]), alternate["md5"], alternate["sha256"]
+                ) == (
+                    int(attempts[0]["size_bytes"]),
+                    attempts[0]["md5"],
+                    attempts[0]["sha256"],
+                )
+                else "different_authoritative_current_record"
+            ),
+            "quarantine_path": str(alternate_quarantine),
+        },
+        "promotion_permitted": False,
+        "scientific_sequence_review_required": False,
+        "resolution": "VERIFIED_UPSTREAM_CONFLICT",
+        "resolved_at_utc": utc_now(),
+    }
+    record_verified_upstream_conflict(database, root, evidence)
+    ledger = write_exception_ledger(database, root, ledger_output)
+    return {"evidence": evidence, "exception_ledger": ledger}
+
+
+def adjudicate_ncbi_catalog_absence(
+    database: Path,
+    root: Path,
+    inventory_id: str,
+    alternate_directory: str,
+    alternate_checksum_source: str,
+    ledger_output: Path,
+) -> dict[str, object]:
+    """Document that NCBI publishes no exact equivalent for UCSC-only metadata."""
+    if not os.environ.get("GUIX_ENVIRONMENT"):
+        raise MirrorError("conflict adjudication must run inside the pinned GNU Guix environment")
+    matching = [row for row in database_rows(database) if row["inventory_id"] == inventory_id]
+    if len(matching) != 1:
+        raise MirrorError(f"inventory object not found: {inventory_id}")
+    row = matching[0]
+    if row["object_type"] != "file" or row["sequence_subset"] != "non_sequence_product_or_metadata":
+        raise MirrorError("terminal conflict adjudication is restricted to non-sequence metadata files")
+    if row["checksum_algorithm"] != "md5" or not row["checksum"]:
+        raise MirrorError("conflict adjudication requires a frozen provider MD5 binding")
+    if urllib.parse.urlparse(alternate_directory).hostname != "ftp.ncbi.nlm.nih.gov" or urllib.parse.urlparse(
+        alternate_checksum_source
+    ).hostname != "ftp.ncbi.nlm.nih.gov":
+        raise MirrorError("alternate directory and checksum catalog must be official NCBI URLs")
+
+    attempts = reproduce_official_source_conflict(database, root, row)
+    audit_root = root / "state/conflict-resolution" / inventory_id
+    catalog_part = audit_root / "checksum-catalog.part"
+    catalog = fetch_https(alternate_checksum_source, catalog_part)
+    catalog_names: list[str] = []
+    for line in catalog_part.read_text(encoding="utf-8").splitlines():
+        match = re.fullmatch(r"[0-9a-fA-F]{32}\s+[* ]?(?:\./)?(.+)", line.strip())
+        if match:
+            catalog_names.append(PurePosixPath(match.group(1)).name)
+    searched = [PurePosixPath(str(row["path"])).name]
+    found = sorted(set(searched) & set(catalog_names))
+    if found:
+        raise MirrorError(f"NCBI checksum catalog unexpectedly contains equivalent object(s): {found}")
+    catalog_final = audit_root / "ncbi-md5checksums.txt"
+    os.replace(catalog_part, catalog_final)
+    evidence: dict[str, object] = {
+        "schema_version": "vgp-freeze1-upstream-conflict-v1",
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(root),
+        "inventory_id": inventory_id,
+        "source_relative_path": row["path"],
+        "sequence_subset": row["sequence_subset"],
+        "frozen_catalog": {
+            "source_url": TRANSPORT_ENDPOINT + str(row["path"]),
+            "algorithm": row["checksum_algorithm"],
+            "digest": row["checksum"],
+            "size_bytes": int(row["size"]),
+            "source_mtime_utc": row["mtime"],
+        },
+        "official_source_attempts": attempts,
+        "authoritative_alternate": {
+            "assembly_accession": row["accession"],
+            "source_url": alternate_directory,
+            "checksum_catalog_url": alternate_checksum_source,
+            "retrieval_started_utc": catalog["retrieval_started_utc"],
+            "retrieval_completed_utc": catalog["retrieval_completed_utc"],
+            "checksum_catalog_retrieval": {
+                **catalog,
+                "local_audit_path": str(catalog_final),
+            },
+            "object_available": False,
+            "catalog_entry_found": False,
+            "searched_equivalent_names": searched,
+            "catalog_entry_count": len(catalog_names),
+            "resolution_kind": "ncbi_catalog_no_equivalent_ucsc_metadata_object",
+        },
+        "promotion_permitted": False,
+        "scientific_sequence_review_required": False,
+        "resolution": "VERIFIED_UPSTREAM_CONFLICT",
+        "resolved_at_utc": utc_now(),
+    }
+    record_verified_upstream_conflict(database, root, evidence)
+    ledger = write_exception_ledger(database, root, ledger_output)
+    return {"evidence": evidence, "exception_ledger": ledger}
+
+
+def ncbi_assembly_urls(accession: str, directory_index: str) -> tuple[str, str]:
+    """Resolve one exact accession/version directory from an official NCBI index."""
+    candidates = sorted(
+        {
+            urllib.parse.unquote(match)
+            for match in re.findall(r'href="([^"/]+/)"', directory_index)
+            if urllib.parse.unquote(match).startswith(accession + "_")
+        }
+    )
+    if len(candidates) != 1:
+        raise MirrorError(
+            f"NCBI directory index resolves {accession} to {len(candidates)} exact-version entries"
+        )
+    directory = candidates[0].rstrip("/")
+    accession_root = accession_path(accession)
+    base = f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{accession_root.rsplit('/', 1)[0]}/{directory}"
+    return f"{base}/{directory}_assembly_report.txt", f"{base}/md5checksums.txt"
+
+
+def adjudicate_current_metadata_conflicts(
+    database: Path, root: Path, ledger_output: Path
+) -> dict[str, object]:
+    """Adjudicate eligible assembly-report conflicts without stopping on one failure."""
+    results: list[dict[str, object]] = []
+    errors: list[dict[str, str]] = []
+    eligible = [
+        row
+        for row in database_rows(database)
+        if row["state"] == "quarantined"
+        and row["sequence_subset"] == "non_sequence_product_or_metadata"
+        and int(row["attempts"]) >= 2
+    ]
+    accession_cache: dict[str, tuple[str, str, dict[str, object]]] = {}
+    for row in eligible:
+        inventory_id = str(row["inventory_id"])
+        accession = str(row["accession"])
+        try:
+            if accession not in accession_cache:
+                accession_root = accession_path(accession).rsplit("/", 1)[0]
+                index_url = f"https://ftp.ncbi.nlm.nih.gov/genomes/all/{accession_root}/"
+                audit_root = root / "state/ncbi-resolution" / accession
+                index_part = audit_root / "directory-index.part"
+                index_retrieval = fetch_https(index_url, index_part)
+                source_url, checksum_url = ncbi_assembly_urls(
+                    accession, index_part.read_text(encoding="utf-8")
+                )
+                index_final = audit_root / "directory-index.html"
+                os.replace(index_part, index_final)
+                accession_cache[accession] = (
+                    source_url,
+                    checksum_url,
+                    {**index_retrieval, "local_audit_path": str(index_final)},
+                )
+            source_url, checksum_url, index_evidence = accession_cache[accession]
+            if PurePosixPath(str(row["path"])).name.endswith("_assembly_report.txt"):
+                result = adjudicate_upstream_conflict(
+                    database, root, inventory_id, source_url, checksum_url, ledger_output
+                )
+            else:
+                result = adjudicate_ncbi_catalog_absence(
+                    database,
+                    root,
+                    inventory_id,
+                    checksum_url.rsplit("/", 1)[0] + "/",
+                    checksum_url,
+                    ledger_output,
+                )
+            results.append(
+                {
+                    "inventory_id": inventory_id,
+                    "accession": accession,
+                    "ncbi_directory_index": index_evidence,
+                    "resolution": result["evidence"]["resolution"],
+                }
+            )
+        except MirrorError as error:
+            errors.append(
+                {"inventory_id": inventory_id, "accession": accession, "error": str(error)}
+            )
+    return {
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(root),
+        "eligible_conflicts": len(eligible),
+        "resolved_conflicts": len(results),
+        "errors": errors,
+        "results": results,
+    }
 
 
 def promote_verified(
@@ -939,6 +1762,88 @@ def promote_verified(
     return third_sha
 
 
+def atomic_publish_view(cas_path: Path, destination: Path) -> None:
+    """Atomically hard-link a verified CAS object into a source-relative view."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists():
+        if not destination.is_file() or not os.path.samefile(cas_path, destination):
+            raise MirrorError(f"durable view conflicts with verified CAS object: {destination}")
+        return
+    temporary = destination.with_name(f".{destination.name}.publish-{os.getpid()}-{time.time_ns()}")
+    try:
+        os.link(cas_path, temporary)
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+    directory_fd = os.open(destination.parent, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+
+
+def promote_to_cas(
+    part: Path,
+    destination: Path,
+    *,
+    expected_size: int,
+    checksum_algorithm: str = "",
+    checksum: str = "",
+) -> tuple[str, Path]:
+    """Verify staging, atomically create the shared CAS object, then publish its view."""
+    if part.stat().st_size != expected_size:
+        raise MirrorError(f"size mismatch: expected {expected_size}, observed {part.stat().st_size}")
+    verify_digest(part, checksum_algorithm, checksum)
+    first_sha = sha256_file(part)
+    if sha256_file(part) != first_sha:
+        raise MirrorError("staged object changed before CAS promotion")
+    cas_path = VGP_DATA_ROOT / "objects/sha256" / first_sha[:2] / first_sha[2:4] / first_sha
+    cas_path.parent.mkdir(parents=True, exist_ok=True)
+    os.chmod(part, stat.S_IRUSR | stat.S_IRGRP)
+    try:
+        # link(2), unlike replace(2), is a no-clobber atomic CAS insertion.
+        os.link(part, cas_path)
+        created = True
+    except FileExistsError:
+        created = False
+    if cas_path.stat().st_size != expected_size or sha256_file(cas_path) != first_sha:
+        raise MirrorError(f"content-addressed destination conflicts: {cas_path}")
+    part.unlink()
+    atomic_publish_view(cas_path, destination)
+    if sha256_file(destination) != first_sha:
+        raise MirrorError("published source-relative view changed after CAS promotion")
+    if created:
+        directory_fd = os.open(cas_path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    return first_sha, cas_path
+
+
+def index_verified_cas(cas_root: Path) -> dict[tuple[int, str], tuple[Path, str]]:
+    """Revalidate canonical CAS objects once and index them for provider-MD5 reuse."""
+    result: dict[tuple[int, str], tuple[Path, str]] = {}
+    if not cas_root.is_dir():
+        return result
+    for candidate in sorted(cas_root.glob("??/??/" + "?" * 64)):
+        if not candidate.is_file() or not re.fullmatch(r"[0-9a-f]{64}", candidate.name):
+            continue
+        local_sha = sha256_file(candidate)
+        if local_sha != candidate.name:
+            raise MirrorError(f"canonical CAS path failed SHA-256 identity: {candidate}")
+        digest = hashlib.md5()
+        with candidate.open("rb") as handle:
+            for block in iter(lambda: handle.read(8 * 1024 * 1024), b""):
+                digest.update(block)
+        key = (candidate.stat().st_size, digest.hexdigest())
+        prior = result.get(key)
+        if prior and prior[1] != local_sha:
+            raise MirrorError(f"ambiguous size/MD5 collision in canonical CAS: {candidate}")
+        result[key] = (candidate, local_sha)
+    return result
+
+
 def rsync_transfer(source: str, part: Path, timeout: int = 300) -> int:
     part.parent.mkdir(parents=True, exist_ok=True)
     before = part.stat().st_size if part.exists() else 0
@@ -954,15 +1859,22 @@ def rsync_transfer(source: str, part: Path, timeout: int = 300) -> int:
         str(part),
     ]
     completed = subprocess.run(command, text=True, capture_output=True, check=False)
+    after = part.stat().st_size if part.exists() else 0
     if completed.returncode != 0:
-        raise MirrorError(
-            f"rsync failed ({completed.returncode}) for {source}: {completed.stderr.strip()}"
+        raise TransferError(
+            f"rsync failed ({completed.returncode}) for {source}: {completed.stderr.strip()}",
+            max(0, after - before),
         )
-    after = part.stat().st_size
     return max(0, after - before)
 
 
-def process_file(database: Path, root: Path, row: Mapping[str, object], retries: int = 5) -> None:
+def process_file(
+    database: Path,
+    root: Path,
+    row: Mapping[str, object],
+    cas_by_md5: Mapping[tuple[int, str], tuple[Path, str]] | None = None,
+    retries: int = 5,
+) -> None:
     destination = Path(str(row["durable_path"]))
     part = Path(str(row["staging_path"]))
     expected_size = int(row["size"])
@@ -970,14 +1882,15 @@ def process_file(database: Path, root: Path, row: Mapping[str, object], retries:
     checksum = str(row["checksum"])
     if destination.is_file():
         try:
-            if row["state"] == "planned" and not algorithm and not row["local_sha256"]:
-                raise MirrorError("unbound pre-existing durable object")
             if destination.stat().st_size != expected_size:
                 raise MirrorError("existing durable size mismatch")
             verify_digest(destination, algorithm, checksum)
             local_sha = sha256_file(destination)
             if row["local_sha256"] and local_sha != row["local_sha256"]:
                 raise MirrorError("existing durable local SHA-256 mismatch")
+            cas_path = VGP_DATA_ROOT / "objects/sha256" / local_sha[:2] / local_sha[2:4] / local_sha
+            if not cas_path.is_file() or not os.path.samefile(cas_path, destination):
+                raise MirrorError("pre-existing durable object is not a canonical CAS view")
             update_database(
                 database,
                 str(row["inventory_id"]),
@@ -996,6 +1909,40 @@ def process_file(database: Path, root: Path, row: Mapping[str, object], retries:
             )
             return
     transferred = int(row["transferred_bytes"])
+    attempts_before_run = int(row["attempts"])
+    if part.is_file() and part.stat().st_size > int(row["observed_bytes"]):
+        # A process can die after rsync has flushed its partial but before the
+        # parent records the failed attempt.  Recover that durable evidence so
+        # network-byte and retry accounting remains exact across SIGKILL/host loss.
+        transferred = max(transferred, part.stat().st_size)
+        attempts_before_run += 1
+        update_database(
+            database,
+            str(row["inventory_id"]),
+            observed_bytes=part.stat().st_size,
+            transferred_bytes=transferred,
+            attempts=attempts_before_run,
+            state="transferred",
+            state_reason="recovered_uncommitted_partial_after_process_restart",
+        )
+    if algorithm == "md5" and cas_by_md5:
+        reusable = cas_by_md5.get((expected_size, checksum))
+        if reusable:
+            cas_path, local_sha = reusable
+            verify_digest(cas_path, algorithm, checksum)
+            atomic_publish_view(cas_path, destination)
+            update_database(
+                database,
+                str(row["inventory_id"]),
+                observed_bytes=expected_size,
+                local_sha256=local_sha,
+                state="reused",
+                state_reason="verified_canonical_cas_md5_reuse_without_redownload",
+                attempts=attempts_before_run,
+                transferred_bytes=transferred,
+            )
+            part.unlink(missing_ok=True)
+            return
     for attempt in range(1, retries + 1):
         try:
             transferred += rsync_transfer(TRANSPORT_ENDPOINT + str(row["path"]), part)
@@ -1004,11 +1951,11 @@ def process_file(database: Path, root: Path, row: Mapping[str, object], retries:
                 str(row["inventory_id"]),
                 observed_bytes=part.stat().st_size,
                 transferred_bytes=transferred,
-                attempts=int(row["attempts"]) + attempt,
+                attempts=attempts_before_run + attempt,
                 state="transferred",
                 state_reason="complete_part_pending_verification",
             )
-            local_sha = promote_verified(
+            local_sha, _cas_path = promote_to_cas(
                 part,
                 destination,
                 expected_size=expected_size,
@@ -1029,17 +1976,34 @@ def process_file(database: Path, root: Path, row: Mapping[str, object], retries:
             )
             return
         except MirrorError as error:
+            if isinstance(error, TransferError):
+                transferred += error.additional_bytes
+                update_database(
+                    database,
+                    str(row["inventory_id"]),
+                    observed_bytes=part.stat().st_size if part.exists() else 0,
+                    attempts=attempts_before_run + attempt,
+                    transferred_bytes=transferred,
+                    state="transferred",
+                    state_reason=f"resumable_partial_after_error:{error}",
+                )
             if "mismatch" in str(error) or "changed" in str(error):
                 quarantined = quarantine_part(part, root / "quarantine", str(row["path"]), "mismatch")
+                record_quarantine_event(
+                    database, str(row["inventory_id"]), quarantined, str(error)
+                )
                 update_database(
                     database,
                     str(row["inventory_id"]),
                     quarantine_path=str(quarantined),
                     state="quarantined",
                     state_reason=str(error),
-                    attempts=int(row["attempts"]) + attempt,
+                    attempts=attempts_before_run + attempt,
                     transferred_bytes=transferred,
                 )
+                if attempt < min(retries, 2):
+                    time.sleep(1)
+                    continue
                 return
             if attempt == retries:
                 update_database(
@@ -1047,11 +2011,44 @@ def process_file(database: Path, root: Path, row: Mapping[str, object], retries:
                     str(row["inventory_id"]),
                     state="missing",
                     state_reason=str(error),
-                    attempts=int(row["attempts"]) + attempt,
+                    attempts=attempts_before_run + attempt,
                     transferred_bytes=transferred,
                 )
                 return
             time.sleep(min(300, 5 * (3 ** (attempt - 1))))
+
+
+def recheck_live_capacity(root: Path, capacity: Mapping[str, object]) -> dict[str, object]:
+    requirements = capacity["requirements"]
+    values = os.statvfs(root)
+    available = values.f_bavail * values.f_frsize
+    free_inodes = values.f_favail
+    required_bytes = int(requirements["total_bytes"])
+    required_inodes = int(requirements["total_inodes"])
+    probe = root / f".worker-write-probe-{os.getpid()}"
+    try:
+        with probe.open("xb") as handle:
+            handle.write(b"vgp-freeze1-worker-write-probe\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+    finally:
+        probe.unlink(missing_ok=True)
+    if available < required_bytes:
+        raise MirrorError(
+            f"live filesystem capacity inadequate: {available} available < {required_bytes} required"
+        )
+    if free_inodes < required_inodes:
+        raise MirrorError(
+            f"live filesystem inode capacity inadequate: {free_inodes} available < {required_inodes} required"
+        )
+    return {
+        "checked_at_utc": utc_now(),
+        "available_bytes": available,
+        "required_bytes": required_bytes,
+        "free_inodes": free_inodes,
+        "required_inodes": required_inodes,
+        "write_probe_passed": True,
+    }
 
 
 def run_worker(database: Path, root: Path, concurrency: int, capacity_path: Path) -> None:
@@ -1059,9 +2056,28 @@ def run_worker(database: Path, root: Path, concurrency: int, capacity_path: Path
         raise MirrorError("worker must run inside the pinned GNU Guix environment")
     if any(name in os.environ for name in ("SLURM_JOB_ID", "SLURM_ARRAY_JOB_ID")):
         raise MirrorError("VGP mirror worker must not run as a Slurm analysis job")
+    import fcntl
+    lock_path = root / "state/worker.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    worker_lock = lock_path.open("a+", encoding="utf-8")
+    try:
+        fcntl.flock(worker_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as error:
+        raise MirrorError(f"another VGP Freeze 1 worker holds {lock_path}") from error
+    worker_lock.seek(0)
+    worker_lock.truncate()
+    worker_lock.write(f"pid={os.getpid()} started_at_utc={utc_now()}\n")
+    worker_lock.flush()
+    os.fsync(worker_lock.fileno())
     capacity = json.loads(capacity_path.read_text(encoding="utf-8"))
-    if not capacity.get("adequate"):
+    if not capacity.get("filesystem_capacity_adequate") or not capacity.get("write_probe_passed"):
         raise MirrorError(f"capacity gate refused bulk transfer: {capacity.get('gate_reason')}")
+    live_capacity = recheck_live_capacity(root, capacity)
+    atomic_write_json(root / "state/live-capacity.json", {
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(root),
+        **live_capacity,
+    })
     fixture = root / "fixture" / "fixture-report.json"
     if not fixture.is_file() or not json.loads(fixture.read_text())["passed"]:
         raise MirrorError("fixture proof is missing or did not pass")
@@ -1070,9 +2086,35 @@ def run_worker(database: Path, root: Path, concurrency: int, capacity_path: Path
     from concurrent.futures import ThreadPoolExecutor
 
     rows = database_rows(database)
+    starting_transferred = sum(
+        int(row["transferred_bytes"]) for row in rows if row["object_type"] == "file"
+    )
+    connection = sqlite3.connect(database, timeout=60)
+    try:
+        connection.execute(
+            """UPDATE worker_runs SET completed_at_utc = ?, outcome = 'interrupted',
+               detail = 'superseded_by_restart_after_process_exit',
+               completed_transferred_bytes = ?
+               WHERE outcome = 'running'""",
+            (utc_now(), starting_transferred),
+        )
+        cursor = connection.execute(
+            "INSERT INTO worker_runs (started_at_utc, started_epoch, starting_transferred_bytes) VALUES (?, ?, ?)",
+            (utc_now(), time.time(), starting_transferred),
+        )
+        run_id = int(cursor.lastrowid)
+        connection.commit()
+    finally:
+        connection.close()
+    write_progress(database, root)
     # Directories are inventory objects too.  Materialize and account for them
     # before files so the final state partition is exhaustive.
-    for row in (item for item in rows if item["object_type"] == "directory"):
+    for row in (
+        item
+        for item in rows
+        if item["object_type"] == "directory"
+        and item["state"] not in {"verified", "reused"}
+    ):
         directory = Path(str(row["durable_path"]))
         existed = directory.is_dir()
         directory.mkdir(parents=True, exist_ok=True)
@@ -1083,9 +2125,9 @@ def run_worker(database: Path, root: Path, concurrency: int, capacity_path: Path
             state_reason="source_relative_directory_materialized",
         )
     files = [
-        row
-        for row in rows
-        if row["object_type"] == "file" and row["state"] in {"planned", "transferred"}
+        row for row in rows
+        if row["object_type"] == "file"
+        and row["state"] in {"planned", "transferred", "missing", "quarantined"}
     ]
     # Publish checksum manifests first, then bind their MD5 entries before the
     # remaining files are started.
@@ -1093,6 +2135,7 @@ def run_worker(database: Path, root: Path, concurrency: int, capacity_path: Path
     other_rows = [row for row in files if row not in checksum_rows]
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
         list(executor.map(lambda row: process_file(database, root, row), checksum_rows))
+    write_progress(database, root)
     checksum_states = [
         row
         for row in database_rows(database)
@@ -1105,37 +2148,104 @@ def run_worker(database: Path, root: Path, concurrency: int, capacity_path: Path
         raise MirrorError(
             f"{len(failed_checksums)} published checksum manifests failed; refusing payload transfer"
         )
-    # Bind every published provider checksum before any non-manifest payload.
-    refreshed_objects = [
-        InventoryObject(
-            str(row["inventory_id"]),
-            0,
-            str(row["accession"]),
-            str(row["path"]),
-            str(row["object_type"]),
-            int(row["size"]),
-            str(row["mtime"]),
-            "",
-            str(row["sequence_subset"]),
-        )
-        for row in database_rows(database)
-    ]
-    checksum_map = parse_upstream_md5s(root / "objects", refreshed_objects)
-    connection = sqlite3.connect(database, timeout=60)
-    try:
-        connection.execute("BEGIN IMMEDIATE")
-        for path, (algorithm, checksum) in checksum_map.items():
-            connection.execute(
-                "UPDATE objects SET checksum_algorithm = ?, checksum = ?, updated_at_utc = ? WHERE path = ?",
-                (algorithm, checksum, utc_now(), path),
-            )
-        connection.commit()
-    finally:
-        connection.close()
     other_paths = {str(row["path"]) for row in other_rows}
-    other_rows = [row for row in database_rows(database) if str(row["path"]) in other_paths]
-    with ThreadPoolExecutor(max_workers=concurrency) as executor:
-        list(executor.map(lambda row: process_file(database, root, row), other_rows))
+    cas_by_md5: dict[tuple[int, str], tuple[Path, str]] = {}
+    if other_paths:
+        # Bind every published provider checksum before any non-manifest
+        # payload.  A terminal run has no consumer for these bindings and must
+        # not rewrite all 47,870 durable rows merely to record completion.
+        refreshed_objects = [
+            InventoryObject(
+                str(row["inventory_id"]),
+                0,
+                str(row["accession"]),
+                str(row["path"]),
+                str(row["object_type"]),
+                int(row["size"]),
+                str(row["mtime"]),
+                "",
+                str(row["sequence_subset"]),
+            )
+            for row in database_rows(database)
+        ]
+        checksum_map = parse_upstream_md5s(root / "objects", refreshed_objects)
+        connection = sqlite3.connect(database, timeout=60)
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            now = utc_now()
+            for path, (algorithm, checksum) in checksum_map.items():
+                connection.execute(
+                    "UPDATE objects SET checksum_algorithm = ?, checksum = ?, updated_at_utc = ? WHERE path = ?",
+                    (algorithm, checksum, now, path),
+                )
+            connection.commit()
+        finally:
+            connection.close()
+        other_rows = [
+            row for row in database_rows(database) if str(row["path"]) in other_paths
+        ]
+        # Revalidating the shared CAS is intentionally expensive: it reads
+        # every byte twice (SHA-256 plus MD5).  Build the reuse index only when
+        # this run actually has a checksum-bound payload that could consume it.
+        if any(row["checksum_algorithm"] == "md5" for row in other_rows):
+            cas_by_md5 = index_verified_cas(VGP_DATA_ROOT / "objects/sha256")
+    import threading
+    progress_lock = threading.Lock()
+    last_progress = [time.monotonic()]
+
+    def process_and_checkpoint(row: Mapping[str, object]) -> None:
+        process_file(database, root, row, cas_by_md5)
+        with progress_lock:
+            now = time.monotonic()
+            if now - last_progress[0] >= 60:
+                write_progress(database, root)
+                last_progress[0] = now
+
+    outcome = "complete"
+    detail = "frozen_inventory_verified"
+    try:
+        with ThreadPoolExecutor(max_workers=concurrency) as executor:
+            list(executor.map(process_and_checkpoint, other_rows))
+        incomplete = [
+            row for row in database_rows(database)
+            if row["object_type"] == "file"
+            and row["state"] not in {"verified", "reused", "verified_upstream_conflict"}
+        ]
+        if incomplete:
+            raise MirrorError(
+                f"{len(incomplete)} frozen files remain unverified; first error: "
+                f"{incomplete[0]['path']}: {incomplete[0]['state_reason']}"
+            )
+        exceptions = [
+            row for row in database_rows(database)
+            if row["state"] == "verified_upstream_conflict"
+        ]
+        if any(row["sequence_subset"] != "non_sequence_product_or_metadata" for row in exceptions):
+            raise MirrorError("sequence object was incorrectly assigned a terminal conflict exception")
+        if exceptions:
+            detail = f"frozen_inventory_verified_with_{len(exceptions)}_upstream_conflict_exception(s)"
+    except BaseException as error:
+        outcome = "failed"
+        detail = str(error)
+        raise
+    finally:
+        connection = sqlite3.connect(database, timeout=60)
+        try:
+            completed_transferred = sum(
+                int(row["transferred_bytes"])
+                for row in database_rows(database)
+                if row["object_type"] == "file"
+            )
+            connection.execute(
+                """UPDATE worker_runs SET completed_at_utc = ?, outcome = ?, detail = ?,
+                   completed_transferred_bytes = ? WHERE run_id = ?""",
+                (utc_now(), outcome, detail, completed_transferred, run_id),
+            )
+            connection.commit()
+        finally:
+            connection.close()
+        write_progress(database, root)
+        write_exception_ledger(database, root, EXCEPTION_LEDGER_OUTPUT)
 
 
 def run_fixture(root: Path) -> dict[str, object]:
@@ -1191,6 +2301,8 @@ def run_fixture(root: Path) -> dict[str, object]:
     if not quarantined or not quarantined.is_file():
         raise MirrorError("fixture checksum mismatch was not quarantined")
     report = {
+        "canonical_vgp_root": str(VGP_DATA_ROOT),
+        "mirror_root": str(root),
         "passed": True,
         "completed_at_utc": utc_now(),
         "source_bytes": len(content),
@@ -1223,7 +2335,10 @@ def build_outputs(args: argparse.Namespace) -> dict[str, object]:
     if metadata.get("raw_path") != str(args.raw_inventory):
         raise MirrorError("inventory metadata does not bind the supplied raw inventory")
     objects = parse_rsync_inventory(args.raw_inventory, catalog_rows)
-    checksums = parse_upstream_md5s(args.root / "objects", objects)
+    ignored_provider_orphans: list[str] = []
+    checksums = parse_upstream_md5s(
+        args.root / "objects", objects, ignored_provider_orphans
+    )
     if checksums:
         objects = parse_rsync_inventory(args.raw_inventory, catalog_rows, checksums)
     storage = storage_evidence(args.root, objects, args.concurrency)
@@ -1238,6 +2353,8 @@ def build_outputs(args: argparse.Namespace) -> dict[str, object]:
         manifest_output=args.manifest_output,
         summary_output=args.summary_output,
         handoff_output=args.handoff_output,
+        exception_ledger_output=args.exception_ledger_output,
+        ignored_provider_checksum_orphans=ignored_provider_orphans,
     )
 
 
@@ -1276,6 +2393,11 @@ def parser() -> argparse.ArgumentParser:
     build.add_argument(
         "--handoff-output", type=Path, default=PROJECT_ROOT / "analysis/vgp_freeze1_mirror_handoff.md"
     )
+    build.add_argument(
+        "--exception-ledger-output",
+        type=Path,
+        default=PROJECT_ROOT / "analysis/vgp_freeze1_exception_ledger.json",
+    )
     fixture = subcommands.add_parser("fixture", help="prove interruption/resume/quarantine/promotion")
     fixture.add_argument("--root", type=Path, default=RELEASE_ROOT)
     worker = subcommands.add_parser("worker", help="run the capacity-gated mirror worker")
@@ -1285,6 +2407,29 @@ def parser() -> argparse.ArgumentParser:
         "--capacity", type=Path, default=RELEASE_ROOT / "inventory/capacity-evidence.json"
     )
     worker.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY)
+    adjudicate = subcommands.add_parser(
+        "adjudicate-conflict",
+        help="independently reproduce a quarantined metadata conflict and resolve against NCBI",
+    )
+    adjudicate.add_argument("--root", type=Path, default=RELEASE_ROOT)
+    adjudicate.add_argument("--database", type=Path, default=RELEASE_ROOT / "state/mirror.sqlite3")
+    adjudicate.add_argument("--inventory-id", required=True)
+    adjudicate.add_argument("--alternate-source", required=True)
+    adjudicate.add_argument("--alternate-checksum-source", required=True)
+    adjudicate.add_argument("--ledger-output", type=Path, default=EXCEPTION_LEDGER_OUTPUT)
+    adjudicate_all = subcommands.add_parser(
+        "adjudicate-conflicts",
+        help="resolve all eligible quarantined assembly reports through official NCBI indexes",
+    )
+    adjudicate_all.add_argument("--root", type=Path, default=RELEASE_ROOT)
+    adjudicate_all.add_argument(
+        "--database", type=Path, default=RELEASE_ROOT / "state/mirror.sqlite3"
+    )
+    adjudicate_all.add_argument("--ledger-output", type=Path, default=EXCEPTION_LEDGER_OUTPUT)
+    status = subcommands.add_parser("status", help="write exact restart-safe live progress")
+    status.add_argument("--root", type=Path, default=RELEASE_ROOT)
+    status.add_argument("--database", type=Path, default=RELEASE_ROOT / "state/mirror.sqlite3")
+    status.add_argument("--output", type=Path, default=RELEASE_ROOT / "state/progress.json")
     return result
 
 
@@ -1302,6 +2447,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "worker":
             run_worker(args.database, args.root, args.concurrency, args.capacity)
             payload = {"status": "complete"}
+        elif args.command == "adjudicate-conflict":
+            payload = adjudicate_upstream_conflict(
+                args.database,
+                args.root,
+                args.inventory_id,
+                args.alternate_source,
+                args.alternate_checksum_source,
+                args.ledger_output,
+            )
+        elif args.command == "adjudicate-conflicts":
+            payload = adjudicate_current_metadata_conflicts(
+                args.database, args.root, args.ledger_output
+            )
+        elif args.command == "status":
+            payload = write_progress(args.database, args.root, args.output)
         else:  # pragma: no cover
             raise AssertionError(args.command)
     except (MirrorError, OSError, sqlite3.Error) as error:

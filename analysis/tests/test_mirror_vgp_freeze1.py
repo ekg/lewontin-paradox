@@ -88,6 +88,8 @@ def test_source_rows_emit_exact_endpoint_and_iso_mtime(tmp_path):
         "retrieval_completed_utc": "2026-01-01T00:01:00Z",
     }
     row = next(iter(mirror.source_rows(objects, metadata)))
+    assert row["canonical_vgp_root"] == "/moosefs/erikg/vgp"
+    assert row["mirror_root"] == "/moosefs/erikg/vgp/freeze1"
     assert row["source_endpoint"].startswith(mirror.TRANSPORT_ENDPOINT + "GCA/")
     assert row["source_mtime_utc"] == "2024-01-02T03:04:05Z"
 
@@ -122,6 +124,65 @@ def test_promote_detects_change_before_promotion_without_overwriting(tmp_path):
     assert not destination.exists()
 
 
+def test_cas_promotion_and_second_view_reuse_are_atomic(tmp_path, monkeypatch):
+    monkeypatch.setattr(mirror, "VGP_DATA_ROOT", tmp_path / "vgp")
+    content = b"canonical shared bytes"
+    part = tmp_path / "first.part"
+    part.write_bytes(content)
+    first_view = tmp_path / "vgp/freeze1/objects/source/first"
+    digest, cas_path = mirror.promote_to_cas(part, first_view, expected_size=len(content))
+    assert digest == hashlib.sha256(content).hexdigest()
+    assert cas_path == tmp_path / "vgp/objects/sha256" / digest[:2] / digest[2:4] / digest
+    assert cas_path.read_bytes() == content
+    assert first_view.read_bytes() == content
+    assert cas_path.stat().st_ino == first_view.stat().st_ino
+    second_view = tmp_path / "vgp/freeze1/objects/source/second"
+    mirror.atomic_publish_view(cas_path, second_view)
+    assert second_view.stat().st_ino == cas_path.stat().st_ino
+
+
+def test_missing_quota_helper_is_observability_only(tmp_path, monkeypatch):
+    monkeypatch.setattr(mirror.shutil, "which", lambda _command: None)
+    obj = mirror.InventoryObject(
+        "id", 2, "GCA_000000000.1", "GCA/000/000/000/GCA_000000000.1/file",
+        "file", 7, "2024/01/02-03:04:05", "", "non_sequence_product_or_metadata"
+    )
+    evidence = mirror.storage_evidence(tmp_path, [obj], concurrency=2)
+    assert evidence["filesystem_capacity_adequate"] is True
+    assert evidence["quota_visibility_adequate"] is False
+    assert evidence["quota_visibility_is_policy_gate"] is False
+    assert evidence["adequate"] is True
+    assert evidence["gate_reason"].endswith("quota_helper_unavailable")
+
+
+def test_process_restart_recovers_uncommitted_partial_accounting(tmp_path, monkeypatch):
+    monkeypatch.setattr(mirror, "VGP_DATA_ROOT", tmp_path / "vgp")
+    root = tmp_path / "vgp/freeze1"
+    database = root / "state/mirror.sqlite3"
+    obj = mirror.InventoryObject(
+        "id", 2, "GCA_000000000.1", "GCA/000/000/000/GCA_000000000.1/payload",
+        "file", 7, "2024/01/02-03:04:05", "", "non_sequence_product_or_metadata"
+    )
+    mirror.init_database(database, [obj], root)
+    row = mirror.database_rows(database)[0]
+    part = Path(row["staging_path"])
+    part.parent.mkdir(parents=True)
+    part.write_bytes(b"part")
+
+    def resume(_source, resumed_part, timeout=300):
+        assert timeout == 300
+        resumed_part.write_bytes(b"partial")
+        return 3
+
+    monkeypatch.setattr(mirror, "rsync_transfer", resume)
+    mirror.process_file(database, root, row)
+    completed = mirror.database_rows(database)[0]
+    assert completed["state"] == "verified"
+    assert completed["observed_bytes"] == 7
+    assert completed["transferred_bytes"] == 7
+    assert completed["attempts"] == 2
+
+
 def test_checksum_failure_is_quarantined_and_verified_destination_survives(tmp_path):
     durable = tmp_path / "objects/payload"
     durable.parent.mkdir()
@@ -140,6 +201,211 @@ def test_checksum_failure_is_quarantined_and_verified_destination_survives(tmp_p
     quarantined = mirror.quarantine_part(part, tmp_path / "quarantine", "payload", "mismatch")
     assert quarantined.read_bytes() == b"bad incoming"
     assert durable.read_bytes() == b"last verified"
+
+
+def test_verified_upstream_conflict_requires_reproduction_and_authoritative_alternate():
+    observed_md5 = hashlib.md5(b"official current bytes").hexdigest()
+    observed_sha256 = hashlib.sha256(b"official current bytes").hexdigest()
+    evidence = {
+        "canonical_vgp_root": "/moosefs/erikg/vgp",
+        "inventory_id": "inventory-id",
+        "source_relative_path": "GCA/000/000/000/GCA_000000000.1/report.txt",
+        "sequence_subset": "non_sequence_product_or_metadata",
+        "frozen_catalog": {"algorithm": "md5", "digest": "0" * 32, "size_bytes": 22},
+        "official_source_attempts": [
+            {
+                "source_url": mirror.TRANSPORT_ENDPOINT + "GCA/000/000/000/GCA_000000000.1/report.txt",
+                "retrieval_started_utc": "2026-01-01T00:00:00Z",
+                "retrieval_completed_utc": "2026-01-01T00:00:01Z",
+                "size_bytes": 22,
+                "md5": observed_md5,
+                "sha256": observed_sha256,
+                "quarantine_path": "/quarantine/attempt-1",
+            },
+            {
+                "source_url": mirror.TRANSPORT_ENDPOINT + "GCA/000/000/000/GCA_000000000.1/report.txt",
+                "retrieval_started_utc": "2026-01-01T00:01:00Z",
+                "retrieval_completed_utc": "2026-01-01T00:01:01Z",
+                "size_bytes": 22,
+                "md5": observed_md5,
+                "sha256": observed_sha256,
+                "quarantine_path": "/quarantine/attempt-2",
+            },
+        ],
+        "authoritative_alternate": {
+            "assembly_accession": "GCA_000000000.1",
+            "source_url": "https://ftp.ncbi.nlm.nih.gov/report.txt",
+            "checksum_catalog_url": "https://ftp.ncbi.nlm.nih.gov/md5checksums.txt",
+            "retrieval_started_utc": "2026-01-01T00:02:00Z",
+            "retrieval_completed_utc": "2026-01-01T00:02:01Z",
+            "size_bytes": 22,
+            "md5": observed_md5,
+            "sha256": observed_sha256,
+            "catalog_algorithm": "md5",
+            "catalog_digest": observed_md5,
+            "quarantine_path": "/quarantine/ncbi",
+        },
+        "resolution": "VERIFIED_UPSTREAM_CONFLICT",
+    }
+    mirror.validate_verified_upstream_conflict(evidence)
+    divergent_ncbi = json.loads(json.dumps(evidence))
+    divergent_ncbi["authoritative_alternate"].update(
+        {"size_bytes": 21, "md5": "1" * 32, "sha256": "2" * 64, "catalog_digest": "1" * 32}
+    )
+    mirror.validate_verified_upstream_conflict(divergent_ncbi)
+    absent_ncbi = json.loads(json.dumps(evidence))
+    absent_ncbi["authoritative_alternate"] = {
+        "assembly_accession": "GCA_000000000.1",
+        "source_url": "https://ftp.ncbi.nlm.nih.gov/accession/",
+        "checksum_catalog_url": "https://ftp.ncbi.nlm.nih.gov/accession/md5checksums.txt",
+        "retrieval_started_utc": "2026-01-01T00:02:00Z",
+        "retrieval_completed_utc": "2026-01-01T00:02:01Z",
+        "checksum_catalog_retrieval": {"sha256": "3" * 64},
+        "object_available": False,
+        "catalog_entry_found": False,
+        "searched_equivalent_names": ["hub.txt"],
+    }
+    mirror.validate_verified_upstream_conflict(absent_ncbi)
+    evidence["official_source_attempts"] = evidence["official_source_attempts"][:1]
+    with pytest.raises(mirror.MirrorError, match="two independent"):
+        mirror.validate_verified_upstream_conflict(evidence)
+
+
+def test_sequence_conflict_cannot_receive_terminal_metadata_exception():
+    with pytest.raises(mirror.MirrorError, match="non-sequence metadata"):
+        mirror.validate_verified_upstream_conflict(
+            {
+                "canonical_vgp_root": "/moosefs/erikg/vgp",
+                "sequence_subset": "assembly_fasta",
+            }
+        )
+
+
+def test_process_file_reproduces_checksum_conflict_twice_then_continues(tmp_path, monkeypatch):
+    monkeypatch.setattr(mirror, "VGP_DATA_ROOT", tmp_path / "vgp")
+    root = tmp_path / "vgp/freeze1"
+    database = root / "state/mirror.sqlite3"
+    obj = mirror.InventoryObject(
+        "id", 2, "GCA_000000000.1", "GCA/000/000/000/GCA_000000000.1/report.txt",
+        "file", 3, "2024/01/02-03:04:05", "", "non_sequence_product_or_metadata",
+        "md5", "0" * 32,
+    )
+    mirror.init_database(database, [obj], root)
+    calls = []
+
+    def conflicting_source(_source, part, timeout=300):
+        calls.append(timeout)
+        part.parent.mkdir(parents=True, exist_ok=True)
+        part.write_bytes(b"bad")
+        return 3
+
+    monkeypatch.setattr(mirror, "rsync_transfer", conflicting_source)
+    monkeypatch.setattr(mirror.time, "sleep", lambda _seconds: None)
+    mirror.process_file(database, root, mirror.database_rows(database)[0])
+    row = mirror.database_rows(database)[0]
+    assert calls == [300, 300]
+    assert row["state"] == "quarantined"
+    assert row["attempts"] == 2
+    assert row["transferred_bytes"] == 6
+    connection = sqlite3.connect(database)
+    assert connection.execute("SELECT COUNT(*) FROM quarantine_events").fetchone()[0] == 2
+    connection.close()
+
+
+def test_terminal_metadata_exception_is_accounted_but_not_remaining(tmp_path, monkeypatch):
+    monkeypatch.setattr(mirror, "VGP_DATA_ROOT", tmp_path / "vgp")
+    root = tmp_path / "vgp/freeze1"
+    database = root / "state/mirror.sqlite3"
+    obj = mirror.InventoryObject(
+        "id", 2, "GCA_000000000.1", "GCA/000/000/000/GCA_000000000.1/report.txt",
+        "file", 3, "2024/01/02-03:04:05", "", "non_sequence_product_or_metadata",
+    )
+    mirror.init_database(database, [obj], root)
+    mirror.update_database(
+        database, "id", state="verified_upstream_conflict", observed_bytes=3
+    )
+    progress = mirror.mirror_progress(database, root)["progress"]
+    assert progress["verified_upstream_conflict_files"] == 1
+    assert progress["verified_upstream_conflict_logical_bytes"] == 3
+    assert progress["remaining_files"] == 0
+    assert progress["remaining_bytes"] == 0
+
+
+def test_terminal_worker_skips_unneeded_full_cas_reindex(tmp_path, monkeypatch):
+    monkeypatch.setenv("GUIX_ENVIRONMENT", "/gnu/store/test")
+    monkeypatch.setattr(mirror, "VGP_DATA_ROOT", tmp_path / "vgp")
+    monkeypatch.setattr(mirror, "EXCEPTION_LEDGER_OUTPUT", tmp_path / "exception-ledger.json")
+    root = tmp_path / "vgp/freeze1"
+    database = root / "state/mirror.sqlite3"
+    obj = mirror.InventoryObject(
+        "id", 2, "GCA_000000000.1", "GCA/000/000/000/GCA_000000000.1/report.txt",
+        "file", 3, "2024/01/02-03:04:05", "", "non_sequence_product_or_metadata",
+    )
+    directory = mirror.InventoryObject(
+        "directory-id", 2, "GCA_000000000.1", "GCA/000/000/000/GCA_000000000.1/",
+        "directory", 0, "2024/01/02-03:04:05", "", "non_sequence_product_or_metadata",
+    )
+    mirror.init_database(database, [directory, obj], root)
+    mirror.update_database(
+        database, "id", state="verified_upstream_conflict", observed_bytes=3
+    )
+    mirror.update_database(database, "directory-id", state="reused")
+    fixture = root / "fixture/fixture-report.json"
+    fixture.parent.mkdir(parents=True)
+    fixture.write_text(json.dumps({"passed": True}), encoding="utf-8")
+    capacity = root / "inventory/capacity-evidence.json"
+    capacity.parent.mkdir(parents=True)
+    capacity.write_text(
+        json.dumps(
+            {
+                "filesystem_capacity_adequate": True,
+                "write_probe_passed": True,
+                "gate_reason": "verified",
+                "requirements": {"total_bytes": 0, "total_inodes": 0},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def unexpected_reindex(_cas_root):
+        pytest.fail("terminal worker must not rehash the full canonical CAS")
+
+    def unexpected_checksum_rebind(_objects_root, _objects, _ignored=None):
+        pytest.fail("terminal worker must not rebind checksums for completed payloads")
+
+    monkeypatch.setattr(mirror, "index_verified_cas", unexpected_reindex)
+    monkeypatch.setattr(mirror, "parse_upstream_md5s", unexpected_checksum_rebind)
+    original_update = mirror.update_database
+
+    def no_terminal_directory_rewrite(database_path, inventory_id, **updates):
+        if inventory_id == "directory-id":
+            pytest.fail("terminal worker must not rewrite completed directory rows")
+        return original_update(database_path, inventory_id, **updates)
+
+    monkeypatch.setattr(mirror, "update_database", no_terminal_directory_rewrite)
+    mirror.run_worker(database, root, 2, capacity)
+
+    connection = sqlite3.connect(database)
+    run = connection.execute(
+        "SELECT outcome, detail FROM worker_runs ORDER BY run_id DESC LIMIT 1"
+    ).fetchone()
+    connection.close()
+    assert run == ("complete", "frozen_inventory_verified_with_1_upstream_conflict_exception(s)")
+
+
+def test_ncbi_assembly_urls_require_one_exact_accession_version():
+    index = """<a href="GCA_005190385.2_old/">old</a>
+<a href="GCA_005190385.3_NGI_Narwhal_2/">exact</a>
+<a href="GCA_005190385.4_new/">new</a>"""
+    source, checksums = mirror.ncbi_assembly_urls("GCA_005190385.3", index)
+    base = (
+        "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/005/190/385/"
+        "GCA_005190385.3_NGI_Narwhal_2"
+    )
+    assert source == base + "/GCA_005190385.3_NGI_Narwhal_2_assembly_report.txt"
+    assert checksums == base + "/md5checksums.txt"
+    with pytest.raises(mirror.MirrorError, match="0 exact-version"):
+        mirror.ncbi_assembly_urls("GCA_005190385.5", index)
 
 
 def test_state_accounting_is_mutually_exclusive_and_byte_exact():
@@ -186,6 +452,45 @@ def test_upstream_md5_manifest_cannot_name_extra_uninventoried_object(tmp_path):
     ]
     with pytest.raises(mirror.MirrorError, match="non-inventoried object"):
         mirror.parse_upstream_md5s(objects_root, objects)
+
+
+def test_upstream_md5_normalizes_only_official_mirrordata_prefix(tmp_path):
+    accession = "GCA_000000000.1"
+    root = mirror.accession_path(accession)
+    objects_root = tmp_path / "objects"
+    manifest = objects_root / root / "md5sum.txt"
+    manifest.parent.mkdir(parents=True)
+    target = root + "/payload.fa.gz"
+    manifest.write_text("1" * 32 + "  /mirrordata/hubs/" + target + "\n")
+    objects = [
+        mirror.InventoryObject("manifest", 2, accession, root + "/md5sum.txt", "file", 1,
+                               "2024/01/02-03:04:05", "", "non_sequence_product_or_metadata"),
+        mirror.InventoryObject("payload", 2, accession, target, "file", 7,
+                               "2024/01/02-03:04:05", "", "assembly_fasta"),
+    ]
+    assert mirror.parse_upstream_md5s(objects_root, objects) == {
+        target: ("md5", "1" * 32)
+    }
+    manifest.write_text("1" * 32 + "  /untrusted/hubs/" + target + "\n")
+    with pytest.raises(mirror.MirrorError, match="unrecognized absolute prefix"):
+        mirror.parse_upstream_md5s(objects_root, objects)
+
+
+def test_stale_provider_absolute_checksum_entry_is_audited_not_inventoried(tmp_path):
+    accession = "GCA_000000000.1"
+    root = mirror.accession_path(accession)
+    objects_root = tmp_path / "objects"
+    manifest = objects_root / root / "md5sum.txt"
+    manifest.parent.mkdir(parents=True)
+    orphan = root + "/provider-deleted.txt"
+    manifest.write_text("2" * 32 + "  /mirrordata/hubs/" + orphan + "\n")
+    objects = [
+        mirror.InventoryObject("manifest", 2, accession, root + "/md5sum.txt", "file", 1,
+                               "2024/01/02-03:04:05", "", "non_sequence_product_or_metadata")
+    ]
+    ignored = []
+    assert mirror.parse_upstream_md5s(objects_root, objects, ignored) == {}
+    assert ignored == [orphan]
 
 
 def test_database_update_accepts_only_exclusive_valid_state(tmp_path):
@@ -244,18 +549,30 @@ def test_committed_mirror_artifacts_are_closed_world_and_byte_exact():
             manifest_states.add(row["state"])
             if row["object_type"] == "file":
                 manifest_bytes += int(row["size_bytes"])
-    assert (manifest_objects, manifest_bytes, manifest_states) == (
-        47870,
-        3916877494936,
-        {"planned"},
+    assert (manifest_objects, manifest_bytes) == (47870, 3916877494936)
+    assert manifest_states <= mirror.VALID_STATES
+    assert manifest_states == {"verified", "reused", "verified_upstream_conflict"}
+    assert summary["live_progress"]["remaining_files"] == 0
+    assert summary["live_progress"]["remaining_bytes"] == 0
+    assert summary["live_progress"]["currently_quarantined_files"] == 0
+    assert summary["live_progress"]["verified_files"] == 42920
+    assert summary["live_progress"]["verified_upstream_conflict_files"] == 451
+    assert len(summary["checksum_exceptions"]) == 451
+    assert all(
+        entry["sequence_subset"] == "non_sequence_product_or_metadata"
+        and entry["scientific_sequence_review_required"] is False
+        and entry["promotion_permitted"] is False
+        for entry in summary["checksum_exceptions"]
     )
+    assert summary["state_accounting"]["verified"]["bytes"] > 0
     assert summary["fixture"]["passed"] is True
+    assert summary["canonical_vgp_root"] == "/moosefs/erikg/vgp"
+    assert summary["mirror_root"] == "/moosefs/erikg/vgp/freeze1"
     assert summary["storage"]["arbitrary_global_byte_cap"] is None
-    assert summary["bulk_launch"] == {
-        "launched": False,
-        "reason": "quota_visibility_unavailable_fail_closed",
-        "slurm_jobs_launched": 0,
-    }
+    assert summary["storage"]["quota_visibility_is_policy_gate"] is False
+    assert summary["storage"]["adequate"] is True
+    assert summary["bulk_launch"]["reason"].startswith("capacity_write_and_inode_headroom_verified")
+    assert summary["bulk_launch"]["slurm_jobs_launched"] == 0
     handoff = (ROOT / "analysis/vgp_freeze1_mirror_handoff.md").read_text()
     assert "unverified historical planning estimates only" in handoff
-    assert "no bulk payload transfer or Slurm job was launched" in handoff
+    assert "quota helpers are observability only" in handoff

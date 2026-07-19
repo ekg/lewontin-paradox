@@ -203,11 +203,21 @@ def reconcile_inputs() -> dict[str, object]:
     require(mirror["catalog_reconciliation"]["released_rows"] == 581 and
             mirror["catalog_reconciliation"]["unreleased_rows"] == 135,
             "mirror catalog reconciliation drift")
-    require(len(mirror_rows) == 47_870 and {row["state"] for row in mirror_rows} == {"planned"},
-            "mirror object-state reconciliation drift")
-    require(mirror["state_accounting"]["verified"]["objects"] == 0 and
-            mirror["state_accounting"]["reused"]["objects"] == 0,
-            "verified or reused mirror payload appeared")
+    require(
+        len(mirror_rows) == 47_870
+        and sum(int(row["size_bytes"]) for row in mirror_rows if row["object_type"] == "file")
+        == 3_916_877_494_936
+        and {row["state"] for row in mirror_rows}
+        == {"verified", "reused", "verified_upstream_conflict"}
+        and all(
+            row.get("canonical_vgp_root") == "/moosefs/erikg/vgp"
+            and row.get("mirror_root") == "/moosefs/erikg/vgp/freeze1"
+            for row in mirror_rows
+        )
+        and mirror["live_progress"]["remaining_files"] == 0
+        and mirror["live_progress"]["remaining_bytes"] == 0,
+        "mirror terminal closed-world canonical-root reconciliation drift",
+    )
     require(len(roster) == 16 and Counter(row["roster_type"] for row in roster) == {
         "primary": 10, "alternate": 6,
     }, "review roster drift")
@@ -288,6 +298,21 @@ def reconcile_inputs() -> dict[str, object]:
                 require(
                     current_design.get("data_root") == "/moosefs/erikg/vgp",
                     "embedded core design drift is not the canonical-root migration",
+                )
+            elif key in {"mirror_manifest", "mirror_summary"} and observed != digest:
+                # The core packet predates the authorized real mirror.  Accept
+                # only the terminal, closed-world canonical-root transition;
+                # current mirror files are independently pinned below.
+                current_summary = json.loads(MIRROR_SUMMARY.read_text(encoding="utf-8"))
+                require(
+                    current_summary.get("canonical_vgp_root") == "/moosefs/erikg/vgp"
+                    and current_summary.get("mirror_root") == "/moosefs/erikg/vgp/freeze1"
+                    and current_summary.get("catalog_reconciliation", {}).get("closed_world") is True
+                    and current_summary.get("inventory_totals", {}).get("full_release", {}).get("files") == 43_371
+                    and current_summary.get("inventory_totals", {}).get("full_release", {}).get("bytes") == 3_916_877_494_936
+                    and current_summary.get("live_progress", {}).get("remaining_files") == 0
+                    and current_summary.get("live_progress", {}).get("remaining_bytes") == 0,
+                    f"embedded core {key} drift is not the completed canonical mirror transition",
                 )
             else:
                 require(observed == digest, f"embedded core input digest drift: {key}")

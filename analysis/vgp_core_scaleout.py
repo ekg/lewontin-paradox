@@ -194,21 +194,37 @@ def verify_mirror(summary_path: Path, manifest_path: Path) -> tuple[dict[str, ob
         "released_rows": 581, "unreleased_rows": 135, "accession_or_version_drift": 0,
     }:
         raise ScaleoutError("mirror catalog reconciliation drift")
-    if summary.get("bulk_launch") != {
-        "launched": False, "reason": "quota_visibility_unavailable_fail_closed",
-        "slurm_jobs_launched": 0,
-    }:
-        raise ScaleoutError("mirror launch state drift; a new reviewed handoff is required")
+    launch = summary.get("bulk_launch", {})
+    storage = summary.get("storage", {})
+    if (
+        summary.get("canonical_vgp_root") != "/moosefs/erikg/vgp"
+        or summary.get("mirror_root") != "/moosefs/erikg/vgp/freeze1"
+        or launch.get("slurm_jobs_launched") != 0
+        or not str(launch.get("reason", "")).startswith(
+            "capacity_write_and_inode_headroom_verified"
+        )
+        or storage.get("adequate") is not True
+        or storage.get("quota_visibility_is_policy_gate") is not False
+    ):
+        raise ScaleoutError("canonical mirror execution contract drift")
     rows = read_tsv(manifest_path)
-    if len(rows) != 47_870 or {row["state"] for row in rows} != {"planned"}:
-        raise ScaleoutError("mirror is not the reviewed all-planned 47,870-object snapshot")
+    if len(rows) != 47_870:
+        raise ScaleoutError("mirror closed-world object count drift")
+    if any(
+        row.get("canonical_vgp_root") != "/moosefs/erikg/vgp"
+        or row.get("mirror_root") != "/moosefs/erikg/vgp/freeze1"
+        for row in rows
+    ):
+        raise ScaleoutError("mirror manifest escaped the canonical root")
     states: dict[str, str] = {}
-    for row in rows:
+    for row in (item for item in rows if item["sequence_subset"] == "assembly_fasta"):
         accession = row["accession_version"]
-        state = row["state"]
-        old = states.setdefault(accession, state)
-        if old != state:
-            raise ScaleoutError(f"mixed mirror state for {accession}")
+        state = "verified" if row["state"] in {"verified", "reused"} else row["state"]
+        if accession in states:
+            raise ScaleoutError(f"duplicate frozen assembly FASTA for {accession}")
+        states[accession] = state
+    if len(states) != 581:
+        raise ScaleoutError("mirror assembly FASTA accession count drift")
     return summary, states
 
 
