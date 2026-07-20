@@ -1,0 +1,6 @@
+authorization_id	canonical_vgp_root	review_cutoff_utc	JobIDRaw	JobName	State	Elapsed	ElapsedRaw	AllocCPUS	ReqMem	MaxRSS	CPUTimeRAW	ExitCode	NodeList	Start	End
+vgp10-auth-20260718-v2	/moosefs/erikg/vgp	2026-07-20T16:06:19Z	1787016	vgp10-P03-mapping	FAILED	00:37:25	2245	32	256G		71840	1:0	octopus08	2026-07-20T15:03:12	2026-07-20T15:40:37
+vgp10-auth-20260718-v2	/moosefs/erikg/vgp	2026-07-20T16:06:19Z	1787022	vgp10-P06-mapping	FAILED	00:38:41	2321	32	320G		74272	1:0	octopus09	2026-07-20T15:19:52	2026-07-20T15:58:33
+vgp10-auth-20260718-v2	/moosefs/erikg/vgp	2026-07-20T16:06:19Z	1787028	vgp10-P08-mapping	RUNNING	00:35:19	2119	32	128G		67808	0:0	octopus07	2026-07-20T15:31:00	Unknown
+vgp10-auth-20260718-v2	/moosefs/erikg/vgp	2026-07-20T16:06:19Z	1787065	vgp10-P09-mapping	RUNNING	00:15:31	931	32	320G		29792	0:0	octopus10	2026-07-20T15:50:48	Unknown
+vgp10-auth-20260718-v2	/moosefs/erikg/vgp	2026-07-20T16:06:19Z	1787071	vgp10-P10-mapping	RUNNING	00:07:46	466	32	320G		14912	0:0	octopus09	2026-07-20T15:58:33	Unknown

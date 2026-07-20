@@ -1,0 +1,565 @@
+{
+  "authorization_id": "vgp10-auth-20260718-v2",
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "completed_pairs": {
+    "P04": {
+      "accounting_discrepancy_bp": 0,
+      "canonical_run_root": "/moosefs/erikg/vgp/pilot/runs/vgp10-auth-20260718-v2-pilot-v1/P04",
+      "consensus_recomputation": {
+        "callable_bases": 770780965,
+        "heterozygous_iupac_bases": 3548818,
+        "masked_N_bases": 444938696,
+        "psmcfa_symbols": {
+          "K": 2137417,
+          "N": 5112715,
+          "T": 4907207
+        },
+        "symbols": {
+          "A": 221463996,
+          "C": 162714685,
+          "G": 162249547,
+          "K": 280738,
+          "M": 283253,
+          "N": 444938696,
+          "R": 1244292,
+          "S": 266668,
+          "T": 220803919,
+          "W": 227634,
+          "Y": 1246233
+        }
+      },
+      "final_callable_fraction": 0.6340120915425419,
+      "pre_indel_callable_fraction": 0.6429722970483407,
+      "psmc_recomputation": {
+        "bootstrap_attempts": 200,
+        "bootstrap_curve_behavior": {
+          "interpretation": "lambda distributions are reported descriptively only and are not admitted as uncertainty bands because replicate theta is systematically shifted from the primary",
+          "maximum_lambda_distribution": {
+            "max": 0.370883,
+            "median": 0.31086650000000005,
+            "min": 0.261955,
+            "q025": 0.272589,
+            "q975": 0.349009
+          },
+          "oldest_interval_lambda_distribution": {
+            "max": 0.090168,
+            "median": 0.0670515,
+            "min": 0.051845,
+            "q025": 0.054642,
+            "q975": 0.082265
+          },
+          "primary_theta_outside_observed_bootstrap_range": true,
+          "primary_theta_to_bootstrap_median_ratio": 0.24057400144816873,
+          "reason": "bootstrap inputs sample callable BED units and therefore do not preserve the primary PSMCFA's masked-bin population; numerical finiteness cannot establish centered uncertainty",
+          "validity": "STATISTICAL_FAIL"
+        },
+        "bootstrap_interval_counts": {
+          "64": 200
+        },
+        "bootstrap_theta_0_per_100bp_bin": {
+          "max": 2.525863,
+          "median": 2.1799945000000003,
+          "min": 1.866327,
+          "q025": 1.953242,
+          "q975": 2.465951
+        },
+        "finite_bootstraps": 200,
+        "method": "native final-iteration RD/TR/RS parse of primary and every bootstrap; no production helper imported",
+        "primary": {
+          "distinct_lambda_values": 28,
+          "intervals": 64,
+          "lambda_range": [
+            0.492194,
+            2.874536
+          ],
+          "maximum_lambda_interval": 4,
+          "minimum_lambda_interval": 40,
+          "oldest_lambda": 0.50855,
+          "recent_lambda": 0.982928,
+          "theta_0_per_100bp_bin": 0.52445,
+          "time_2N0_range": [
+            0.0,
+            8.05621
+          ]
+        },
+        "scaling_sources": [
+          "predeclared_generic_sensitivity_grid_not_species_calibration"
+        ],
+        "scenario_count": 9,
+        "scenario_ids": [
+          "SENS_MU1.0E-08_G1Y",
+          "SENS_MU1.0E-08_G2Y",
+          "SENS_MU1.0E-08_G4Y",
+          "SENS_MU2.0E-08_G1Y",
+          "SENS_MU2.0E-08_G2Y",
+          "SENS_MU2.0E-08_G4Y",
+          "SENS_MU5.0E-09_G1Y",
+          "SENS_MU5.0E-09_G2Y",
+          "SENS_MU5.0E-09_G4Y"
+        ],
+        "scenario_rows": 576
+      },
+      "selection_id": "P04",
+      "universe_bp": 1215719661,
+      "variant_recomputation": {
+        "callable_indel_records": 627193,
+        "callable_snp_records": 3804357,
+        "callable_snps_masked_by_indel_flank": 255539,
+        "callable_variant_records": 4431550,
+        "final_callable_bp": 770780965,
+        "heterozygous_snps": 3548818,
+        "indel_masked_h1_bp": 10893098,
+        "method": "two-pass VCF recount plus BED containment and independent merged +/-10-bp callable indel mask",
+        "normalized_indel_records": 954826,
+        "normalized_snp_records": 3839270,
+        "normalized_variant_records": 4794096,
+        "pi": 0.004604184795871289,
+        "pre_indel_callable_bp": 781674063
+      }
+    },
+    "P07": {
+      "accounting_discrepancy_bp": 0,
+      "canonical_run_root": "/moosefs/erikg/vgp/pilot/outputs/vgp10-auth-20260718-v2/P07/core",
+      "consensus_recomputation": {
+        "callable_bases": 267379237,
+        "heterozygous_iupac_bases": 574122,
+        "masked_N_bases": 140181870,
+        "psmcfa_symbols": {
+          "K": 110846,
+          "N": 1602504,
+          "T": 2362279
+        },
+        "symbols": {
+          "A": 73702514,
+          "C": 59746553,
+          "G": 59717658,
+          "K": 69964,
+          "M": 68721,
+          "N": 140181870,
+          "R": 143097,
+          "S": 61456,
+          "T": 73638390,
+          "W": 80703,
+          "Y": 150181
+        }
+      },
+      "final_callable_fraction": 0.656046988801608,
+      "pre_indel_callable_fraction": 0.6693933457198112,
+      "psmc_recomputation": {
+        "bootstrap_attempts": 200,
+        "bootstrap_curve_behavior": {
+          "interpretation": "lambda distributions are reported descriptively only and are not admitted as uncertainty bands because replicate theta is systematically shifted from the primary",
+          "maximum_lambda_distribution": {
+            "max": 127.565358,
+            "median": 81.403558,
+            "min": 51.352918,
+            "q025": 59.790691,
+            "q975": 113.118953
+          },
+          "oldest_interval_lambda_distribution": {
+            "max": 84.341137,
+            "median": 34.690311,
+            "min": 14.653941,
+            "q025": 19.567762,
+            "q975": 67.25058
+          },
+          "primary_theta_outside_observed_bootstrap_range": true,
+          "primary_theta_to_bootstrap_median_ratio": 0.43730240960654604,
+          "reason": "bootstrap inputs sample callable BED units and therefore do not preserve the primary PSMCFA's masked-bin population; numerical finiteness cannot establish centered uncertainty",
+          "validity": "STATISTICAL_FAIL"
+        },
+        "bootstrap_interval_counts": {
+          "64": 200
+        },
+        "bootstrap_theta_0_per_100bp_bin": {
+          "max": 0.09747,
+          "median": 0.075282,
+          "min": 0.052696,
+          "q025": 0.059196,
+          "q975": 0.092452
+        },
+        "finite_bootstraps": 200,
+        "method": "native final-iteration RD/TR/RS parse of primary and every bootstrap; no production helper imported",
+        "primary": {
+          "distinct_lambda_values": 28,
+          "intervals": 64,
+          "lambda_range": [
+            0.64926,
+            159.317994
+          ],
+          "maximum_lambda_interval": 52,
+          "minimum_lambda_interval": 24,
+          "oldest_lambda": 51.975015,
+          "recent_lambda": 6.562356,
+          "theta_0_per_100bp_bin": 0.032921,
+          "time_2N0_range": [
+            0.0,
+            29.843129
+          ]
+        },
+        "scaling_sources": [
+          "predeclared_generic_sensitivity_grid_not_species_calibration"
+        ],
+        "scenario_count": 9,
+        "scenario_ids": [
+          "SENS_MU1.0E-08_G1Y",
+          "SENS_MU1.0E-08_G2Y",
+          "SENS_MU1.0E-08_G4Y",
+          "SENS_MU2.0E-08_G1Y",
+          "SENS_MU2.0E-08_G2Y",
+          "SENS_MU2.0E-08_G4Y",
+          "SENS_MU5.0E-09_G1Y",
+          "SENS_MU5.0E-09_G2Y",
+          "SENS_MU5.0E-09_G4Y"
+        ],
+        "scenario_rows": 576
+      },
+      "selection_id": "P07",
+      "universe_bp": 407561107,
+      "variant_recomputation": {
+        "callable_indel_records": 371229,
+        "callable_snp_records": 944917,
+        "callable_snps_masked_by_indel_flank": 370795,
+        "callable_variant_records": 1316146,
+        "final_callable_bp": 267379237,
+        "heterozygous_snps": 574122,
+        "indel_masked_h1_bp": 5439456,
+        "method": "two-pass VCF recount plus BED containment and independent merged +/-10-bp callable indel mask",
+        "normalized_indel_records": 534692,
+        "normalized_snp_records": 954193,
+        "normalized_variant_records": 1488885,
+        "pi": 0.0021472198306856562,
+        "pre_indel_callable_bp": 272818693
+      }
+    }
+  },
+  "conditions_for_scaleout": [
+    "preflight graph/FASTA sequence dictionaries and mixed-site handling before expensive IMPG extraction; never omit failed regions",
+    "preserve exact pair provenance, 1:1 multiplicity, reconstruction, mask accounting, callable thresholds, and >=190/200 finite PSMC bootstraps",
+    "before admitting PSMC uncertainty, rebuild bootstraps from blocks of the primary PSMCFA so masked and callable bins share the primary sampling population, then require primary theta/trajectory centering diagnostics",
+    "use canonical-root-only paths and fail-closed private node-local scratch guards",
+    "limit the first wave to resource strata represented by completed pairs; admit larger strata only after a completed sentinel",
+    "keep annotation and raw-read confidence columns separate from core admission"
+  ],
+  "confidence_decisions": {
+    "annotation": "PASS only for P07 exact-native partitions; NOT_APPLICABLE for P04; not a core veto",
+    "assembly_qv_busco_collapse_repeat_covariates": "UNVALIDATED; tier-C confidence, not hard invalidity",
+    "core": "PASS for P04 and P07; hard fail or no result for all other pairs",
+    "population_inference": "NOT_AUTHORIZED: each estimate is one diploid individual's phased-haplotype divergence",
+    "psmc": "DESCRIPTIVE_PRIMARY_ONLY: both primaries are finite; bootstrap uncertainty is STATISTICAL_FAIL because the replicate input population is shifted from the primary",
+    "raw_reads": "UNVALIDATED for both completed pairs at this cutoff; confidence covariate only"
+  },
+  "decision": "CONDITIONAL_GO",
+  "decision_scope": "bounded core-only scale-out; annotation and raw-read validation have independent confidence decisions",
+  "hard_failures_from_frozen_ledger": {
+    "P01": {
+      "alternate_activated": false,
+      "classification": "reproducible_hard_primary_execution_failure",
+      "exit_code": "2:0",
+      "job_id": "1782614",
+      "primary_preserved": true,
+      "reason": "Exact 16-way P01 IMPG query extraction failed deterministically near the end of its 1,150,008-region census: graph lookup panicked because sequence CM070280.1 was absent from both staged frozen primary FASTAs; successful shards cannot substitute for the failed exact census",
+      "retry_action": "stop the affected P01 primary downstream path; retain its completed exact mapping and every IMPG error, do not omit the failed region, substitute successful shards, or relax the frozen query contract",
+      "selection_id": "P01",
+      "stage": "impg",
+      "state": "FAILED"
+    },
+    "P02": {
+      "alternate_activated": false,
+      "classification": "reproducible_hard_primary_execution_failure",
+      "exit_code": "2:0",
+      "job_id": "1782558",
+      "primary_preserved": true,
+      "reason": "Exact 16-way P02 IMPG query extraction failed deterministically after most of the 1,375,084-region census: graph lookup panicked because sequences JBDMAU010000296.1, JBDMAU010000433.1, and JBDMAU010000398.1 were absent from both staged frozen primary FASTAs; successful shards cannot substitute for the failed exact census",
+      "retry_action": "stop the affected P02 primary downstream path; retain its completed exact mapping and every IMPG error, do not omit failed regions, substitute successful shards, or relax the frozen query contract",
+      "selection_id": "P02",
+      "stage": "impg",
+      "state": "FAILED"
+    },
+    "P03": {
+      "alternate_activated": false,
+      "canonical_vgp_root": "/moosefs/erikg/vgp",
+      "classification": "reproducible_hard_primary_execution_failure",
+      "job_id": "1787016",
+      "primary_preserved": true,
+      "prior_attempt_reasons_retained": [
+        "1782068",
+        "1782257"
+      ],
+      "reason": "Unchanged P03 primary reproduced FastGA child loss at 00:37:25 after the corrected live guard proved FastGA cwd, TMPDIR/TMP/TEMP, both staged indexes, and 772 observed pair descriptors all remained within private node-local /scratch; 598,585,008,128 scratch bytes were available at start versus 214,748,364,800 required.",
+      "recorded_at_utc": "2026-07-20T15:41:39.750709+00:00",
+      "scratch_contract_audit": "analysis/vgp_real_pilot_fastga_scratch_v1.json",
+      "selection_id": "P03",
+      "stage": "mapping",
+      "state": "FAILED",
+      "terminal_primary_failure": true
+    },
+    "P05": {
+      "alternate_activated": false,
+      "classification": "reproducible_hard_primary_execution_failure",
+      "exit_code": "2:0",
+      "job_id": "1782284",
+      "primary_preserved": true,
+      "reason": "Exact 16-way frozen IMPG query extraction failed deterministically: graph lookup could not find sequences JAYKKY010000001.1 and JAYKKY010000134.1 in either staged primary FASTA, and native Rust VCF extraction rejected mixed variant types at a site; successful shards cannot substitute for the failed exact census",
+      "retry_action": "stop the affected P05 primary; retain mapping and every IMPG error, do not omit failed regions, change output semantics, or relax the frozen query contract",
+      "selection_id": "P05",
+      "stage": "impg",
+      "state": "FAILED"
+    }
+  },
+  "measured_vs_unvalidated": {
+    "measured": [
+      "canonical BED/VCF/consensus/PSMCFA contents for P04 and P07",
+      "all 402 primary/bootstrap PSMC outputs and all 1,152 sensitivity rows",
+      "sacct elapsed allocation capacity, requested memory, state, node, and exit code",
+      "four frozen terminal primary failures plus the post-snapshot P06 scheduler failure"
+    ],
+    "unvalidated": [
+      "raw-read concordance and chemistry",
+      "assembly QV, BUSCO, collapse/copy-number, k-mer, and standalone repeat audits",
+      "species-specific mutation rates and generation times",
+      "PSMC bootstrap uncertainty: outputs are finite but the resampled input population does not preserve primary masked bins",
+      "population-level diversity or demographic generalization",
+      "actual MaxRSS, TotalCPU, I/O, and scratch high-water from sacct",
+      "biological outputs for P01/P02/P03/P05/P06/P08/P09/P10"
+    ]
+  },
+  "non_retrospective_core_criteria": {
+    "annotation_required_for_core": false,
+    "bootstrap_attempts": 200,
+    "callable_bp_minimum": 100000000,
+    "exact_1to1_mapping_and_reconstruction": true,
+    "exact_same_individual_pair_and_frozen_digests": true,
+    "mask_accounting_discrepancy_bp_required": 0,
+    "minimum_finite_bootstraps": 190,
+    "pre_indel_callable_fraction_minimum": 0.6,
+    "raw_read_validation_required_for_core": false,
+    "unscaled_primary_required": true
+  },
+  "numbers_first": {
+    "bootstrap_attempts": 400,
+    "bootstrap_uncertainty_sets_admitted": 0,
+    "completed_pair_ids": [
+      "P04",
+      "P07"
+    ],
+    "completed_pairs": 2,
+    "final_callable_bp_range": [
+      267379237,
+      770780965
+    ],
+    "final_callable_bp_total": 1038160202,
+    "finite_bootstraps": 400,
+    "hard_invalid_pairs": 4,
+    "heterozygous_snps_range": [
+      574122,
+      3548818
+    ],
+    "heterozygous_snps_total": 4122940,
+    "incomplete_without_biological_result_at_cutoff": 4,
+    "numerically_finite_bootstraps": 400,
+    "pi_range": [
+      0.0021472198306856562,
+      0.004604184795871289
+    ]
+  },
+  "pair_dispositions": {
+    "P01": "hard_invalid_primary_impg_dictionary_failure",
+    "P02": "hard_invalid_primary_impg_dictionary_failure",
+    "P03": "hard_invalid_primary_mapping_execution_failure",
+    "P04": "valid_core_complete_annotation_not_applicable",
+    "P05": "hard_invalid_primary_impg_dictionary_and_mixed_site_failure",
+    "P06": "no_biological_result_corrected_mapping_failed_cause_not_revalidated",
+    "P07": "valid_core_complete_exact_annotation_confidence_subset",
+    "P08": "no_biological_result_mapping_running_at_cutoff",
+    "P09": "no_biological_result_mapping_running_at_cutoff",
+    "P10": "no_biological_result_mapping_running_at_cutoff"
+  },
+  "post_upstream_live_delta": {
+    "P06": {
+      "cause": "not_revalidated_from_empty_job_stdout/stderr; do not infer from prior attempts",
+      "elapsed_seconds": 2321,
+      "exit_code": "1:0",
+      "job_id": "1787022",
+      "state": "FAILED"
+    },
+    "P08": {
+      "cause": "not_applicable_job_running_at_cutoff",
+      "elapsed_seconds": 2119,
+      "exit_code": "0:0",
+      "job_id": "1787028",
+      "state": "RUNNING"
+    },
+    "P09": {
+      "cause": "not_applicable_job_running_at_cutoff",
+      "elapsed_seconds": 931,
+      "exit_code": "0:0",
+      "job_id": "1787065",
+      "state": "RUNNING"
+    },
+    "P10": {
+      "cause": "not_applicable_job_running_at_cutoff",
+      "elapsed_seconds": 466,
+      "exit_code": "0:0",
+      "job_id": "1787071",
+      "state": "RUNNING"
+    }
+  },
+  "resource_model_from_sacct": {
+    "P04_outcome_producing_allocations": {
+      "consensus": {
+        "allocated_core_hours": 12.133333333333333,
+        "allocations": 1,
+        "elapsed_allocation_hours": 0.5055555555555555,
+        "maxrss_observed_rows": 0,
+        "requested_memory_gib_hours": 80.88888888888889,
+        "requested_memory_rows": 1,
+        "state_counts": {
+          "COMPLETED": 1
+        }
+      },
+      "finalize": {
+        "allocated_core_hours": 0.0033333333333333335,
+        "allocations": 1,
+        "elapsed_allocation_hours": 0.0008333333333333334,
+        "maxrss_observed_rows": 0,
+        "requested_memory_gib_hours": 0.013333333333333334,
+        "requested_memory_rows": 1,
+        "state_counts": {
+          "COMPLETED": 1
+        }
+      },
+      "impg": {
+        "allocated_core_hours": 311.32,
+        "allocations": 1,
+        "elapsed_allocation_hours": 6.485833333333333,
+        "maxrss_observed_rows": 0,
+        "requested_memory_gib_hours": 1037.7333333333333,
+        "requested_memory_rows": 1,
+        "state_counts": {
+          "COMPLETED": 1
+        }
+      },
+      "mapping": {
+        "allocated_core_hours": 7.955555555555556,
+        "allocations": 1,
+        "elapsed_allocation_hours": 0.24861111111111112,
+        "maxrss_observed_rows": 0,
+        "requested_memory_gib_hours": 39.77777777777778,
+        "requested_memory_rows": 1,
+        "state_counts": {
+          "COMPLETED": 1
+        }
+      },
+      "psmc": {
+        "allocated_core_hours": 402.9011111111111,
+        "allocations": 201,
+        "elapsed_allocation_hours": 100.72527777777778,
+        "elapsed_seconds_distribution": {
+          "max": 2518,
+          "median": 1799,
+          "min": 1778,
+          "q025": 1784,
+          "q975": 1832
+        },
+        "maxrss_observed_rows": 0,
+        "requested_memory_gib_hours": 1611.6044444444444,
+        "requested_memory_rows": 201,
+        "scaleout_model": {
+          "allocations_per_pair": 201,
+          "cpus_per_allocation": 4,
+          "observed_median_minutes": 29.983333333333334,
+          "projected_makespan_hours_at_throttle_21": 4.997222222222222,
+          "requested_memory_gib_per_allocation": 16
+        },
+        "state_counts": {
+          "COMPLETED": 201
+        }
+      },
+      "total": {
+        "allocated_core_hours": 735.48,
+        "allocations": 206,
+        "elapsed_allocation_hours": 108.01472222222222,
+        "maxrss_observed_rows": 0,
+        "requested_memory_gib_hours": 2777.7955555555554,
+        "requested_memory_rows": 206,
+        "state_counts": {
+          "COMPLETED": 206
+        }
+      },
+      "variants": {
+        "allocated_core_hours": 1.1666666666666667,
+        "allocations": 1,
+        "elapsed_allocation_hours": 0.04861111111111111,
+        "maxrss_observed_rows": 0,
+        "requested_memory_gib_hours": 7.777777777777778,
+        "requested_memory_rows": 1,
+        "state_counts": {
+          "COMPLETED": 1
+        }
+      }
+    },
+    "P07_final_core_allocation": {
+      "allocated_core_hours": 78.69333333333333,
+      "allocations": 1,
+      "elapsed_allocation_hours": 2.4591666666666665,
+      "maxrss_observed_rows": 0,
+      "requested_memory_gib_hours": 314.7733333333333,
+      "requested_memory_rows": 1,
+      "state_counts": {
+        "COMPLETED": 1
+      }
+    },
+    "P07_successful_rescue_allocations": {
+      "allocated_core_hours": 8.488888888888889,
+      "allocations": 2,
+      "elapsed_allocation_hours": 0.2652777777777778,
+      "maxrss_observed_rows": 0,
+      "requested_memory_gib_hours": 33.955555555555556,
+      "requested_memory_rows": 2,
+      "state_counts": {
+        "COMPLETED": 2
+      }
+    },
+    "canary_all_attempts_snapshot": {
+      "allocated_core_hours": 368.61555555555555,
+      "allocations": 35,
+      "elapsed_allocation_hours": 11.563611111111111,
+      "maxrss_observed_rows": 0,
+      "requested_memory_gib_hours": 1480.1422222222222,
+      "requested_memory_rows": 35,
+      "state_counts": {
+        "CANCELLED": 12,
+        "COMPLETED": 4,
+        "FAILED": 19
+      }
+    },
+    "corrected_scaleout_rules": [
+      "budget PSMC as 201 independent 4-CPU/16-GiB allocations per completed pair, not one array allocation",
+      "do not spend the 200-bootstrap allocation budget at scale until the shifted bootstrap input population is repaired and revalidated",
+      "for a P04-sized 2.372-Gbp pair, use measured stage allocations: mapping 32 CPU/160 GiB for 895 s; IMPG 48 CPU/160 GiB for 23,349 s; variants 24 CPU/160 GiB for 175 s; consensus 24 CPU/160 GiB for 1,820 s",
+      "retain the measured 600-GiB free-scratch gate for P04-like IMPG and size-stratified per-pair envelopes for larger genomes; sacct does not measure scratch",
+      "run a bounded wave and recalibrate after each new completed size stratum; two completions do not identify a reliable genome-size scaling slope",
+      "exclude failed and cancelled allocations from the success-template model but report their capacity cost separately"
+    ],
+    "measurement_boundary": "elapsed allocation capacity and requested memory; MaxRSS/TotalCPU unavailable on this cluster and never imputed",
+    "pilot_all_attempts_snapshot": {
+      "allocated_core_hours": 3235.8533333333335,
+      "allocations": 287,
+      "elapsed_allocation_hours": 184.0211111111111,
+      "maxrss_observed_rows": 0,
+      "requested_memory_gib_hours": 16312.48,
+      "requested_memory_rows": 287,
+      "state_counts": {
+        "CANCELLED": 346,
+        "COMPLETED": 236,
+        "FAILED": 33,
+        "PENDING": 22,
+        "RUNNING": 3
+      }
+    }
+  },
+  "review_cutoff_utc": "2026-07-20T16:06:19Z",
+  "schema_version": "vgp-real-pilot-independent-review-v1",
+  "task_id": "review-vgp-real-pilot"
+}
