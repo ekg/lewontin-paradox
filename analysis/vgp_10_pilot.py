@@ -22,7 +22,7 @@ import shlex
 import shutil
 import sys
 import tempfile
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable, Mapping, Sequence
@@ -33,6 +33,10 @@ ANALYSIS = ROOT / "analysis"
 PRIMARY_MANIFEST = ANALYSIS / "vgp_10_pair_manifest.tsv"
 DESIGN_MANIFEST = ANALYSIS / "vgp_analysis_manifest.json"
 ENVIRONMENT_LOCK = ANALYSIS / "guix/vgp_10_pilot/environment-lock.json"
+# Frozen identity of the versioned primary-PSMCFA bootstrap repair design.
+# Keep this independent of the historical global design manifest: that file is
+# digest-bound into earlier comprehensive synthesis artifacts and is immutable.
+PSMCFA_BOOTSTRAP_DESIGN_SHA256 = "ac352c3adcf1edb6eb6aab67a31ab911d0294bbb80b704f3944ce4e69a22404c"
 
 REASON_ORDER = (
     "not_eligible_contig",
@@ -1067,21 +1071,93 @@ def consensus_to_psmcfa(consensus: Mapping[str, str], bin_size: int = 100) -> st
     return "".join(records)
 
 
+def parse_psmcfa(path: Path | str) -> dict[str, str]:
+    """Read the exact N/K/T population consumed by PSMC."""
+    records: dict[str, list[str]] = {}
+    current: str | None = None
+    with Path(path).open(encoding="utf-8") as handle:
+        for number, line in enumerate(handle, 1):
+            value = line.strip()
+            if not value:
+                continue
+            if value.startswith(">"):
+                current = value[1:].strip()
+                if not current or current in records:
+                    raise PilotError(f"invalid or duplicate PSMCFA record at line {number}")
+                records[current] = []
+                continue
+            if current is None:
+                raise PilotError(f"PSMCFA sequence precedes its header at line {number}")
+            sequence = value.upper()
+            unexpected = set(sequence) - set("NKT")
+            if unexpected:
+                raise PilotError(
+                    f"unexpected PSMCFA symbols at line {number}: {sorted(unexpected)}"
+                )
+            records[current].append(sequence)
+    result = {name: "".join(parts) for name, parts in records.items()}
+    if not result or any(not sequence for sequence in result.values()):
+        raise PilotError("PSMCFA must contain at least one non-empty record")
+    return result
+
+
+def psmcfa_text(records: Mapping[str, str], width: int = 60) -> str:
+    """Serialize already encoded PSMCFA records without re-binning them."""
+    if width <= 0:
+        raise PilotError("PSMCFA line width must be positive")
+    lines: list[str] = []
+    for name, sequence in records.items():
+        if not name or not sequence or set(sequence) - set("NKT"):
+            raise PilotError("PSMCFA records require a name and only N/K/T symbols")
+        lines.append(f">{name}\n")
+        lines.extend(sequence[start:start + width] + "\n" for start in range(0, len(sequence), width))
+    if not lines:
+        raise PilotError("cannot serialize an empty PSMCFA")
+    return "".join(lines)
+
+
+def freeze_psmcfa_bootstrap_units(
+    primary_psmcfa: Mapping[str, str], block_bins: int,
+) -> list[Interval]:
+    """Tile every primary PSMCFA bin without crossing a contig boundary."""
+    if block_bins <= 0:
+        raise PilotError("bootstrap block length must be positive")
+    units: list[Interval] = []
+    for contig, sequence in primary_psmcfa.items():
+        if not contig or not sequence or set(sequence) - set("NKT"):
+            raise PilotError("bootstrap population must be non-empty N/K/T PSMCFA records")
+        for start in range(0, len(sequence), block_bins):
+            units.append(Interval(contig, start, min(start + block_bins, len(sequence))))
+    if not units:
+        raise PilotError("no bootstrap units can be frozen from an empty PSMCFA")
+    return units
+
+
 def bootstrap_psmcfa(
-    consensus: Mapping[str, str], units: Sequence[Interval], sampled_unit_indices: Sequence[int],
+    sequences: Mapping[str, str], units: Sequence[Interval], sampled_unit_indices: Sequence[int],
     bin_size: int = 100,
 ) -> str:
-    """Encode sampled blocks as distinct records so no PSMC bin spans a boundary."""
+    """Emit sampled blocks as records so neither bins nor blocks span boundaries.
+
+    Production passes the already encoded primary PSMCFA (N/K/T), preserving
+    its complete masked/callable population.  Raw consensus support remains for
+    older frozen fixtures, but is not used by the real-VGP bootstrap path.
+    """
+    is_primary_psmcfa = bool(sequences) and all(
+        sequence and not (set(sequence) - set("NKT")) for sequence in sequences.values()
+    )
     sampled: dict[str, str] = {}
     for ordinal, index in enumerate(sampled_unit_indices, 1):
         if index < 0 or index >= len(units):
             raise PilotError("bootstrap unit index is out of range")
         unit = units[index]
-        if unit.contig not in consensus or unit.end > len(consensus[unit.contig]):
-            raise PilotError("bootstrap unit exceeds consensus sequence")
+        if unit.contig not in sequences or unit.end > len(sequences[unit.contig]):
+            raise PilotError("bootstrap unit exceeds input sequence")
         sampled[f"block_{ordinal:06d}_{unit.contig}_{unit.start}_{unit.end}"] = \
-            consensus[unit.contig][unit.start:unit.end]
-    return consensus_to_psmcfa(sampled, bin_size=bin_size)
+            sequences[unit.contig][unit.start:unit.end]
+    return psmcfa_text(sampled) if is_primary_psmcfa else consensus_to_psmcfa(
+        sampled, bin_size=bin_size
+    )
 
 
 def write_fasta(path: Path | str, sequences: Mapping[str, str], width: int = 60) -> None:
@@ -1120,6 +1196,35 @@ def bootstrap_manifest(
         result.append({
             "replicate": replicate,
             "block_bp": block_bp,
+            "seed": seed + replicate,
+            "unit_count": len(units),
+            "sampled_unit_indices": sampled,
+        })
+    return result
+
+
+def psmcfa_bootstrap_manifest(
+    primary_psmcfa: Mapping[str, str], selection_id: str, design_sha256: str,
+    attempts: int = 200, block_bp: int = 5_000_000, bin_size: int = 100,
+) -> list[dict[str, object]]:
+    """Freeze deterministic draws from the same N/K/T population as primary PSMC."""
+    if attempts < 100:
+        raise PilotError("PSMC requires at least 100 block bootstrap attempts")
+    if bin_size <= 0 or block_bp <= 0 or block_bp % bin_size:
+        raise PilotError("bootstrap block length must be a positive multiple of PSMC bin size")
+    block_bins = block_bp // bin_size
+    units = freeze_psmcfa_bootstrap_units(primary_psmcfa, block_bins)
+    seed_material = f"{design_sha256}:{selection_id}:primary-psmcfa:{block_bp}:{bin_size}"
+    seed = int(hashlib.sha256(seed_material.encode()).hexdigest()[:16], 16)
+    result: list[dict[str, object]] = []
+    for replicate in range(1, attempts + 1):
+        rng = random.Random(seed + replicate)
+        sampled = [rng.randrange(len(units)) for _ in units]
+        result.append({
+            "replicate": replicate,
+            "block_bp": block_bp,
+            "block_bins": block_bins,
+            "bin_size": bin_size,
             "seed": seed + replicate,
             "unit_count": len(units),
             "sampled_unit_indices": sampled,
@@ -1588,36 +1693,63 @@ def materialize_mask_consensus_psmc(
     consensus_dir = output / "consensus"
     consensus_dir.mkdir()
     write_fasta(consensus_dir / "consensus.fa", consensus)
-    (consensus_dir / "input.psmcfa").write_text(consensus_to_psmcfa(consensus), encoding="utf-8")
+    primary_psmcfa_path = consensus_dir / "input.psmcfa"
+    primary_psmcfa_path.write_text(consensus_to_psmcfa(consensus), encoding="utf-8")
+    primary_psmcfa = parse_psmcfa(primary_psmcfa_path)
     bootstrap_dir = consensus_dir / "bootstrap"
     bootstrap_dir.mkdir()
-    design_sha256 = design_sha256 or sha256_file(DESIGN_MANIFEST)
-    units = freeze_bootstrap_units(callable_rows, 5_000_000)
-    manifest = bootstrap_manifest(callable_rows, selection_id, design_sha256, attempts=attempts)
-    write_bed(consensus_dir / "bootstrap_units.5mb.bed", units)
+    design_sha256 = design_sha256 or PSMCFA_BOOTSTRAP_DESIGN_SHA256
+    units = freeze_psmcfa_bootstrap_units(primary_psmcfa, 5_000_000 // 100)
+    manifest = psmcfa_bootstrap_manifest(
+        primary_psmcfa, selection_id, design_sha256, attempts=attempts
+    )
+    write_bed(consensus_dir / "bootstrap_units.5mb.psmcfa_bins.tsv", units)
     with (consensus_dir / "bootstrap_manifest.tsv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, delimiter="\t", lineterminator="\n")
-        writer.writerow(("replicate", "block_bp", "seed", "unit_count", "sampled_unit_indices"))
+        writer.writerow((
+            "replicate", "block_bp", "block_bins", "bin_size", "seed", "unit_count",
+            "sampled_unit_indices",
+        ))
         for row in manifest:
-            writer.writerow((row["replicate"], row["block_bp"], row["seed"], row["unit_count"],
-                             ",".join(map(str, row["sampled_unit_indices"]))))
+            writer.writerow((
+                row["replicate"], row["block_bp"], row["block_bins"], row["bin_size"],
+                row["seed"], row["unit_count"],
+                ",".join(map(str, row["sampled_unit_indices"])),
+            ))
     (bootstrap_dir / "README.txt").write_text(
-        "Replicate PSMCFA is generated atomically in job-local scratch from the frozen unit BED "
-        "and sampled indices; it is not duplicated in durable storage.\n", encoding="utf-8"
+        "Replicate PSMCFA is generated atomically in job-local scratch by resampling "
+        "contig-bounded blocks of input.psmcfa, including its masked N and callable K/T bins; "
+        "it is not duplicated in durable storage.\n", encoding="utf-8"
     )
     # Freeze both block-length sensitivities, but defer their expensive runs.
     for block_bp in (1_000_000, 10_000_000):
-        write_bed(consensus_dir / f"bootstrap_units.{block_bp // 1_000_000}mb.bed",
-                  freeze_bootstrap_units(callable_rows, block_bp))
+        write_bed(
+            consensus_dir / f"bootstrap_units.{block_bp // 1_000_000}mb.psmcfa_bins.tsv",
+            freeze_psmcfa_bootstrap_units(primary_psmcfa, block_bp // 100),
+        )
+    primary_symbols = Counter("".join(primary_psmcfa.values()))
+    frozen_symbols = Counter(
+        symbol
+        for unit in units
+        for symbol in primary_psmcfa[unit.contig][unit.start:unit.end]
+    )
+    if frozen_symbols != primary_symbols:
+        raise PilotError("frozen PSMCFA units do not preserve the primary N/K/T population")
     qc = {
         "concordance": concordance,
         "mask": reconciliation,
         "consensus": consensus_qc,
         "bootstrap_attempts": attempts,
         "primary_block_bp": 5_000_000,
+        "psmc_bin_size_bp": 100,
         "sensitivity_block_bp": [1_000_000, 10_000_000],
         "blocks_cross_contigs": False,
-        "blocks_cross_mask_discontinuities": False,
+        "bootstrap_sampling_population": "primary_psmcfa_NKT_bins",
+        "primary_psmcfa_bins": sum(primary_symbols.values()),
+        "frozen_unit_bins": sum(unit.length for unit in units),
+        "primary_psmcfa_symbols": dict(sorted(primary_symbols.items())),
+        "frozen_unit_symbols": dict(sorted(frozen_symbols.items())),
+        "masked_and_callable_population_preserved": True,
     }
     (output / "join_qc.json").write_text(canonical_json(qc), encoding="utf-8")
     return qc
@@ -1687,8 +1819,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     resource.add_argument("--threads", type=int, default=8)
     resource.add_argument("--calibration-json")
     emit = sub.add_parser("emit-bootstrap", help="materialize one frozen bootstrap in scratch")
-    emit.add_argument("consensus_fasta")
-    emit.add_argument("units_bed")
+    emit.add_argument("primary_psmcfa")
+    emit.add_argument("units_tsv")
     emit.add_argument("manifest_tsv")
     emit.add_argument("replicate", type=int)
     emit.add_argument("output")
@@ -1719,8 +1851,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.native_partitions, calibration, args.threads,
             )
         else:
-            sequences = parse_fasta(args.consensus_fasta)
-            units = read_bed(args.units_bed)
+            sequences = parse_psmcfa(args.primary_psmcfa)
+            units = read_bed(args.units_tsv)
             csv.field_size_limit(2 ** 31 - 1)
             with Path(args.manifest_tsv).open(newline="", encoding="utf-8") as handle:
                 matches = [row for row in csv.DictReader(handle, delimiter="\t")
@@ -1730,7 +1862,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             sampled = [int(value) for value in matches[0]["sampled_unit_indices"].split(",")]
             Path(args.output).write_text(bootstrap_psmcfa(sequences, units, sampled), encoding="utf-8")
             result = {"replicate": args.replicate, "output": args.output,
-                      "sha256": sha256_file(args.output), "boundary_aware": True}
+                      "sha256": sha256_file(args.output), "boundary_aware": True,
+                      "sampling_population": "primary_psmcfa_NKT_bins"}
     except (PilotError, OSError, json.JSONDecodeError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2

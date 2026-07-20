@@ -28,8 +28,8 @@ if [[ $replicate -eq 0 ]]; then
 else
     unit="$VGP_STAGE_PARTIAL/replicate-$(printf '%03d' "$replicate").psmcfa"
     python3 -m analysis.vgp_10_pilot emit-bootstrap \
-        "$VGP_PAIR_RUN/consensus/consensus/consensus.fa" \
-        "$VGP_PAIR_RUN/consensus/consensus/bootstrap_units.5mb.bed" \
+        "$VGP_PAIR_RUN/consensus/consensus/input.psmcfa" \
+        "$VGP_PAIR_RUN/consensus/consensus/bootstrap_units.5mb.psmcfa_bins.tsv" \
         "$VGP_PAIR_RUN/consensus/consensus/bootstrap_manifest.tsv" "$replicate" "$unit" \
         >"$VGP_STAGE_PARTIAL/bootstrap_input.json"
     "$psmc" -b -N25 -t15 -r5 -p '4+25*2+4+6' \

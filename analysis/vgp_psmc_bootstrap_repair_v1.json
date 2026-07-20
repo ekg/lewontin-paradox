@@ -1,0 +1,200 @@
+{
+  "bootstrap_design_sha256": "ac352c3adcf1edb6eb6aab67a31ab911d0294bbb80b704f3944ce4e69a22404c",
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "centering_diagnostic_predeclaration": {
+    "diagnostic": {
+      "lower_quantile": 0.025,
+      "metric": "final_native_iteration_theta_0_per_100bp_bin",
+      "name": "primary_theta_in_equal_tail_central_95pct_bootstrap_interval",
+      "predeclared_before_execution": true,
+      "quantile_method": "nearest index round((n - 1) * q)",
+      "required_attempts": 200,
+      "required_finite_outputs": 200,
+      "upper_quantile": 0.975
+    },
+    "path": "/moosefs/erikg/vgp/pilot/diagnostics/vgp-psmc-bootstrap-repair-v1/centering_diagnostic.predeclared.json",
+    "sha256": "9f2ee33f879d93afcc7352cf63cc4bf38110172afc79a42d921fe4e4eac4d502"
+  },
+  "diagnostic_output_root": "/moosefs/erikg/vgp/pilot/diagnostics/vgp-psmc-bootstrap-repair-v1",
+  "pairs": {
+    "P04": {
+      "block_bins": 50000,
+      "block_bp": 5000000,
+      "blocks_cross_contig_boundaries": false,
+      "bootstrap_attempts": 200,
+      "bootstrap_interval_counts": {
+        "64": 200
+      },
+      "bootstrap_theta_0_per_100bp_bin": {
+        "max": 0.662797,
+        "median": 0.5247634999999999,
+        "min": 0.401595,
+        "q025": 0.435533,
+        "q975": 0.618109
+      },
+      "canonical_primary_psmc": "/moosefs/erikg/vgp/pilot/runs/vgp10-auth-20260718-v2-pilot-v1/P04/psmc/replicate-000/unscaled.psmc",
+      "canonical_primary_psmcfa": "/moosefs/erikg/vgp/pilot/runs/vgp10-auth-20260718-v2-pilot-v1/P04/consensus/consensus/input.psmcfa",
+      "canonical_run_root": "/moosefs/erikg/vgp/pilot/runs/vgp10-auth-20260718-v2-pilot-v1/P04",
+      "centering_diagnostic": {
+        "lower_quantile": 0.025,
+        "metric": "final_native_iteration_theta_0_per_100bp_bin",
+        "name": "primary_theta_in_equal_tail_central_95pct_bootstrap_interval",
+        "observed_lower_bound": 0.435533,
+        "observed_upper_bound": 0.618109,
+        "passed": true,
+        "predeclared_before_execution": true,
+        "primary_inside_bounds": true,
+        "quantile_method": "nearest index round((n - 1) * q)",
+        "required_attempts": 200,
+        "required_finite_outputs": 200,
+        "upper_quantile": 0.975
+      },
+      "finite_bootstraps": 200,
+      "frozen_unit_bins": 12157339,
+      "frozen_unit_symbols": {
+        "K": 2137417,
+        "N": 5112715,
+        "T": 4907207
+      },
+      "masked_and_callable_sampling_population_preserved": true,
+      "passed": true,
+      "primary": {
+        "intervals": 64,
+        "theta_0_per_100bp_bin": 0.52445
+      },
+      "primary_psmcfa_bins": 12157339,
+      "primary_psmcfa_symbols": {
+        "K": 2137417,
+        "N": 5112715,
+        "T": 4907207
+      },
+      "sampled_population_diagnostic": {
+        "replicate_bin_count": {
+          "max": 13614207.0,
+          "median": 12063384.5,
+          "min": 10450009.0,
+          "q025": 11030321.0,
+          "q975": 13090547.0
+        },
+        "replicate_symbol_proportions": {
+          "K": {
+            "max": 0.18856744204656364,
+            "median": 0.17701111739258799,
+            "min": 0.163987478205276,
+            "q025": 0.16752798639248195,
+            "q975": 0.18538640394258513
+          },
+          "N": {
+            "max": 0.4554007690455527,
+            "median": 0.41945221754221707,
+            "min": 0.38994945964993494,
+            "q025": 0.39712887025029175,
+            "q975": 0.44377633985509324
+          },
+          "T": {
+            "max": 0.43211753701442696,
+            "median": 0.40495783180149786,
+            "min": 0.3769074239064828,
+            "q025": 0.38306020014219894,
+            "q975": 0.42705150095634997
+          }
+        }
+      },
+      "sampling_population": "primary_psmcfa_NKT_bins",
+      "selection_id": "P04",
+      "unit_count": 519
+    },
+    "P07": {
+      "block_bins": 50000,
+      "block_bp": 5000000,
+      "blocks_cross_contig_boundaries": false,
+      "bootstrap_attempts": 200,
+      "bootstrap_interval_counts": {
+        "64": 200
+      },
+      "bootstrap_theta_0_per_100bp_bin": {
+        "max": 0.041038,
+        "median": 0.0333045,
+        "min": 0.026506,
+        "q025": 0.028314,
+        "q975": 0.038858
+      },
+      "canonical_primary_psmc": "/moosefs/erikg/vgp/pilot/outputs/vgp10-auth-20260718-v2/P07/core/psmc/replicate-000/unscaled.psmc",
+      "canonical_primary_psmcfa": "/moosefs/erikg/vgp/pilot/outputs/vgp10-auth-20260718-v2/P07/core/consensus/consensus/input.psmcfa",
+      "canonical_run_root": "/moosefs/erikg/vgp/pilot/outputs/vgp10-auth-20260718-v2/P07/core",
+      "centering_diagnostic": {
+        "lower_quantile": 0.025,
+        "metric": "final_native_iteration_theta_0_per_100bp_bin",
+        "name": "primary_theta_in_equal_tail_central_95pct_bootstrap_interval",
+        "observed_lower_bound": 0.028314,
+        "observed_upper_bound": 0.038858,
+        "passed": true,
+        "predeclared_before_execution": true,
+        "primary_inside_bounds": true,
+        "quantile_method": "nearest index round((n - 1) * q)",
+        "required_attempts": 200,
+        "required_finite_outputs": 200,
+        "upper_quantile": 0.975
+      },
+      "finite_bootstraps": 200,
+      "frozen_unit_bins": 4075629,
+      "frozen_unit_symbols": {
+        "K": 110846,
+        "N": 1602504,
+        "T": 2362279
+      },
+      "masked_and_callable_sampling_population_preserved": true,
+      "passed": true,
+      "primary": {
+        "intervals": 64,
+        "theta_0_per_100bp_bin": 0.032921
+      },
+      "primary_psmcfa_bins": 4075629,
+      "primary_psmcfa_symbols": {
+        "K": 110846,
+        "N": 1602504,
+        "T": 2362279
+      },
+      "sampled_population_diagnostic": {
+        "replicate_bin_count": {
+          "max": 4671171.0,
+          "median": 4087912.5,
+          "min": 3235377.0,
+          "q025": 3741180.0,
+          "q975": 4458283.0
+        },
+        "replicate_symbol_proportions": {
+          "K": {
+            "max": 0.030748929862358904,
+            "median": 0.026982840213291802,
+            "min": 0.024534292404558948,
+            "q025": 0.0252039901856091,
+            "q975": 0.02892001946907149
+          },
+          "N": {
+            "max": 0.4171296222047589,
+            "median": 0.39266289165903756,
+            "min": 0.3702660206695278,
+            "q025": 0.3759496511888883,
+            "q975": 0.407320083925446
+          },
+          "T": {
+            "max": 0.6028428454581349,
+            "median": 0.5805906019670173,
+            "min": 0.5554998690252808,
+            "q025": 0.5651066320864616,
+            "q975": 0.5967827327863003
+          }
+        }
+      },
+      "sampling_population": "primary_psmcfa_NKT_bins",
+      "selection_id": "P07",
+      "unit_count": 109
+    }
+  },
+  "passed": true,
+  "repair_id": "vgp-psmc-bootstrap-repair-v1",
+  "sampling_population": "primary_psmcfa_NKT_bins",
+  "schema_version": "vgp-psmc-bootstrap-repair-diagnostic-v1",
+  "task_id": "repair-vgp-psmc"
+}

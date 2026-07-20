@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import subprocess
+from collections import Counter
 from pathlib import Path
 
 import jsonschema
@@ -29,6 +30,7 @@ from analysis.vgp_10_pilot import (
     estimate_resources,
     enforce_exact_paf_multiplicity,
     freeze_bootstrap_units,
+    freeze_psmcfa_bootstrap_units,
     impg_commands,
     interval_bp,
     low_complexity_intervals,
@@ -39,6 +41,7 @@ from analysis.vgp_10_pilot import (
     paf_to_exact_vcf,
     parse_fasta,
     parse_paf,
+    parse_psmcfa,
     parse_psmc_unscaled,
     parse_vcf,
     project_h2_non_acgt_to_h1,
@@ -382,6 +385,25 @@ def test_psmcfa_recognizes_every_heterozygous_iupac_code():
     assert value == ">a\nKKKKKK\n"
 
 
+def test_bootstrap_population_is_primary_psmcfa_including_masked_bins():
+    """Regression: callable-BED units dropped every masked primary bin."""
+    primary = {"a": "NNTKNT", "b": "TNNK"}
+    units = freeze_psmcfa_bootstrap_units(primary, block_bins=3)
+    assert units == [
+        Interval("a", 0, 3), Interval("a", 3, 6),
+        Interval("b", 0, 3), Interval("b", 3, 4),
+    ]
+    encoded = bootstrap_psmcfa(primary, units, range(len(units)))
+    observed = Counter(
+        character
+        for line in encoded.splitlines()
+        if not line.startswith(">")
+        for character in line
+    )
+    assert observed == Counter("".join(primary.values()))
+    assert observed["N"] == 5
+
+
 def test_at_least_100_deterministic_boundary_aware_bootstraps():
     callable_rows = [Interval("a", 0, 12), Interval("a", 20, 31), Interval("b", 0, 9)]
     units = freeze_bootstrap_units(callable_rows, 5)
@@ -607,15 +629,18 @@ def test_materialized_join_proves_concordance_mask_consensus_and_200_bootstraps(
     assert (output / "masks/callable.bed").is_file()
     manifest = list(csv.DictReader((output / "consensus/bootstrap_manifest.tsv").open(), delimiter="\t"))
     assert len(manifest) == 200
-    assert (output / "consensus/bootstrap_units.1mb.bed").is_file()
-    assert (output / "consensus/bootstrap_units.10mb.bed").is_file()
+    assert (output / "consensus/bootstrap_units.1mb.psmcfa_bins.tsv").is_file()
+    assert (output / "consensus/bootstrap_units.10mb.psmcfa_bins.tsv").is_file()
+    assert qc["bootstrap_sampling_population"] == "primary_psmcfa_NKT_bins"
+    assert qc["masked_and_callable_population_preserved"] is True
+    assert qc["primary_psmcfa_symbols"] == qc["frozen_unit_symbols"]
 
 
 def test_emit_bootstrap_accepts_explicit_fragmented_mask_manifest_field(tmp_path):
     consensus, units, manifest, output = (tmp_path / name for name in (
         "consensus.fa", "units.bed", "manifest.tsv", "replicate.psmcfa"
     ))
-    consensus.write_text(">h1\nACGTACGTAC\n")
+    consensus.write_text(">h1\nNKTNKTNKTN\n")
     units.write_text("h1\t0\t10\n")
     sampled = ",".join(["0"] * 70_000)
     manifest.write_text(
@@ -627,6 +652,7 @@ def test_emit_bootstrap_accepts_explicit_fragmented_mask_manifest_field(tmp_path
         str(consensus), str(units), str(manifest), "1", str(output),
     ], cwd=ROOT, check=True, capture_output=True, text=True)
     assert output.stat().st_size > 700_000
+    assert parse_psmcfa(output)
 
 
 def test_output_schema_is_valid_and_annotation_absence_is_nonblocking():
@@ -675,6 +701,8 @@ def test_slurm_entrypoints_are_resumable_atomic_ordered_and_have_no_global_memor
     assert "P07" not in submit.split("VGP_SELECTION_IDS:=", 1)[1].split("}", 1)[0]
     assert "#SBATCH --mem" not in pair and "#SBATCH --mem" not in psmc
     assert "emit-bootstrap" in psmc and "SLURM_ARRAY_TASK_ID" in psmc
+    assert "input.psmcfa" in psmc and "bootstrap_units.5mb.psmcfa_bins.tsv" in psmc
+    assert "consensus.fa" not in psmc
     assert psmc.index('"$psmc" -b') < psmc.index('rm -- "$unit"') < psmc.index("promote_stage")
     assert "--array=0-200%20" in submit and "psmc_finalize.sh" in submit
     for entrypoint in ("pair_stage.sh", "psmc_array.sh", "psmc_finalize.sh", "annotation_stage.sh"):

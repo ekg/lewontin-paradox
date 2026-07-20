@@ -10,7 +10,9 @@ The pair path is `pilot/runs/<run_id>/<selection_id>`. `pair_stage.sh` owns the
 preflight, whole-assembly SweepGA mapping, exact IMPG index/partition/query/lace
 sequence, and bcftools normalization stages. `psmc_array.sh` reserves task zero
 for the unscaled primary run and tasks 1–200 for job-local inputs generated
-from pre-frozen boundary-aware unit/sample manifests. `psmc_finalize.sh`
+by resampling contig-bounded blocks of the primary PSMCFA itself. The frozen
+unit/sample manifests therefore retain the primary population of masked `N`
+and callable `K/T` bins instead of sampling callable BED fragments. `psmc_finalize.sh`
 requires the full array, checks the 190/200 finite-output gate, and writes
 unscaled and scenario-scaled tables separately. Consensus/mask/bootstrap materialization is intentionally a
 pair-level join: it must be produced only after REF, H2 reconstruction, and
