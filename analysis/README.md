@@ -46,6 +46,27 @@ subset, authoritative allocation telemetry, and atomic-promotion receipt are
 under `/moosefs/erikg/vgp/pilot/outputs/vgp10-auth-20260718-v2/P07/`; it is not
 duplicated in Git.
 
+### Real ten-pair pilot and P04 completion
+
+The remaining nine authorized primaries were submitted as independent,
+resumable Slurm chains. P04 *Falco naumanni* is the first new completed pair:
+770,780,965 final callable bp, 3,548,818 heterozygous SNPs,
+π = 0.004604184795871289, an unscaled PSMC trajectory, and 200 finite
+bootstraps. See `vgp_real_pilot_report_v1.md` and the machine-readable
+`vgp_real_pilot_closed_world_v1.json`. The detailed independent P04 audit,
+early/middle/late variant subset, complete Slurm census, and live FastGA
+scratch audit are `vgp_real_pilot_P04_execution_v1.json`,
+`vgp_real_pilot_P04_variant_subset_v1.tsv`, `vgp_real_pilot_sacct_v1.tsv`,
+and `vgp_real_pilot_fastga_scratch_v1.json`.
+
+All pilot products remain under `/moosefs/erikg/vgp`. Hard primary input
+failures and retryable infrastructure attempts remain explicit in the
+canonical failure ledger; no alternate was activated. Every current SweepGA/
+FastGA retry stages both FASTAs and indexes in a private `/scratch` tree,
+exports `TMPDIR`, `TMP`, and `TEMP`, enters the tree before alignment, and
+fails closed if live `/proc` cwd or managed pair/index/intermediate paths
+escape node-local scratch.
+
 ### Independent validation reads
 
 The independent raw-read validation subset is frozen in

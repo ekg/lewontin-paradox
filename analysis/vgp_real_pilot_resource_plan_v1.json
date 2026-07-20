@@ -1,0 +1,130 @@
+{
+  "authorization_id": "vgp10-auth-20260718-v2",
+  "basis": {
+    "canary_alloc_cpus": 32,
+    "canary_alloc_memory_gib": 128,
+    "canary_elapsed": "02:27:33",
+    "canary_pair": "P07",
+    "canary_sequence_bp": 813562223,
+    "policy": "Per-genome allocations scaled from frozen assembly bp and compressed bytes with substantial discrete headroom; no global ceiling. Resource failures are retried above the failed allocation.",
+    "slurm_job_id": "1781798"
+  },
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "pairs": {
+    "P01": {
+      "measurement_sequence_bp": 4393098473,
+      "resource_reestimate_basis": "Job 1782133 reached 303646476 KiB RSS during ALNtoPAF conversion on a 386641 MiB worker and retained about 59 GiB scratch before the raw PAF was emitted; reserve 360 GiB memory and require 400 GiB free scratch for a resource retry.",
+      "stages": {
+        "consensus": {"cpus_per_task": 32, "scratch_bytes_high": 214748364800, "slurm_mem": "256G", "slurm_partition": "workers", "slurm_time": "3-00:00:00"},
+        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 214748364800, "slurm_mem": "256G", "slurm_partition": "workers", "slurm_time": "4-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 429496729600, "slurm_mem": "360G", "slurm_time": "4-00:00:00"},
+        "variants": {"cpus_per_task": 24, "scratch_bytes_high": 214748364800, "slurm_mem": "256G", "slurm_partition": "workers", "slurm_time": "2-00:00:00"}
+      },
+      "wave": 2
+    },
+    "P02": {
+      "measurement_sequence_bp": 5353123058,
+      "stages": {
+        "consensus": {"cpus_per_task": 32, "scratch_bytes_high": 274877906944, "slurm_mem": "256G", "slurm_partition": "workers", "slurm_time": "3-00:00:00"},
+        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 274877906944, "slurm_mem": "256G", "slurm_partition": "workers", "slurm_time": "4-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 274877906944, "slurm_mem": "256G", "slurm_time": "4-00:00:00"},
+        "variants": {"cpus_per_task": 24, "scratch_bytes_high": 274877906944, "slurm_mem": "256G", "slurm_partition": "workers", "slurm_time": "2-00:00:00"}
+      },
+      "wave": 2
+    },
+    "P03": {
+      "measurement_sequence_bp": 2365968587,
+      "stages": {
+        "consensus": {"cpus_per_task": 24, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_time": "2-00:00:00"},
+        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_time": "3-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 214748364800, "slurm_exclude": "octopus11", "slurm_mem": "256G", "slurm_time": "4-00:00:00"},
+        "variants": {"cpus_per_task": 24, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_time": "1-00:00:00"}
+      },
+      "wave": 1
+    },
+    "P04": {
+      "measurement_sequence_bp": 2372467332,
+      "scratch_reestimate_basis": "Job 1782218 completed all 608347 exact queries but uncompressed hierarchical lacing reached 363 GiB at only 17-30% progress; the lossless compressed retry requires 600 GiB available scratch and avoids the projected uncompressed exhaustion. Job 1783448 then demonstrated that pinned IMPG lace deadlocks at one thread, so the retry preserves the measured two-thread minimum and expands to all 48 node CPUs (24 independent lace workers).",
+      "stages": {
+        "consensus": {"cpus_per_task": 24, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_time": "2-00:00:00"},
+        "impg": {"cpus_per_task": 48, "scratch_bytes_high": 644245094400, "slurm_mem": "160G", "slurm_time": "3-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_time": "3-00:00:00"},
+        "variants": {"cpus_per_task": 24, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_time": "1-00:00:00"}
+      },
+      "wave": 1
+    },
+    "P05": {
+      "measurement_sequence_bp": 3060141947,
+      "stages": {
+        "consensus": {"cpus_per_task": 24, "scratch_bytes_high": 161061273600, "slurm_mem": "192G", "slurm_time": "2-00:00:00"},
+        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 161061273600, "slurm_mem": "192G", "slurm_time": "3-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 161061273600, "slurm_mem": "192G", "slurm_time": "3-00:00:00"},
+        "variants": {"cpus_per_task": 24, "scratch_bytes_high": 161061273600, "slurm_mem": "192G", "slurm_time": "1-12:00:00"}
+      },
+      "wave": 2
+    },
+    "P06": {
+      "measurement_sequence_bp": 4567738964,
+      "stages": {
+        "consensus": {"cpus_per_task": 32, "scratch_bytes_high": 214748364800, "slurm_mem": "256G", "slurm_time": "3-00:00:00"},
+        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 214748364800, "slurm_mem": "256G", "slurm_time": "4-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 322122547200, "slurm_exclude": "octopus11", "slurm_mem": "320G", "slurm_time": "5-00:00:00"},
+        "variants": {"cpus_per_task": 24, "scratch_bytes_high": 214748364800, "slurm_mem": "256G", "slurm_time": "2-00:00:00"}
+      },
+      "wave": 2
+    },
+    "P08": {
+      "measurement_sequence_bp": 1124806929,
+      "resource_reestimate_basis": "Job 1782082 demonstrated only about 14 GiB live local working data and 7.4 GiB FastGA RSS, but was canceled after 31h07m because its launch environment predated the complete private-/scratch cwd and TMPDIR/TMP/TEMP contract. Preserve the original 128 GiB memory, 90 GiB measured-free scratch and three-day headroom while excluding octopus11, which previously produced verified pair-file I/O failures.",
+      "stages": {
+        "annotation": {"cpus_per_task": 8, "scratch_bytes_high": 96636764160, "slurm_mem": "128G", "slurm_partition": "workers", "slurm_time": "1-00:00:00"},
+        "consensus": {"cpus_per_task": 24, "scratch_bytes_high": 96636764160, "slurm_mem": "128G", "slurm_partition": "workers", "slurm_time": "2-00:00:00"},
+        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 96636764160, "slurm_mem": "128G", "slurm_partition": "workers", "slurm_time": "3-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 96636764160, "slurm_exclude": "octopus11", "slurm_mem": "128G", "slurm_partition": "workers", "slurm_time": "3-00:00:00"},
+        "variants": {"cpus_per_task": 24, "scratch_bytes_high": 96636764160, "slurm_mem": "128G", "slurm_partition": "workers", "slurm_time": "1-00:00:00"}
+      },
+      "wave": 1
+    },
+    "P09": {
+      "measurement_sequence_bp": 11209934419,
+      "scratch_reestimate_basis": "Job 1782270 lost substantial headroom during active FastGA when unrelated octopus07 usage grew. Corrected-contract job 1787035 then failed its measured-free gate on octopus08 before staging any input. Require 600 GiB measured free and exclude octopus07, octopus08, and octopus11.",
+      "stages": {
+        "consensus": {"cpus_per_task": 32, "scratch_bytes_high": 536870912000, "slurm_mem": "512G", "slurm_time": "5-00:00:00"},
+        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 536870912000, "slurm_mem": "512G", "slurm_time": "5-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 644245094400, "slurm_exclude": "octopus07,octopus08,octopus11", "slurm_mem": "320G", "slurm_partition": "workers", "slurm_time": "5-00:00:00"},
+        "variants": {"cpus_per_task": 32, "scratch_bytes_high": 536870912000, "slurm_mem": "512G", "slurm_time": "3-00:00:00"}
+      },
+      "wave": 3
+    },
+    "P10": {
+      "measurement_sequence_bp": 8132928280,
+      "scratch_reestimate_basis": "P10 shares the large-shark mapping envelope with P09. Corrected-contract job 1787041 also failed its measured-free gate on octopus08 before staging any input; require 600 GiB measured free and exclude octopus07, octopus08, and octopus11.",
+      "stages": {
+        "consensus": {"cpus_per_task": 32, "scratch_bytes_high": 429496729600, "slurm_mem": "384G", "slurm_time": "4-00:00:00"},
+        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 429496729600, "slurm_mem": "384G", "slurm_time": "5-00:00:00"},
+        "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 644245094400, "slurm_exclude": "octopus07,octopus08,octopus11", "slurm_mem": "320G", "slurm_partition": "workers", "slurm_time": "5-00:00:00"},
+        "variants": {"cpus_per_task": 32, "scratch_bytes_high": 429496729600, "slurm_mem": "384G", "slurm_time": "3-00:00:00"}
+      },
+      "wave": 3
+    }
+  },
+  "schema_version": "vgp-real-pilot-resource-plan-v1",
+  "stage_excludes": {
+    "annotation": "octopus11",
+    "consensus": "octopus11",
+    "impg": "octopus11",
+    "psmc": "octopus11",
+    "psmc_finalize": "octopus11",
+    "variants": "octopus11"
+  },
+  "stage_partitions": {
+    "annotation": "highmem",
+    "consensus": "highmem",
+    "impg": "highmem",
+    "mapping": "workers",
+    "preflight": "workers",
+    "psmc": "workers",
+    "psmc_finalize": "workers",
+    "variants": "highmem"
+  }
+}

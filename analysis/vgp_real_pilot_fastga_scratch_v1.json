@@ -1,0 +1,163 @@
+{
+  "schema_version": "vgp-real-pilot-fastga-scratch-audit-v1",
+  "task_id": "run-vgp-real-pilot",
+  "authorization_id": "vgp10-auth-20260718-v2",
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "guard_commit": "870715e",
+  "audit_time_utc": "2026-07-20T15:57:59Z",
+  "scratch_mount": {
+    "requested_path": "/scratch",
+    "resolved_path_on_octopus08": "/mnt/sdb1/scratch"
+  },
+  "cancelled_incomplete_contract_attempt": {
+    "selection_id": "P08",
+    "job_id": "1782082",
+    "state": "CANCELLED",
+    "elapsed": "1-07:07:34",
+    "node": "octopus08",
+    "fastga_pid": 22742,
+    "fastga_cwd_resolved": "/mnt/sdb1/scratch/vgp-map-P08-1782082-UBTHLh/inputs",
+    "tmpdir": "/scratch/vgp-map-P08-1782082-UBTHLh",
+    "tmp_was_set": false,
+    "temp_was_set": false,
+    "all_observed_fastga_managed_paths_under_private_scratch": true,
+    "durable_mapping_output": false,
+    "classification": "retryable_infrastructure_contract_failure",
+    "alternate_activated": false,
+    "corrected_retry_job_id": "1787028"
+  },
+  "live_corrected_contract_proof": {
+    "selection_id": "P03",
+    "job_id": "1787016",
+    "node": "octopus08",
+    "fastga_pid": 36733,
+    "private_work_root_requested": "/scratch/vgp-map-P03-1787016-74PCXU",
+    "private_work_root_resolved": "/mnt/sdb1/scratch/vgp-map-P03-1787016-74PCXU",
+    "fastga_cwd_resolved": "/mnt/sdb1/scratch/vgp-map-P03-1787016-74PCXU/inputs",
+    "temp_environment": {
+      "TMPDIR": "/scratch/vgp-map-P03-1787016-74PCXU",
+      "TMP": "/scratch/vgp-map-P03-1787016-74PCXU",
+      "TEMP": "/scratch/vgp-map-P03-1787016-74PCXU"
+    },
+    "observed_managed_path_classes": [
+      ".bps",
+      ".gix",
+      "_pair.<pid>.<partition>.C",
+      "_pair.<pid>.<partition>.N"
+    ],
+    "observed_managed_open_path_count": 772,
+    "managed_open_paths_sha256": "33f07456b8b60b86611157f48d1232312078523b2bce8b9ca1942d170e16ac65",
+    "contract_valid": true
+  },
+  "second_node_live_contract_proof": {
+    "selection_id": "P06",
+    "job_id": "1787022",
+    "node": "octopus09",
+    "fastga_pid": 42653,
+    "private_work_root_requested": "/scratch/vgp-map-P06-1787022-Vx2NGZ",
+    "private_work_root_resolved": "/mnt/sdb1/scratch/vgp-map-P06-1787022-Vx2NGZ",
+    "fastga_cwd_resolved": "/mnt/sdb1/scratch/vgp-map-P06-1787022-Vx2NGZ/inputs",
+    "temp_environment": {
+      "TMPDIR": "/scratch/vgp-map-P06-1787022-Vx2NGZ",
+      "TMP": "/scratch/vgp-map-P06-1787022-Vx2NGZ",
+      "TEMP": "/scratch/vgp-map-P06-1787022-Vx2NGZ"
+    },
+    "contract_valid": true
+  },
+  "corrected_P08_live_contract_proof": {
+    "selection_id": "P08",
+    "job_id": "1787028",
+    "node": "octopus07",
+    "fastga_pid": 28178,
+    "private_work_root_requested": "/scratch/vgp-map-P08-1787028-QYOYyn",
+    "private_work_root_resolved": "/scratch/vgp-map-P08-1787028-QYOYyn",
+    "fastga_cwd_resolved": "/scratch/vgp-map-P08-1787028-QYOYyn/inputs",
+    "temp_environment": {
+      "TMPDIR": "/scratch/vgp-map-P08-1787028-QYOYyn",
+      "TMP": "/scratch/vgp-map-P08-1787028-QYOYyn",
+      "TEMP": "/scratch/vgp-map-P08-1787028-QYOYyn"
+    },
+    "observed_managed_path_classes": [
+      ".bps",
+      ".gix",
+      "_algn",
+      "_uniq",
+      "_pair"
+    ],
+    "observed_managed_open_path_count": 1090,
+    "contract_valid": true
+  },
+  "corrected_P09_live_contract_proof": {
+    "selection_id": "P09",
+    "job_id": "1787065",
+    "node": "octopus10",
+    "fastga_pid": 39733,
+    "private_work_root_requested": "/scratch/vgp-map-P09-1787065-V6YK76",
+    "private_work_root_resolved": "/mnt/sdb1/scratch/vgp-map-P09-1787065-V6YK76",
+    "fastga_cwd_resolved": "/mnt/sdb1/scratch/vgp-map-P09-1787065-V6YK76/inputs",
+    "temp_environment": {
+      "TMPDIR": "/scratch/vgp-map-P09-1787065-V6YK76",
+      "TMP": "/scratch/vgp-map-P09-1787065-V6YK76",
+      "TEMP": "/scratch/vgp-map-P09-1787065-V6YK76"
+    },
+    "observed_managed_path_classes": [
+      ".bps",
+      ".gix",
+      "_pair"
+    ],
+    "observed_managed_open_path_count": 2052,
+    "contract_valid": true
+  },
+  "corrected_primary_mapping_jobs": {
+    "P03": "1787016",
+    "P06": "1787022",
+    "P08": "1787028",
+    "P09": "1787065",
+    "P10": "1787071"
+  },
+  "post_correction_outcomes": {
+    "P03": {
+      "job_id": "1787016",
+      "state": "FAILED",
+      "elapsed": "00:37:25",
+      "exit_code": "1:0",
+      "classification": "reproducible_hard_primary_execution_failure_after_verified_scratch_contract",
+      "scratch_available_bytes_at_start": 598585008128,
+      "scratch_required_bytes": 214748364800,
+      "fastga_exit_code_reported_by_launcher": null,
+      "alternate_activated": false
+    },
+    "P09": {
+      "prior_corrected_job_id": "1787035",
+      "prior_state": "FAILED",
+      "prior_exit_code": "2:0",
+      "classification": "measured_free_scratch_gate_failure_before_input_staging",
+      "retry_job_id": "1787065",
+      "retry_excludes": "octopus07,octopus08,octopus11",
+      "scratch_required_bytes": 644245094400,
+      "alternate_activated": false
+    },
+    "P10": {
+      "prior_corrected_job_id": "1787041",
+      "prior_state": "FAILED",
+      "prior_exit_code": "2:0",
+      "classification": "measured_free_scratch_gate_failure_before_input_staging",
+      "retry_job_id": "1787071",
+      "retry_excludes": "octopus07,octopus08,octopus11",
+      "scratch_required_bytes": 644245094400,
+      "alternate_activated": false
+    }
+  },
+  "contract": {
+    "measured_free_scratch_gate": true,
+    "private_mktemp_directory_under_scratch": true,
+    "both_fastas_staged": true,
+    "indexes_created_only_beneath_private_tree": true,
+    "batch_cd_before_sweepga": true,
+    "tmpdir_tmp_temp_exported": true,
+    "live_proc_cwd_and_managed_fd_validation": true,
+    "outside_scratch_is_hard_exit_70": true,
+    "atomic_promotion_only_after_guarded_alignment_success": true,
+    "guarded_cleanup": true
+  }
+}

@@ -176,6 +176,17 @@ def test_mapping_derives_h1_1to1_complement_and_projects_h2_N_on_both_strands(tm
         project_h2_non_acgt_to_h1(parse_paf(malformed), {"h2": "A" * 20})
 
 
+def test_h2_ambiguity_projection_indexes_distant_runs_without_changing_mask(tmp_path):
+    sequence = "".join("N" if index % 2 == 0 else "A" for index in range(20_000))
+    paf = tmp_path / "late-window.paf"
+    paf.write_text(
+        "h2\t20000\t19980\t20000\t+\th1\t20\t0\t20\t10\t20\t60\tcg:Z:20=\n"
+    )
+    assert project_h2_non_acgt_to_h1(parse_paf(paf), {"h2": sequence}) == [
+        Interval("h1", offset, offset + 1) for offset in range(0, 20, 2)
+    ]
+
+
 def test_sequence_derived_low_complexity_mask_does_not_require_repeat_report():
     rows = low_complexity_intervals({"h1": "CG" + "A" * 12 + "GT" * 11 + "ACG" * 8 + "TTGC"})
     assert rows == [Interval("h1", 2, 60)]
@@ -221,6 +232,11 @@ def test_partition_focus_is_exact_subset_of_native_impg_rows(tmp_path):
     rows = [line.split("\t") for line in focus.read_text().splitlines()]
     assert [row[3] for row in rows] == ["query000000000", "query000000001"]
     assert [row[4] for row in rows] == ["p0", "p0"]
+    disjoint = tmp_path / "disjoint.bed"
+    disjoint.write_text("h1\t0\t10\ta\nh1\t10\t20\tb\nh2\t0\t20\tc\n")
+    assert select_native_partitions(
+        disjoint, [Interval("h1", 10, 11), Interval("h2", 19, 20)], focus
+    ) == [(Interval("h1", 10, 20), "b"), (Interval("h2", 0, 20), "c")]
     malformed = tmp_path / "user-windows.bed"
     malformed.write_text("h1\t0\t10\n")
     with pytest.raises(PilotError, match="partition identifier"):
@@ -357,6 +373,13 @@ def test_callable_containment_uses_indexed_lookup_not_linear_iteration():
 def test_psmcfa_preserves_mask_and_heterozygous_bins():
     value = consensus_to_psmcfa({"a": "A" * 100 + "R" + "A" * 99 + "N" + "A" * 99})
     assert value == ">a\nTKN\n"
+
+
+def test_psmcfa_recognizes_every_heterozygous_iupac_code():
+    value = consensus_to_psmcfa({
+        "a": "".join(code + "A" * 99 for code in "RYSWKM"),
+    })
+    assert value == ">a\nKKKKKK\n"
 
 
 def test_at_least_100_deterministic_boundary_aware_bootstraps():
@@ -617,13 +640,18 @@ def test_output_schema_is_valid_and_annotation_absence_is_nonblocking():
 
 def test_slurm_entrypoints_are_resumable_atomic_ordered_and_have_no_global_memory_ceiling():
     pair = (SLURM / "pair_stage.sh").read_text()
+    lace = (SLURM / "impg_hierarchical_lace.sh").read_text()
+    query = (SLURM / "impg_parallel_query.sh").read_text()
     common = (SLURM / "common.sh").read_text()
     submit = (SLURM / "submit.sh").read_text()
     psmc = (SLURM / "psmc_array.sh").read_text()
-    for token in ("--num-mappings 1:1", "impg\" index", "impg\" partition", "impg\" query", "impg\" lace",
+    for token in ("--num-mappings 1:1", "impg\" index", "impg\" partition",
                   "bcftools\" norm", "-d exact", "materialize_mask_consensus_psmc"):
         assert token in pair
-    assert pair.index('"$impg" index') < pair.index('"$impg" partition') < pair.index('"$impg" query') < pair.index('"$impg" lace')
+    assert '"$impg" query' in query
+    assert pair.index('"$impg" index') < pair.index('"$impg" partition') < pair.index(
+        'impg_parallel_query.sh')
+    assert '"$impg" lace' in lace
     split_index = '"$bcftools" index -f -t "$VGP_STAGE_PARTIAL/split.vcf.gz"'
     assert split_index in pair
     assert "paf-vcf" in pair and "paf_variant_audit.json" in pair
@@ -634,15 +662,181 @@ def test_slurm_entrypoints_are_resumable_atomic_ordered_and_have_no_global_memor
     assert '"$input_dir/h1_universe.bed" "$VGP_STAGE_PARTIAL/focus.native.bed"' in pair
     assert '"$input_dir/eligible_query_regions.bed" "$VGP_STAGE_PARTIAL/focus.native.bed"' not in pair
     assert "regional_vcf_audit.json" in pair
-    assert pair.index('regional_vcf_audit.json') < pair.index('"$impg" lace') < pair.index('rm -rf -- "$VGP_STAGE_PARTIAL/calls"')
-    assert ".complete.json" in common and "atomic_promote" in common and "record_telemetry" in common
+    assert pair.index('regional_vcf_audit.json') < pair.index('impg_hierarchical_lace.sh')
+    assert lace.index('"$impg" lace') < lace.index('rm -rf -- "$VGP_STAGE_PARTIAL/calls"')
+    assert ".complete.json" in common and "promote_stage_cross_filesystem" in common and "record_telemetry" in common
     assert "--dry-run" in submit and "--submit" in submit and "resources.json" in submit
+    assert "VGP_SELECTION_IDS" in submit
+    assert "VGP_SUBMISSION_MANIFEST" in submit
+    assert "RESUME-SUBMIT" in submit
+    assert "VGP_NODE_LOCAL_BASE" in submit
+    assert "slurm_partition" in submit
+    assert '--partition="${limits[4]}"' in submit
+    assert "P07" not in submit.split("VGP_SELECTION_IDS:=", 1)[1].split("}", 1)[0]
     assert "#SBATCH --mem" not in pair and "#SBATCH --mem" not in psmc
     assert "emit-bootstrap" in psmc and "SLURM_ARRAY_TASK_ID" in psmc
     assert psmc.index('"$psmc" -b') < psmc.index('rm -- "$unit"') < psmc.index("promote_stage")
     assert "--array=0-200%20" in submit and "psmc_finalize.sh" in submit
+    for entrypoint in ("pair_stage.sh", "psmc_array.sh", "psmc_finalize.sh", "annotation_stage.sh"):
+        stage_text = (SLURM / entrypoint).read_text()
+        assert "SLURM_SUBMIT_DIR" in stage_text
+        assert 'source "$(dirname -- "$0")/common.sh"' not in stage_text
     for script in SLURM.glob("*.sh"):
         subprocess.run(["bash", "-n", str(script)], check=True)
+
+
+def test_generic_scaleout_uses_node_local_scratch_and_cross_filesystem_promotion():
+    common = (SLURM / "common.sh").read_text()
+    pair = (SLURM / "pair_stage.sh").read_text()
+    lace = (SLURM / "impg_hierarchical_lace.sh").read_text()
+    query = (SLURM / "impg_parallel_query.sh").read_text()
+    resource_plan = (ROOT / "analysis" / "vgp_real_pilot_resource_plan_v1.json").read_text()
+    assert "VGP_NODE_LOCAL_BASE" in common
+    assert "scratch_bytes_high" in common
+    assert "stat -f -c %T" in common
+    assert "promote_stage_cross_filesystem" in common
+    assert "diagnostic_tails" in common
+    assert "hierarchical" in lace
+    assert "lace_threads=${VGP_IMPG_LACE_THREADS:-2}" in lace
+    assert "lace_threads >= 2" in lace
+    assert "chunk_count=$((available_cpus / lace_threads))" in lace
+    assert "chunk_count > 16" not in lace
+    assert "--compress bgzip" in lace
+    assert 'bz2.open(chunk,"rt")' in lace
+    assert 'lace-chunks/$chunk_id.vcf.bz2' in lace
+    assert 'bz2.open(sys.argv[1],"rb")' in lace
+    assert "python3 -c" in lace
+    assert "<<'PY' |" not in lace
+    assert 'chunk_compression":"bzip2 (observed BZ stream from pinned IMPG --compress bgzip)"' in lace
+    assert '"$bcftools" concat -a -d exact' in lace
+    assert '"$bcftools" sort' in lace
+    assert "h2_nonreference_projection" in lace
+    assert "regional_shards_removed_after_verified_lacing" in lace
+    assert "impg_hierarchical_lace.sh" in pair
+    assert "impg_parallel_query.sh" in pair
+    assert 'query_workers > 16' in query
+    assert 'split_is_disjoint_and_exhaustive' in query
+    assert '"$impg" query' in query
+    assert '"$query_root/temp/$query_id"' in query
+    assert 'cp "$h1" "$SLURM_TMPDIR/inputs/h1.fa"' in pair
+    assert 'cp "$h2" "$SLURM_TMPDIR/inputs/h2.fa"' in pair
+    assert "VGP_DURABLE_ROOT" not in pair
+    assert "VGP_IMPG_LOG_LEVEL:-warn" in pair
+    assert "impg.partition.stderr" in pair
+    assert 'verify_tool samtools' in pair
+    assert '"$samtools" faidx "$h1"' in pair
+    assert '"$samtools" faidx "$h2"' in pair
+    assert pair.index('"$samtools" faidx "$h2"') < pair.index('impg_parallel_query.sh')
+    assert "VGP_FASTGA_AMENDMENT" in pair and "FastGA amendment digest mismatch" in pair
+    assert "fastga_sidecar_prebuild.json" in pair
+    assert pair.index('"$fatogdb" "$fasta"') < pair.index('"$sweepga" "$h2" "$h1"')
+    annotation = (SLURM / "annotation_stage.sh").read_text()
+    assert "vgp_real_canary_annotation.py" in annotation
+    assert "--selection-id" in annotation
+    assert "vgp-real-pilot-exact-annotation-v1" in annotation
+    mapping = (SLURM / "mapping_stage.sh").read_text()
+    assert "--num-mappings 1:1" in mapping
+    assert "promote_stage_cross_filesystem" in mapping
+    assert "VGP_FASTGA_AMENDMENT" in mapping
+    assert "VGP_RESOURCE_PLAN" in mapping
+    assert 'export TMPDIR="$scratch"' in mapping
+    assert 'export TMP="$scratch"' in mapping
+    assert 'export TEMP="$scratch"' in mapping
+    assert 'cd -- "$scratch"' in mapping
+    assert "fastga_scratch_guard.py" in mapping
+    assert "fastga_scratch_contract.json" in mapping
+    assert "canonical_vgp_root" in mapping
+    submit = (SLURM / "submit.sh").read_text()
+    assert "mapping_stage.sh" in submit
+    assert 'VGP_NODE_LOCAL_BASE,VGP_RESOURCE_PLAN' in submit
+    assert '"mapping": "workers"' in resource_plan
+    assert '"P03"' in resource_plan and '"slurm_mem": "256G"' in resource_plan
+    assert '"slurm_exclude": "octopus11"' in resource_plan
+    assert '--exclude="${limits[5]}"' in submit
+    assert '"stage_excludes"' in resource_plan
+
+    independent = (SLURM / "independent_mapping.sh").read_text()
+    assert "/moosefs/erikg/vgp" in independent
+    assert "independent recomputation must use the canonical VGP root" in independent
+    assert "--num-mappings 1:1" in independent
+    assert 'export TMPDIR="$scratch"' in independent
+    assert 'export TMP="$scratch"' in independent
+    assert 'export TEMP="$scratch"' in independent
+    assert 'cd -- "$scratch"' in independent
+    assert "fastga_scratch_guard.py" in independent
+    assert '"independent_of_primary_output":True' in independent
+
+
+def test_fastga_scratch_guard_rejects_cwd_temp_and_managed_files_outside_scratch(tmp_path):
+    from analysis.fastga_scratch_guard import ScratchContractError, validate_snapshot
+
+    scratch = tmp_path / "scratch" / "vgp-map-P03-123-private"
+    scratch.mkdir(parents=True)
+    inside = scratch / "inputs" / "h1.fa"
+    inside.parent.mkdir()
+    inside.write_text(">h1\nACGT\n")
+
+    valid = validate_snapshot(
+        scratch=scratch,
+        pid=123,
+        cwd=scratch,
+        temp_env={name: str(scratch) for name in ("TMPDIR", "TMP", "TEMP")},
+        managed_open_paths=[inside, scratch / "_tmp_123_0.1aln", scratch / "pair.0.las"],
+    )
+    assert valid["contract_valid"] is True
+
+    outside = tmp_path / "submit-worktree"
+    outside.mkdir()
+    cases = (
+        {"cwd": outside},
+        {"temp_env": {"TMPDIR": str(scratch), "TMP": "/tmp", "TEMP": str(scratch)}},
+        {"managed_open_paths": [scratch / "pair.0.las", outside / "_tmp_123_0.1aln"]},
+    )
+    defaults = {
+        "scratch": scratch,
+        "pid": 123,
+        "cwd": scratch,
+        "temp_env": {name: str(scratch) for name in ("TMPDIR", "TMP", "TEMP")},
+        "managed_open_paths": [inside],
+    }
+    for override in cases:
+        values = {**defaults, **override}
+        with pytest.raises(ScratchContractError, match="outside private node-local scratch"):
+            validate_snapshot(**values)
+
+
+def test_fastga_scratch_guard_compacts_repeated_full_path_census(tmp_path):
+    from analysis.fastga_scratch_guard import _append_jsonl
+
+    audit = tmp_path / "guard.jsonl"
+    snapshot = {
+        "pid": 42,
+        "managed_open_paths_resolved": ["/scratch/private/_pair.42.0.C"],
+    }
+    _append_jsonl(audit, {"contract_valid": True, "fastga_processes": [dict(snapshot)]})
+    _append_jsonl(audit, {"contract_valid": True, "fastga_processes": [dict(snapshot)]})
+    first, second = [json.loads(line) for line in audit.read_text().splitlines()]
+    assert first["fastga_processes"][0]["managed_open_paths_resolved"] == snapshot["managed_open_paths_resolved"]
+    assert second["fastga_processes"][0]["managed_open_paths_unchanged"] is True
+    assert "managed_open_paths_resolved" not in second["fastga_processes"][0]
+
+
+def test_materialized_input_manifest_records_canonical_root(tmp_path, monkeypatch):
+    import gzip
+    from analysis import vgp_pilot_authorization as authorization
+
+    value = authorization.build_authorization()
+    source = tmp_path / "source.fa.gz"
+    with gzip.open(source, "wt") as handle:
+        handle.write(">contig\nACGTACGT\n")
+    digest = authorization.sha256_file(source)
+    pair = value["pairs"][0]
+    for side in ("h1", "h2"):
+        pair[side].update(cas_path=str(source), sha256=digest, compressed_bytes=source.stat().st_size)
+    monkeypatch.setattr(authorization, "validate_authorization", lambda _: {"authorized_pairs": 10})
+    authorization.materialize_input(value, "P01", tmp_path)
+    manifest = json.loads((tmp_path / "pilot/inputs/P01/input-manifest.json").read_text())
+    assert manifest["canonical_vgp_root"] == str(tmp_path.resolve())
 
 
 def test_p07_impg_rescue_uses_boundary_safe_hierarchical_lacing():

@@ -1,0 +1,24 @@
+{
+  "authorization_id": "vgp10-auth-20260718-v2",
+  "baseline_capture": "analysis/guix/vgp_10_pilot/realization.json",
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "companions": {
+    "ALNtoPAF": {"path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/ALNtoPAF", "sha256": "5d937d11ede79b55acb793103badeddd217ad076fe6f98bf582caa0f7bf701a4"},
+    "FAtoGDB": {"path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/FAtoGDB", "sha256": "84781abf618501780565d265220fdfb808644cd6f1dfc073d0f46f1281b521de"},
+    "FastGA": {"path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/FastGA", "sha256": "e5af1843aa2ace1a3ecc7d0f6a23e5814664043079f3518829eddbdd6f758cf1"},
+    "GIXmake": {"path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/GIXmake", "sha256": "b5499b81745914d8d9279c35a6c95af12fbf864df1862fcb6030e61f45b4a0de"},
+    "GIXrm": {"path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/GIXrm", "sha256": "3fe0f0559f58bd75e4ac6270176ab3cdacd52864c1b0ff1a7abc29299dee2a8b"},
+    "ONEview": {"path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/ONEview", "sha256": "5da2dba3f76a32bddfbcc83ec46f2d393735eadc333436dee13da445c43214a6"},
+    "PAFtoALN": {"path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/PAFtoALN", "sha256": "8e1cb19295483cddf323de32cd95df94c76b4ff151793825622f1f522e095079"},
+    "wfmash": {"path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/wfmash", "sha256": "2a62fa8dde7685d6895cfb786cc4d514b43f765ca2a5c127af649e6dbfce7e45"}
+  },
+  "evidence": {
+    "baseline_fatogdb_failure": "segmentation fault in Slurm job 1781976",
+    "canary_runtime_fatogdb": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/FAtoGDB",
+    "canary_mapping_job": "1781607",
+    "direct_real_input_diagnostics": ["1781958", "1781959", "1781960", "1781961"]
+  },
+  "policy": "Pin the companion suite actually resolved by the successful P07 SweepGA canary; preserve the baseline Guix profile and every unrelated executable.",
+  "schema_version": "vgp-real-pilot-fastga-amendment-v1",
+  "task_id": "run-vgp-real-pilot"
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independently audit and summarize the real P07 VGP biological canary.
+"""Independently audit and summarize a real VGP biological pair.
 
 This module deliberately does not import ``analysis.vgp_10_pilot``.  It
 reconstructs PAF multiplicity, ordered mask accounting, the normalized variant
@@ -17,11 +17,11 @@ import json
 import math
 import subprocess
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence
+from typing import Iterable, Mapping, Sequence, Tuple
 
 
-Interval = tuple[str, int, int]
-Variant = tuple[str, int, str, str]  # contig, one-based POS, REF, ALT
+Interval = Tuple[str, int, int]
+Variant = Tuple[str, int, str, str]  # contig, one-based POS, REF, ALT
 
 
 class CanaryAuditError(RuntimeError):
@@ -242,6 +242,29 @@ def summarize_vcf(path: Path, subset_intervals: Sequence[Interval]) -> dict[str,
     }
 
 
+def stratified_windows(
+    dictionary: Sequence[Mapping[str, object]], strata: int, window_bp: int = 5_000_000
+) -> list[Interval]:
+    """Select deterministic early/middle/late dictionary strata independently."""
+
+    if strata <= 0 or window_bp <= 0 or len(dictionary) < strata:
+        raise CanaryAuditError("requested independent subset strata are unavailable")
+    if strata == 1:
+        indices = [0]
+    else:
+        indices = [round(number * (len(dictionary) - 1) / (strata - 1)) for number in range(strata)]
+    if len(set(indices)) != strata:
+        raise CanaryAuditError("independent subset strata do not resolve uniquely")
+    windows = []
+    for index in indices:
+        row = dictionary[index]
+        length = int(row["length"])
+        if length <= 0:
+            raise CanaryAuditError("independent subset stratum has a non-positive contig")
+        windows.append((str(row["name"]), 0, min(window_bp, length)))
+    return windows
+
+
 def _bcf_rows(bcftools: Path, path: Path) -> list[Variant]:
     output = subprocess.check_output(
         [str(bcftools), "query", "-f", "%CHROM\\t%POS\\t%REF\\t%ALT\\n", str(path)],
@@ -383,13 +406,14 @@ def audit(args: argparse.Namespace) -> dict[str, object]:
         if rebuilt[key] != production_mask[key]:
             raise CanaryAuditError(f"independent mask accounting differs for {key}")
 
-    first_contig = str(h1_dictionary[0]["name"])
-    subset_end = min(5_000_000, int(h1_dictionary[0]["length"]))
-    subset_window = [(first_contig, 0, subset_end)]
+    subset_window = stratified_windows(h1_dictionary, args.subset_strata)
     subset_callable = []
+    subset_by_contig = {contig: (window_start, window_end) for contig, window_start, window_end in subset_window}
     for contig, start, end in emitted_callable:
-        if contig == first_contig and start < subset_end and end > 0:
-            subset_callable.append((contig, max(0, start), min(subset_end, end)))
+        if contig in subset_by_contig:
+            window_start, window_end = subset_by_contig[contig]
+            if start < window_end and end > window_start:
+                subset_callable.append((contig, max(window_start, start), min(window_end, end)))
     vcf_path = run_root / "consensus/normalized.vcf"
     variants = summarize_vcf(vcf_path, emitted_callable)
     subset = summarize_vcf(vcf_path, subset_callable)
@@ -467,12 +491,21 @@ def audit(args: argparse.Namespace) -> dict[str, object]:
     regional_vcf_census = read_regional_vcf_audit(
         run_root / "impg/regional_vcf_audit.json", selected_native_rows, args.canonical_root
     )
+    annotation = (
+        json.loads(args.annotation_result.read_text(encoding="utf-8"))
+        if args.annotation_result is not None
+        else {
+            "status": "not_applicable_no_eligible_exact_annotation_binding",
+            "core_result_affected": False,
+            "canonical_vgp_root": args.canonical_root,
+        }
+    )
     result = {
-        "schema_version": "vgp-real-canary-execution-v1",
-        "task_id": "run-vgp-real-canary",
+        "schema_version": args.schema_version,
+        "task_id": args.task_id,
         "authorization_id": "vgp10-auth-20260718-v2",
-        "selection_id": "P07",
-        "species": "Spinachia spinachia",
+        "selection_id": args.selection_id,
+        "species": args.species,
         "canonical_vgp_root": args.canonical_root,
         "promoted_run_root": str(run_root),
         "slurm_job_id": args.slurm_job_id,
@@ -515,7 +548,11 @@ def audit(args: argparse.Namespace) -> dict[str, object]:
             "exact_emitted_bed_match": True,
         },
         "independent_variant_subset": {
-            "window": {"contig": first_contig, "start_0based": 0, "end_0based_exclusive": subset_end},
+            "stratification": "early/middle/late H1 dictionary positions" if args.subset_strata > 1 else "leading H1 dictionary position",
+            "windows": [
+                {"contig": contig, "start_0based": start, "end_0based_exclusive": end}
+                for contig, start, end in subset_window
+            ],
             "callable_bp": interval_bp(subset_callable),
             "heterozygous_variant_records": len(subset_rows),
             "tsv": file_record(args.subset_output),
@@ -541,7 +578,7 @@ def audit(args: argparse.Namespace) -> dict[str, object]:
             "rows": telemetry_rows,
             "compute_node_sacct_limitation": "slurmdbd unreachable from compute node; captured after completion on login node",
         },
-        "annotation": json.loads(args.annotation_result.read_text(encoding="utf-8")),
+        "annotation": annotation,
         "verification": {
             "independent_reconstruction": True,
             "atomic_verified_promotion": True,
@@ -559,12 +596,20 @@ def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument("--run-root", type=Path, required=True)
     result.add_argument("--canonical-root", default="/moosefs/erikg/vgp")
+    result.add_argument("--selection-id", default="P07")
+    result.add_argument("--species", default="Spinachia spinachia")
+    result.add_argument("--task-id", default="run-vgp-real-canary")
+    result.add_argument("--schema-version", default="vgp-real-canary-execution-v1")
     result.add_argument("--slurm-job-id", required=True)
     result.add_argument("--bcftools", type=Path, required=True)
     result.add_argument("--environment-capture", type=Path, required=True)
     result.add_argument("--sacct-telemetry", type=Path, required=True)
-    result.add_argument("--annotation-result", type=Path, required=True)
+    result.add_argument(
+        "--annotation-result", type=Path,
+        help="eligible exact annotation result; omit only when the frozen pair has no eligible binding",
+    )
     result.add_argument("--subset-output", type=Path, required=True)
+    result.add_argument("--subset-strata", type=int, default=1)
     result.add_argument("--output", type=Path, required=True)
     return result
 

@@ -2,7 +2,12 @@
 #SBATCH --job-name=vgp10-psmc-finalize
 set -euo pipefail
 
-source "$(dirname -- "$0")/common.sh"
+if [[ -n ${SLURM_JOB_ID:-} ]]; then
+    VGP_STAGE_REPO_ROOT=${SLURM_SUBMIT_DIR:?submit from the repository root}
+else
+    VGP_STAGE_REPO_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
+fi
+source "$VGP_STAGE_REPO_ROOT/analysis/slurm/vgp_10_pilot/common.sh"
 VGP_SELECTION_ID=${1:?usage: psmc_finalize.sh SELECTION_ID}
 VGP_STAGE_NAME=psmc/finalize
 export VGP_SELECTION_ID VGP_STAGE_NAME

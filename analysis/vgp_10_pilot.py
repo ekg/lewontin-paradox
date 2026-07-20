@@ -58,6 +58,7 @@ IUPAC = {
     frozenset(("G", "T")): "K",
     frozenset(("A", "C")): "M",
 }
+HETEROZYGOUS_IUPAC_CODES = frozenset(IUPAC.values())
 
 
 class PilotError(ValueError):
@@ -458,6 +459,19 @@ def project_h2_non_acgt_to_h1(
     query_bad: dict[str, list[Interval]] = defaultdict(list)
     for interval in non_acgt_intervals(h2_sequences):
         query_bad[interval.contig].append(interval)
+    # The intervals emitted by non_acgt_intervals are ordered and disjoint for
+    # each contig.  Keep their endpoints beside them so each CIGAR segment can
+    # jump directly to its overlapping slice.  Whole assemblies can contain
+    # millions of ambiguity runs; rescanning all of them for every segment is
+    # quadratic in real VGP mappings while producing exactly the same mask.
+    query_bad_index = {
+        contig: (
+            intervals,
+            [interval.start for interval in intervals],
+            [interval.end for interval in intervals],
+        )
+        for contig, intervals in query_bad.items()
+    }
     projected: list[Interval] = []
     for row in records:
         if row.query not in h2_sequences or len(h2_sequences[row.query]) != row.query_length:
@@ -480,7 +494,11 @@ def project_h2_non_acgt_to_h1(
                     qstart, qend = query_cursor, query_cursor + length
                 else:
                     qstart, qend = query_cursor - length, query_cursor
-                for bad in query_bad[row.query]:
+                intervals, starts, ends = query_bad_index.get(row.query, ([], [], []))
+                first = bisect.bisect_right(ends, qstart)
+                last = bisect.bisect_left(starts, qend, lo=first)
+                for index in range(first, last):
+                    bad = intervals[index]
                     start, end = max(qstart, bad.start), min(qend, bad.end)
                     if start >= end:
                         continue
@@ -707,9 +725,19 @@ def select_native_partitions(
     if not native:
         raise PilotError("IMPG native partitions are empty")
     eligible = merge_intervals(eligible_regions)
+    eligible_by_contig: dict[str, list[Interval]] = defaultdict(list)
+    for interval in eligible:
+        eligible_by_contig[interval.contig].append(interval)
+    eligible_starts = {
+        contig: [interval.start for interval in intervals]
+        for contig, intervals in eligible_by_contig.items()
+    }
     selected: list[tuple[Interval, str]] = []
     for interval, name in native:
-        if intersect_intervals([interval], eligible):
+        intervals = eligible_by_contig.get(interval.contig, [])
+        starts = eligible_starts.get(interval.contig, [])
+        candidate = bisect.bisect_left(starts, interval.end) - 1
+        if candidate >= 0 and intervals[candidate].end > interval.start:
             selected.append((interval, name))
     if not selected:
         raise PilotError("no IMPG native partition intersects eligible query regions")
@@ -1030,7 +1058,7 @@ def consensus_to_psmcfa(consensus: Mapping[str, str], bin_size: int = 100) -> st
             window = sequence[start:start + bin_size]
             if len(window) < bin_size or "N" in window:
                 encoded.append("N")
-            elif any(base in set(IUPAC.values()) for base in window):
+            elif any(base in HETEROZYGOUS_IUPAC_CODES for base in window):
                 encoded.append("K")  # canonical fq2psmcfa heterozygous bin
             else:
                 encoded.append("T")  # canonical fq2psmcfa homozygous callable bin
@@ -1468,6 +1496,67 @@ def atomic_promote(partial: Path, final: Path, sentinel_payload: Mapping[str, ob
     (partial / ".complete.json").write_text(canonical_json(payload), encoding="utf-8")
     final.parent.mkdir(parents=True, exist_ok=True)
     os.replace(partial, final)
+
+
+def promote_stage_cross_filesystem(
+    partial: Path, final: Path, sentinel_payload: Mapping[str, object], promotion_token: str
+) -> dict[str, object]:
+    """Promote a verified node-local stage through a durable same-FS partial.
+
+    ``os.replace`` cannot move a stage from node-local scratch to MooseFS.  A
+    stage is therefore sealed in scratch first, copied to a uniquely named
+    partial beside its durable target, rehashed, and only then renamed.  The
+    scratch source remains available until the caller's cleanup trap runs.
+    """
+
+    partial, final = partial.resolve(), final.resolve()
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", promotion_token):
+        raise PilotError("unsafe cross-filesystem promotion token")
+    if final.exists():
+        marker = final / ".complete.json"
+        if not marker.is_file():
+            raise PilotError(f"final directory exists without completion sentinel: {final}")
+        return {"status": "already_complete", "target": str(final)}
+    if not partial.is_dir():
+        raise PilotError(f"partial stage directory is absent: {partial}")
+
+    payload = dict(sentinel_payload)
+    payload["files"] = {
+        str(path.relative_to(partial)): sha256_file(path)
+        for path in sorted(partial.rglob("*"))
+        if path.is_file() and path.name != ".complete.json"
+    }
+    (partial / ".complete.json").write_text(canonical_json(payload), encoding="utf-8")
+    final.parent.mkdir(parents=True, exist_ok=True)
+
+    if partial.stat().st_dev == final.parent.stat().st_dev:
+        os.replace(partial, final)
+        return {"status": "renamed_same_filesystem", "target": str(final)}
+
+    durable_partial = final.parent / f".{final.name}.{promotion_token}.partial"
+    if durable_partial.exists():
+        stale = durable_partial.with_name(
+            f"{durable_partial.name}.stale.{os.getpid()}"
+        )
+        os.replace(durable_partial, stale)
+    shutil.copytree(partial, durable_partial, copy_function=shutil.copy2)
+    copied = json.loads((durable_partial / ".complete.json").read_text(encoding="utf-8"))
+    observed = {
+        str(path.relative_to(durable_partial)): sha256_file(path)
+        for path in sorted(durable_partial.rglob("*"))
+        if path.is_file() and path.name != ".complete.json"
+    }
+    if copied.get("files") != observed or observed != payload["files"]:
+        raise PilotError("durable stage copy differs from sealed node-local source")
+    os.replace(durable_partial, final)
+    return {
+        "status": "copied_then_renamed",
+        "target": str(final),
+        "verified_payload_files": len(observed),
+        "verified_payload_bytes": sum(
+            (final / relative).stat().st_size for relative in observed
+        ),
+    }
 
 
 def materialize_mask_consensus_psmc(

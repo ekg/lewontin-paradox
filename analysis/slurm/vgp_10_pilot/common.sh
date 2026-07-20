@@ -46,6 +46,58 @@ PY
     unset PYTHONHOME CONDA_PREFIX VIRTUAL_ENV LD_LIBRARY_PATH
 }
 
+prepare_node_local_scratch() {
+    local stage_key=${VGP_STAGE_NAME%%/*}
+    [[ $stage_key == psmc ]] && stage_key=psmc
+    local resource="$VGP_DATA_ROOT/pilot/inputs/$VGP_SELECTION_ID/resources.json"
+    local required_bytes
+    required_bytes=$(python3 - "$resource" "$stage_key" "${VGP_RESOURCE_PLAN:-}" \
+        "$VGP_SELECTION_ID" <<'PY'
+import json,sys
+value=json.load(open(sys.argv[1]))
+stage=value.get("stages",{}).get(sys.argv[2],{})
+if sys.argv[3]:
+    plan=json.load(open(sys.argv[3]))
+    override=plan.get("pairs",{}).get(sys.argv[4],{}).get("stages",{}).get(sys.argv[2],{})
+    stage={**stage,**override}
+required=int(stage.get("scratch_bytes_high",0))
+if required <= 0: raise SystemExit(f"missing positive scratch estimate for {sys.argv[2]}")
+print(required)
+PY
+)
+    VGP_NODE_LOCAL_BASE=${VGP_NODE_LOCAL_BASE:-/scratch}
+    [[ -d $VGP_NODE_LOCAL_BASE && -w $VGP_NODE_LOCAL_BASE ]] || \
+        fail "node-local scratch base is absent or unwritable: $VGP_NODE_LOCAL_BASE"
+    local filesystem_type available_bytes
+    filesystem_type=$(stat -f -c %T -- "$VGP_NODE_LOCAL_BASE")
+    case "$filesystem_type" in
+        nfs|nfs4|fuse*|lustre|gpfs|ceph) fail "scratch is not node-local: $filesystem_type" ;;
+    esac
+    available_bytes=$(df -PB1 -- "$VGP_NODE_LOCAL_BASE" | awk 'NR==2 {print $4}')
+    [[ $available_bytes =~ ^[0-9]+$ ]] || fail "could not measure node-local scratch capacity"
+    (( available_bytes >= required_bytes )) || \
+        fail "insufficient node-local scratch: $available_bytes < measured $required_bytes bytes"
+    if [[ -z ${SLURM_TMPDIR:-} ]]; then
+        SLURM_TMPDIR=$(mktemp -d -- \
+            "${VGP_NODE_LOCAL_BASE%/}/vgp-${VGP_RUN_ID}-${VGP_SELECTION_ID}-${SLURM_JOB_ID:-local}-XXXXXX")
+        VGP_SLURM_TMPDIR_CREATED=1
+    else
+        VGP_SLURM_TMPDIR_CREATED=0
+    fi
+    [[ -d $SLURM_TMPDIR && $SLURM_TMPDIR = "${VGP_NODE_LOCAL_BASE%/}"/* ]] || \
+        fail "SLURM_TMPDIR is outside the verified node-local base: $SLURM_TMPDIR"
+    export SLURM_TMPDIR TMPDIR="$SLURM_TMPDIR" VGP_NODE_LOCAL_BASE VGP_SLURM_TMPDIR_CREATED
+    export VGP_SCRATCH_REQUIRED_BYTES=$required_bytes VGP_SCRATCH_AVAILABLE_BYTES=$available_bytes
+}
+
+cleanup_stage_scratch() {
+    if [[ ${VGP_SLURM_TMPDIR_CREATED:-0} == 1 && -n ${SLURM_TMPDIR:-} ]]; then
+        [[ $SLURM_TMPDIR == "${VGP_NODE_LOCAL_BASE%/}/vgp-${VGP_RUN_ID}-${VGP_SELECTION_ID}-${SLURM_JOB_ID:-local}-"* ]] || \
+            fail "refusing unsafe scratch cleanup target: $SLURM_TMPDIR"
+        rm -rf -- "$SLURM_TMPDIR"
+    fi
+}
+
 tool_path() {
     python3 - "$VGP_ENVIRONMENT_CAPTURE" "$1" <<'PY'
 import json,sys
@@ -83,7 +135,8 @@ begin_stage() {
         exit 0
     fi
     [[ ! -e $VGP_STAGE_FINAL ]] || fail "final stage exists without sentinel: $VGP_STAGE_FINAL"
-    local scratch_root=${SLURM_TMPDIR:-${VGP_SCRATCH_ROOT:?VGP_SCRATCH_ROOT is required outside Slurm}}
+    prepare_node_local_scratch
+    local scratch_root=$SLURM_TMPDIR
     VGP_STAGE_PARTIAL="$scratch_root/vgp-$VGP_RUN_ID-$VGP_SELECTION_ID-$VGP_STAGE_TAG-${SLURM_JOB_ID:-local}.partial"
     [[ $VGP_STAGE_PARTIAL = "$scratch_root"/* ]] || fail "unsafe scratch stage path"
     if [[ -e $VGP_STAGE_PARTIAL ]]; then
@@ -93,7 +146,7 @@ begin_stage() {
     export VGP_PAIR_RUN VGP_STAGE_FINAL VGP_STAGE_PARTIAL
     VGP_STAGE_STARTED_EPOCH=$(date +%s)
     export VGP_STAGE_STARTED_EPOCH
-    trap 'record_telemetry failure' ERR INT TERM
+    trap 'record_telemetry failure || true; cleanup_stage_scratch || true' ERR INT TERM
 }
 
 record_telemetry() {
@@ -105,6 +158,14 @@ from pathlib import Path
 usage=resource.getrusage(resource.RUSAGE_CHILDREN)
 scratch=Path(os.environ["VGP_STAGE_PARTIAL"])
 files=[path for path in scratch.rglob("*") if path.is_file()] if scratch.exists() else []
+diagnostics={}
+for diagnostic in files:
+    if diagnostic.suffix in {".stderr",".stdout",".log"}:
+        try:
+            diagnostics[str(diagnostic.relative_to(scratch))]=diagnostic.read_text(
+                encoding="utf-8",errors="replace")[-32768:]
+        except OSError:
+            pass
 value={
  "selection_id":os.environ["VGP_SELECTION_ID"], "stage":os.environ["VGP_STAGE_NAME"],
  "job_id":os.environ.get("SLURM_JOB_ID","local"), "array_task_id":os.environ.get("SLURM_ARRAY_TASK_ID"),
@@ -115,6 +176,11 @@ value={
  "scratch_high_water_bytes":sum(path.stat().st_size for path in files),
  "scratch_file_count":len(files),
  "scratch_path":os.environ["VGP_STAGE_PARTIAL"], "retry":int(os.environ.get("VGP_RETRY","0")),
+ "canonical_vgp_root":os.environ["VGP_DATA_ROOT"],
+ "scratch_required_bytes":int(os.environ["VGP_SCRATCH_REQUIRED_BYTES"]),
+ "scratch_available_bytes_at_start":int(os.environ["VGP_SCRATCH_AVAILABLE_BYTES"]),
+ "node_local_scratch_base":os.environ["VGP_NODE_LOCAL_BASE"],
+ "diagnostic_tails":diagnostics,
 }
 path=sys.argv[1]
 partial=path+".partial"
@@ -133,12 +199,15 @@ PY
 promote_stage() {
     trap - ERR INT TERM
     record_telemetry success
-    python3 - "$VGP_STAGE_PARTIAL" "$VGP_STAGE_FINAL" "$VGP_SELECTION_ID" "$VGP_STAGE_NAME" <<'PY'
+    python3 - "$VGP_STAGE_PARTIAL" "$VGP_STAGE_FINAL" "$VGP_SELECTION_ID" "$VGP_STAGE_NAME" \
+        "${SLURM_JOB_ID:-local}" "$VGP_DATA_ROOT" <<'PY'
 import sys
 from pathlib import Path
-from analysis.vgp_10_pilot import atomic_promote
-atomic_promote(Path(sys.argv[1]),Path(sys.argv[2]),{
+from analysis.vgp_10_pilot import promote_stage_cross_filesystem
+promote_stage_cross_filesystem(Path(sys.argv[1]),Path(sys.argv[2]),{
  "selection_id":sys.argv[3],"stage":sys.argv[4],"atomic_promotion":True,
-})
+ "canonical_vgp_root":sys.argv[6],"slurm_job_id":sys.argv[5],
+},sys.argv[5])
 PY
+    cleanup_stage_scratch
 }

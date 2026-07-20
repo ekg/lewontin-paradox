@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run exact-native P07 annotation partitions on promoted canary outputs."""
+"""Run exact-native annotation partitions on promoted VGP pilot outputs."""
 
 from __future__ import annotations
 
@@ -135,7 +135,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     annotation = parse_gff(args.annotation_gff)
     observed_dictionary = fasta_dictionary(h1)
     if annotation.sequence_regions != observed_dictionary:
-        raise AnnotationCanaryError("exact-native GFF sequence dictionary does not equal P07 H1")
+        raise AnnotationCanaryError("exact-native GFF sequence dictionary does not equal pilot H1")
     fourfold, frame_discordant = collect_fourfold_sites(h1, annotation, genetic_code=1)
     cds_rows = merge_intervals(
         (segment.contig, segment.start, segment.end)
@@ -148,14 +148,14 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     if not any(row["partition"] == "fourfold" and int(row["callable_bp"]) > 0 for row in partitions):
         raise AnnotationCanaryError("exact annotation produced no callable fourfold partition")
     value = {
-        "schema_version": "vgp-real-canary-exact-annotation-v1",
-        "task_id": "run-vgp-real-canary",
-        "authorization_id": "vgp10-auth-20260718-v2",
-        "selection_id": "P07",
+        "schema_version": args.schema_version,
+        "task_id": args.task_id,
+        "authorization_id": args.authorization_id,
+        "selection_id": args.selection_id,
         "canonical_vgp_root": args.canonical_root,
         "annotation_status": "exact_native",
-        "assembly_accession_version": "GCA_048126635.1",
-        "annotation_accession_version": "GCA_048126635.1-GB_2025_08_04",
+        "assembly_accession_version": args.assembly_accession_version,
+        "annotation_accession_version": args.annotation_accession_version,
         "annotation_gff": {
             "canonical_source_path": args.annotation_source_path,
             "sha256": sha256_file(args.annotation_gff),
@@ -191,6 +191,12 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--callable-bed", type=Path, required=True)
     result.add_argument("--normalized-vcf", type=Path, required=True)
     result.add_argument("--canonical-root", default="/moosefs/erikg/vgp")
+    result.add_argument("--selection-id", default="P07")
+    result.add_argument("--assembly-accession-version", default="GCA_048126635.1")
+    result.add_argument("--annotation-accession-version", default="GCA_048126635.1-GB_2025_08_04")
+    result.add_argument("--authorization-id", default="vgp10-auth-20260718-v2")
+    result.add_argument("--task-id", default="run-vgp-real-canary")
+    result.add_argument("--schema-version", default="vgp-real-canary-exact-annotation-v1")
     result.add_argument("--output", type=Path, required=True)
     return result
 

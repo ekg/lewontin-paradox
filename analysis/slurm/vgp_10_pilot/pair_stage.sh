@@ -4,7 +4,12 @@
 # from the measured estimator record.  There is intentionally no global cap.
 set -euo pipefail
 
-source "$(dirname -- "$0")/common.sh"
+if [[ -n ${SLURM_JOB_ID:-} ]]; then
+    VGP_STAGE_REPO_ROOT=${SLURM_SUBMIT_DIR:?submit from the repository root}
+else
+    VGP_STAGE_REPO_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
+fi
+source "$VGP_STAGE_REPO_ROOT/analysis/slurm/vgp_10_pilot/common.sh"
 VGP_STAGE_NAME=${1:?usage: pair_stage.sh STAGE SELECTION_ID}
 VGP_SELECTION_ID=${2:?usage: pair_stage.sh STAGE SELECTION_ID}
 export VGP_STAGE_NAME VGP_SELECTION_ID
@@ -16,6 +21,17 @@ input_dir="$VGP_DATA_ROOT/pilot/inputs/$VGP_SELECTION_ID"
 h1="$input_dir/h1.fa"
 h2="$input_dir/h2.fa"
 threads=${SLURM_CPUS_PER_TASK:-1}
+
+# FastGA/IMPG create indexes and companion files relative to their sequence
+# inputs.  Canonical inputs are immutable, so every biological stage receives
+# private node-local working copies sized by resources.json.
+if [[ $VGP_STAGE_NAME != preflight ]]; then
+    mkdir -p "$SLURM_TMPDIR/inputs"
+    cp "$h1" "$SLURM_TMPDIR/inputs/h1.fa"
+    cp "$h2" "$SLURM_TMPDIR/inputs/h2.fa"
+    h1="$SLURM_TMPDIR/inputs/h1.fa"
+    h2="$SLURM_TMPDIR/inputs/h2.fa"
+fi
 
 case "$VGP_STAGE_NAME" in
 preflight)
@@ -33,6 +49,39 @@ mapping)
     [[ -f $VGP_PAIR_RUN/preflight/.complete.json ]] || fail "preflight sentinel absent"
     verify_tool sweepga
     sweepga=$(tool_path sweepga)
+    : "${VGP_FASTGA_AMENDMENT:=$VGP_REPO_ROOT/analysis/vgp_real_pilot_fastga_amendment_v1.json}"
+    readarray -t fastga_companions < <(python3 - "$VGP_FASTGA_AMENDMENT" <<'PY'
+import hashlib,json,sys
+from pathlib import Path
+value=json.load(open(sys.argv[1])); companions=value.get("companions",{})
+required=("ALNtoPAF","FAtoGDB","FastGA","GIXmake","GIXrm","ONEview","PAFtoALN","wfmash")
+for name in required:
+    row=companions.get(name,{}); path=Path(row.get("path",""))
+    if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest()!=row.get("sha256"):
+        raise SystemExit(f"FastGA amendment digest mismatch: {name}")
+print(companions["FAtoGDB"]["path"]); print(companions["GIXmake"]["path"])
+PY
+)
+    fatogdb=${fastga_companions[0]}
+    gixmake=${fastga_companions[1]}
+    for fasta in "$h2" "$h1"; do
+        "$fatogdb" "$fasta"
+        "$gixmake" -T"$threads" -P"$SLURM_TMPDIR" "${fasta%.fa}"
+    done
+    python3 - "$VGP_STAGE_PARTIAL/fastga_sidecar_prebuild.json" "$fatogdb" "$gixmake" \
+        "$VGP_SELECTION_ID" "$VGP_DATA_ROOT" "$VGP_FASTGA_AMENDMENT" <<'PY'
+import hashlib,json,sys
+from pathlib import Path
+def digest(path): return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+Path(sys.argv[1]).write_text(json.dumps({
+ "schema_version":"vgp-fastga-sidecar-prebuild-v1","selection_id":sys.argv[4],
+ "canonical_vgp_root":sys.argv[5],"reason":"avoid nested child signal observed in scale-out",
+ "sweepga_remains_mapping_owner":True,"num_mappings":"1:1",
+ "FAtoGDB":{"path":sys.argv[2],"sha256":digest(sys.argv[2])},
+ "GIXmake":{"path":sys.argv[3],"sha256":digest(sys.argv[3])},
+ "runtime_amendment":{"path":sys.argv[6],"sha256":digest(sys.argv[6])},
+},sort_keys=True)+"\n")
+PY
     "$sweepga" "$h2" "$h1" --output-file "$VGP_STAGE_PARTIAL/h2_to_h1.native.1to1.paf" \
         --num-mappings 1:1 --scaffold-jump 0 --overlap 0 \
         --scoring log-length-ani --threads "$threads" \
@@ -65,31 +114,41 @@ PY
     ;;
 impg)
     [[ -f $VGP_PAIR_RUN/mapping/.complete.json ]] || fail "mapping sentinel absent"
+    # IMPG emits one INFO row per 2-kb partition (hundreds of thousands to
+    # millions per genome).  Preserve warnings/errors and structured audits
+    # without turning scheduler stderr into a second large biological object.
+    export RUST_LOG=${VGP_IMPG_LOG_LEVEL:-warn}
     verify_tool impg
+    verify_tool bcftools
+    verify_tool samtools
     impg=$(tool_path impg)
+    bcftools=$(tool_path bcftools)
+    samtools=$(tool_path samtools)
     paf="$VGP_PAIR_RUN/mapping/h2_to_h1.1to1.paf"
     "$impg" index -a "$paf" -i "$VGP_STAGE_PARTIAL/h1_h2.impg" -t "$threads"
     mkdir "$VGP_STAGE_PARTIAL/partitions"
     "$impg" partition -a "$paf" -i "$VGP_STAGE_PARTIAL/h1_h2.impg" \
         -w 2000 -d 0 --min-missing-size 1 --min-boundary-distance 0 \
-        -o bed --output-folder "$VGP_STAGE_PARTIAL/partitions" -t "$threads"
+        -o bed --output-folder "$VGP_STAGE_PARTIAL/partitions" -t "$threads" \
+        2> >(awk '!/ INFO  /' >"$VGP_STAGE_PARTIAL/impg.partition.stderr")
     python3 - "$VGP_STAGE_PARTIAL/partitions/partitions.bed" \
         "$input_dir/h1_universe.bed" "$VGP_STAGE_PARTIAL/focus.native.bed" <<'PY'
 import sys
 from analysis.vgp_10_pilot import read_bed,select_native_partitions
 select_native_partitions(sys.argv[1],read_bed(sys.argv[2]),sys.argv[3])
 PY
-    mkdir "$VGP_STAGE_PARTIAL/calls"
-    "$impg" query -a "$paf" -i "$VGP_STAGE_PARTIAL/h1_h2.impg" \
-        -b "$VGP_STAGE_PARTIAL/focus.native.bed" -d 0 --min-transitive-len 1 \
-        --temp-dir "$SLURM_TMPDIR" -o vcf:poa \
-        --sequence-files "$h1" "$h2" -O "$VGP_STAGE_PARTIAL/calls" -t "$threads"
+    # Every IMPG query process otherwise races to create the same .fai files.
+    # Build the private staged indexes once, before starting concurrent readers.
+    "$samtools" faidx "$h1"
+    "$samtools" faidx "$h2"
+    [[ -s $h1.fai && -s $h2.fai ]] || fail "staged FASTA indexes are absent"
+    source "$VGP_REPO_ROOT/analysis/slurm/vgp_10_pilot/impg_parallel_query.sh"
     find "$VGP_STAGE_PARTIAL/calls" -type f -name '*.vcf' -print | LC_ALL=C sort \
         >"$VGP_STAGE_PARTIAL/vcf.list"
     [[ -s $VGP_STAGE_PARTIAL/vcf.list ]] || fail "IMPG query emitted no regional VCF"
     python3 - "$VGP_STAGE_PARTIAL/focus.native.bed" "$VGP_STAGE_PARTIAL/vcf.list" \
         "$VGP_STAGE_PARTIAL/regional_vcf_audit.json" "$VGP_SELECTION_ID" \
-        "$VGP_DURABLE_ROOT" <<'PY'
+        "$VGP_DATA_ROOT" <<'PY'
 import json,sys
 from pathlib import Path
 focus,listing,output,selection,canonical_root=(
@@ -122,12 +181,10 @@ value={
 }
 output.write_text(json.dumps(value,sort_keys=True)+"\n")
 PY
-    "$impg" lace -l "$VGP_STAGE_PARTIAL/vcf.list" --format vcf \
-        -o "$VGP_STAGE_PARTIAL/laced.vcf" --reference "$h1" \
-        --temp-dir "$SLURM_TMPDIR" --compress none -t "$threads"
-    [[ -s $VGP_STAGE_PARTIAL/laced.vcf ]] || fail "IMPG lace emitted no VCF"
-    rm -rf -- "$VGP_STAGE_PARTIAL/calls"
-    rm -- "$VGP_STAGE_PARTIAL/vcf.list"
+    # The P07 canary established that a single monolithic lace can deadlock on
+    # thousands of regional VCFs.  Preserve every query shard through a
+    # parallel hierarchical lace and exact boundary reconciliation instead.
+    source "$VGP_REPO_ROOT/analysis/slurm/vgp_10_pilot/impg_hierarchical_lace.sh"
     ;;
 variants)
     [[ -f $VGP_PAIR_RUN/impg/.complete.json ]] || fail "IMPG sentinel absent"

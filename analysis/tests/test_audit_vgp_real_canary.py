@@ -6,8 +6,10 @@ from analysis.audit_vgp_real_canary import (
     maximum_axis_depth,
     parse_bed,
     read_regional_vcf_audit,
+    stratified_windows,
     summarize_scaled_scenarios,
     summarize_vcf,
+    parser,
 )
 from analysis.vgp_real_canary_annotation import annotation_partition_counts
 from analysis.promote_vgp_real_canary import verify_stage_sentinels
@@ -69,6 +71,16 @@ def test_paf_depth_and_vcf_subset_are_reconstructed_without_pipeline_helpers(tmp
     assert summary["callable_snp_records"] == 1
     assert summary["callable_indel_records"] == 0
     assert summary["subset_records"] == [("chr1", 4, "A", "G")]
+
+
+def test_independent_subset_windows_cover_early_middle_and_late_strata():
+    dictionary = [{"name": f"ctg{i}", "length": 6_000_000 + i} for i in range(7)]
+    assert stratified_windows(dictionary, 3) == [
+        ("ctg0", 0, 5_000_000),
+        ("ctg3", 0, 5_000_000),
+        ("ctg6", 0, 5_000_000),
+    ]
+    assert stratified_windows(dictionary, 1) == [("ctg0", 0, 5_000_000)]
 
 
 def test_exact_annotation_partitions_keep_callable_denominators_and_ws_sw_direction():
@@ -140,3 +152,31 @@ def test_scaled_scenario_audit_requires_labels_sources_and_frozen_bin_size():
     import pytest
     with pytest.raises(RuntimeError, match="100-bp"):
         summarize_scaled_scenarios(rows)
+
+
+def test_pair_audit_identity_defaults_remain_canary_compatible_and_are_overridable():
+    defaults = parser().parse_args([
+        "--run-root", "/tmp/run", "--slurm-job-id", "1", "--bcftools", "/bin/true",
+        "--environment-capture", "/tmp/capture", "--sacct-telemetry", "/tmp/sacct",
+        "--annotation-result", "/tmp/annotation", "--subset-output", "/tmp/subset",
+        "--output", "/tmp/output",
+    ])
+    assert defaults.selection_id == "P07"
+    assert defaults.task_id == "run-vgp-real-canary"
+    scaled = parser().parse_args([
+        "--run-root", "/tmp/run", "--slurm-job-id", "2", "--bcftools", "/bin/true",
+        "--environment-capture", "/tmp/capture", "--sacct-telemetry", "/tmp/sacct",
+        "--annotation-result", "/tmp/annotation", "--subset-output", "/tmp/subset",
+        "--output", "/tmp/output", "--selection-id", "P08", "--species", "Passer domesticus",
+        "--task-id", "run-vgp-real-pilot", "--schema-version", "vgp-real-pilot-pair-v1",
+    ])
+    assert (scaled.selection_id, scaled.species, scaled.task_id) == (
+        "P08", "Passer domesticus", "run-vgp-real-pilot")
+
+    unannotated = parser().parse_args([
+        "--run-root", "/tmp/run", "--slurm-job-id", "3", "--bcftools", "/bin/true",
+        "--environment-capture", "/tmp/capture", "--sacct-telemetry", "/tmp/sacct",
+        "--subset-output", "/tmp/subset", "--output", "/tmp/output",
+        "--selection-id", "P04", "--species", "Falco naumanni",
+    ])
+    assert unannotated.annotation_result is None

@@ -433,6 +433,7 @@ def preflight(value: Mapping[str, Any], storage_root: Path, run_scheduler_checks
 def materialize_input(value: Mapping[str, Any], selection_id: str, data_root: Path) -> dict[str, Any]:
     """Stage one authorized pair into node-local scratch for the worker."""
     validate_authorization(value)
+    data_root = data_root.resolve()
     matches = [row for row in value["pairs"] if row["selection_id"] == selection_id]
     if len(matches) != 1:
         raise AuthorizationError(f"authorized selection does not resolve once: {selection_id}")
@@ -462,6 +463,7 @@ def materialize_input(value: Mapping[str, Any], selection_id: str, data_root: Pa
     write_bed(input_dir / "eligible_query_regions.bed", h1_universe + query_universe)
     (input_dir / "exclusions").mkdir(exist_ok=True)
     manifest = {
+        "canonical_vgp_root": str(data_root),
         "selection_id": selection_id,
         "biosample": pair["biosample"],
         "individual_or_isolate": pair["individual_or_isolate"],
