@@ -1,0 +1,114 @@
+{
+  "authorization": "CONDITIONAL_GO_BOUNDED_CORE_ONLY",
+  "authorization_id": "vgp10-auth-20260718-v2",
+  "canonical_manifest_root": "/moosefs/erikg/vgp/derived/scale-vgp-real-v1/manifests",
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "catalog": {
+    "commit": "dc1b2af5a7741b97d66fb10cb2bce97f41765cdf",
+    "links": 569,
+    "rows": 716,
+    "sha256": "9c58420484a8b76a2d6175b7c26bf709e68bdc726a67fc7541b8c2b5a2fc13a4"
+  },
+  "confidence_covariates_not_core_gates": [
+    "annotation",
+    "external_Ne",
+    "final_QV",
+    "BUSCO",
+    "raw_reads",
+    "repeat_reports",
+    "kmer_audits"
+  ],
+  "counts": {
+    "annotation_partition_rows": 6,
+    "audited_eligible_pairs": 10,
+    "catalog_links": 569,
+    "catalog_rows": 716,
+    "execution_error_pairs": 3,
+    "fastga_scratch_contracts_passed": 2,
+    "fastga_scratch_revalidation_jobs": 4,
+    "hard_invalid_pairs": 4,
+    "not_eligible_or_self_links": 559,
+    "pending_pairs": 0,
+    "psmc_trajectory_rows": 128,
+    "running_pairs": 1,
+    "scale_verification_jobs": 6,
+    "scaleout_jobs": 10,
+    "scenario_rows": 1152,
+    "submitted_biological_jobs": 450,
+    "verified_pairs": 2
+  },
+  "eligible_roster": {
+    "catalog_pair_mapping": {
+      "P01": "R0102-HQ01",
+      "P02": "R0067-HQ01",
+      "P03": "R0264-HQ01",
+      "P04": "R0255-HQ01",
+      "P05": "R0379-HQ01",
+      "P06": "R0435-HQ01",
+      "P07": "R0671-HQ01",
+      "P08": "R0596-HQ01",
+      "P09": "R0677-HQ01",
+      "P10": "R0679-HQ01"
+    },
+    "pair_ids": [
+      "P01",
+      "P02",
+      "P03",
+      "P04",
+      "P05",
+      "P06",
+      "P07",
+      "P08",
+      "P09",
+      "P10"
+    ],
+    "pairs": 10
+  },
+  "generated_at_utc": "2026-07-20T20:55:50Z",
+  "schema_version": "vgp-real-scaleout-summary-v1",
+  "telemetry_calibrated_per_pair_resource_plan": {
+    "canonical_vgp_root": "/moosefs/erikg/vgp",
+    "measured_canary_job_id": "1781798",
+    "pair_count": 10,
+    "policy": "Per-genome allocations scaled from frozen assembly bp and compressed bytes with substantial discrete headroom; no global ceiling. Resource failures are retried above the failed allocation.",
+    "schema_version": "vgp-real-pilot-resource-plan-v1",
+    "source_path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-371/analysis/vgp_real_pilot_resource_plan_v1.json",
+    "source_sha256": "2752de3ba3178197714008e0c3893a1b2ccf857b0bc66f4ef99ec72e4de86052"
+  },
+  "uncertainty_contract": {
+    "absolute_scaling": "nine generic mutation-rate x generation-time scenarios; none preferred",
+    "pair_dependence": "pi and PSMC share the same H1/H2 pair and are not independent",
+    "population_inference_authorized": false,
+    "psmc": "primary-PSMCFA block bootstrap with masked and callable N/K/T population preserved"
+  },
+  "verified_pair_estimates": [
+    {
+      "bootstrap_attempts": 200,
+      "bootstrap_theta_interval": [
+        0.435533,
+        0.618109
+      ],
+      "callable_bp": 770780965,
+      "callable_pi": 0.004604184795871289,
+      "finite_bootstraps": 200,
+      "heterozygous_snps": 3548818,
+      "primary_theta_0": 0.52445,
+      "same_pair_pi_psmc_non_independent": true,
+      "selection_id": "P04"
+    },
+    {
+      "bootstrap_attempts": 200,
+      "bootstrap_theta_interval": [
+        0.028314,
+        0.038858
+      ],
+      "callable_bp": 267379237,
+      "callable_pi": 0.0021472198306856562,
+      "finite_bootstraps": 200,
+      "heterozygous_snps": 574122,
+      "primary_theta_0": 0.032921,
+      "same_pair_pi_psmc_non_independent": true,
+      "selection_id": "P07"
+    }
+  ]
+}
