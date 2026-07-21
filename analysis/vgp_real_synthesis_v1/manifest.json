@@ -1,0 +1,138 @@
+{
+  "analysis_contract": {
+    "annotation_absence_core_veto": false,
+    "gene_conversion_branches_integrated": false,
+    "missing_estimates_encoded_as_zero": false,
+    "population_inference_authorized": false,
+    "same_pair_pi_psmc_independent": false,
+    "species_calibrated_absolute_psmc": false
+  },
+  "biological_evidence": {
+    "assembly_derived_diversity": {
+      "completed_pair_count": 2,
+      "invalidated_by_raw_reads_pair_count": 1,
+      "max_to_min_ratio": 2.1442540396066794,
+      "maximum_pi": 0.004604184795871289,
+      "minimum_pi": 0.0021472198306856562,
+      "retained_raw_pending_pair_count": 1,
+      "selection_ids": [
+        "P04",
+        "P07"
+      ],
+      "validated_quantitative_pair_count": 0
+    },
+    "exact_native_annotation_pairs": 1,
+    "exact_native_annotation_partitions": 6,
+    "psmc_completed_pairs": 2
+  },
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "claim_classifications": {
+    "bounded": 3,
+    "suggestive": 3,
+    "supported": 6,
+    "unidentifiable": 4
+  },
+  "closed_world": {
+    "annotation_partition_rows": 6,
+    "audited_pairs": 10,
+    "catalog_links": 569,
+    "catalog_rows": 716,
+    "execution_error_pairs": 3,
+    "generic_scenario_rows": 1152,
+    "hard_invalid_primary_pairs": 4,
+    "psmc_trajectory_rows": 128,
+    "resumable_running_pairs_at_freeze": 1,
+    "verified_core_results": 2
+  },
+  "digest_accounting": {
+    "algorithms": {
+      "md5": 8,
+      "sha256": 155
+    },
+    "repository_inputs_rehashed": 26,
+    "unique_upstream_embedded_bindings": 137,
+    "upstream_embedded_occurrences": 2701
+  },
+  "environment": {
+    "core_guix_closure_sha256": "8fcdb32021f1cd8eac839509cff47ab6bdd63b656b30e243fdf78d3c4ba24f9d",
+    "core_guix_profile": "/gnu/store/3c2mxm30rbzvnw7qsi235mrkk3m38fym-profile",
+    "guix_channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "read_validation_guix_closure_sha256": "ac0cb3601e56ef62b9ef99419de3659b2a2ba59b2aead29bc5f1928b50c83da2",
+    "read_validation_guix_profile": "/gnu/store/n3vizxfw5ilggrinaj2mmbmng5ja4d6d-profile"
+  },
+  "generated_at_utc": "2026-07-21T18:10:15Z",
+  "input_digests": {
+    "analysis/guix/vgp_10_pilot/environment-lock.json": "402e06cf4725dc28dede76e475a912eb0dc3072d4309cd42e64d937e72bb621a",
+    "analysis/guix/vgp_10_pilot/realization.json": "c37690b52536a5573c9a172375464247f826e4f904443d2181c00c725f897a12",
+    "analysis/synthesize_vgp_real.py": "70fcf31bd796e0d975d2be5d093fdade7d2cd234fb24a11a45de1d1c751128d2",
+    "analysis/tests/test_synthesize_vgp_real.py": "fc400d754cb84d20fca49d8f56ec4c57b2b24caa54e9e2da799f80c2f40f77c5",
+    "analysis/vgp_10_pilot_workflow.json": "63795ca6aa79bd44cf3b023e483851a41034e716f0d2a0b5c5bf94287bd35f1a",
+    "analysis/vgp_comprehensive_table_gene_conversion.tsv": "1ee2dc610a7c1c1d4ca864aab9436ab4f7d3a2123d5b29d7aa78844ccd899bf3",
+    "analysis/vgp_data_root_config.json": "9e6767d653b0c3dc0b38dd6b8fa05fb0586d5ff626edbb02168df275e2fee549",
+    "analysis/vgp_read_validation_environment_v1.json": "79def0a03e16a402eaf42cbf09b32c5f2079579d12a925e5a632656f6de9bce3",
+    "analysis/vgp_read_validation_evidence_manifest_v1.json": "5443e4eb9c4f74be6f504dbb90ec7ecd3a7db374ba667a12bc2ce5436cf3cd0c",
+    "analysis/vgp_read_validation_mask_sensitivity_v1.tsv": "976c1e4bf3f1af8cabe5e0940aeffab673af25688056422c41f36e16ba56ef76",
+    "analysis/vgp_read_validation_per_pair_v1.tsv": "67528b2ef3de0005c9f77bfa1009f0e447f7ed3a77163ce09ce4d16bd73e2af2",
+    "analysis/vgp_read_validation_report_v1.md": "ea71cfa02fd06efcbcb00b94f5aaa7c30ed386a43ab60dfa5b5223cee6b4cfd6",
+    "analysis/vgp_read_validation_results_v1.json": "cb5a4b4ade7c408d707b4efa6930e1f9ad8c764c5831c6832984288b1ac46c54",
+    "analysis/vgp_read_validation_sacct_v1.tsv": "09b58f7464568da8e8e27a1c2e8fc8f4b11165a2e170829d28720a80028dca8f",
+    "analysis/vgp_real_scaleout_sacct_v1.tsv": "d4dd381d2837be105b04ef6ab8db0444c0f4fe2e7e0c1127325a79aa8a33f7a4",
+    "analysis/vgp_real_scaleout_v1/catalog_accounting.tsv": "c55288a3f5931fd86c1d745e7620818d407eeda723033d6d7e1e93a727e1be8c",
+    "analysis/vgp_real_scaleout_v1/exact_native_annotation_partitions.tsv": "103fe2ff8ad7f5518c2fd787560848fb3df9b1c197bb3bcc4a9330d8fcd9f85f",
+    "analysis/vgp_real_scaleout_v1/fastga_scratch_contracts.tsv": "d22232d6426eccdc2b0c1f96f9559eee8898968a32dc6bf2e64c1cac448a7a62",
+    "analysis/vgp_real_scaleout_v1/pair_accounting.tsv": "088eb89b81201dcb0677be0773f737305d8660056483cca7ddee03ceb26c9fca",
+    "analysis/vgp_real_scaleout_v1/per_pair_resource_plan.json": "8aded8e907bf983e47f55d13e4181b975943645a26141c19e40d1b821bbdbf3d",
+    "analysis/vgp_real_scaleout_v1/psmc_unscaled_trajectories.tsv": "b8124d719c665d719bef4ed0dec79421b1779426f628db21174899b616ecfc04",
+    "analysis/vgp_real_scaleout_v1/results.md": "94438496b59d4b297c4de246ec4eb39261fa97cea1af165cf43ae3be2c1aba48",
+    "analysis/vgp_real_scaleout_v1/scaleout_telemetry.tsv": "f06dbda7a4bec3c6e7b3d3cdd4be5f84cb6f965f51763c487156a40e15321093",
+    "analysis/vgp_real_scaleout_v1/scenario_uncertainty.tsv": "dd17c0cd8a4f92131a8f22edf50ac3396809a346662c14ccba8e9a7273ccd561",
+    "analysis/vgp_real_scaleout_v1/summary.json": "db57c44ce7cf1e2e7b414d8c634b181688243e2348b2c216af3eb50aa5f0937a",
+    "analysis/vgp_validation_reads_manifest_v1.json": "feab18591a411ce9873f4b69e9bc9d5005ea88352b9d6f6abd71c172db6d05ff"
+  },
+  "jobs": {
+    "combined_distinct_scheduler_records": 658,
+    "combined_failure_cancelled_or_nonterminal_records": 416,
+    "scale_vgp_real": {
+      "allocations": 650,
+      "states": {
+        "CANCELLED by 1001": 346,
+        "COMPLETED": 240,
+        "FAILED": 42,
+        "PENDING": 21,
+        "RUNNING": 1
+      }
+    },
+    "validate_vgp_pilot_reads": {
+      "allocations": 8,
+      "states": {
+        "CANCELLED by 1001": 2,
+        "COMPLETED": 2,
+        "FAILED": 4
+      }
+    }
+  },
+  "legacy_root_role": "migration_input_only",
+  "output_digests": {
+    "analysis/vgp_real_synthesis_v1/annotation_partitions.tsv": "216b02f965d3ae8e91ebfc514d8faa8c30a55c36628e1731bf15fb319fe22196",
+    "analysis/vgp_real_synthesis_v1/claim_ledger.tsv": "d4262e4b4afd4b1e6d45a3c29838657576aa5404abbe96ce56fc778ca894979e",
+    "analysis/vgp_real_synthesis_v1/digest_ledger.tsv": "459d1d3832c4c59ecf9bf129a8e166bc2299166127920b4af121831edc81e0eb",
+    "analysis/vgp_real_synthesis_v1/figure_diversity.svg": "a92d285be84d3ee3bb61aba51ba145e0cf45aa67730ba51016aa9e94e3e35a88",
+    "analysis/vgp_real_synthesis_v1/figure_psmc.svg": "c6b26e2e77b4d27cbf2708311f92868439e92c358334378d299f57106ddd2e40",
+    "analysis/vgp_real_synthesis_v1/gene_conversion_branches.tsv": "d768729b7a9716b31093ca28ec976cc0e98d2074709216bff06fbde13368cefe",
+    "analysis/vgp_real_synthesis_v1/job_ledger.tsv": "55eae6c87e03d28824e037193def2046b5bdfb3c4b7c9cfe50a2d99e50b0745e",
+    "analysis/vgp_real_synthesis_v1/paper_pairs.tsv": "01df6d40de1db8f6607cfc751bdf8cf7c5c33fe3006dd09697c71711c812f725",
+    "analysis/vgp_real_synthesis_v1/psmc_histories.tsv": "5c4dfc40b76a4ea5394b7cf34084f8ae782095db416c22bfe11e11143112b9cb",
+    "analysis/vgp_real_synthesis_v1/report.md": "e167d801c5db2798fee8b4834c038c5241d4bff76d585ead3e101099c91b238e"
+  },
+  "raw_reads": {
+    "planned_pending_bytes": 42344746693,
+    "planned_pending_objects": 1,
+    "quarantined_failed_transfer_count": 1,
+    "quarantined_failed_transfer_sha256": "defaed9e929d8acf9d58006a3be51c26dd7c1937079f7d47e9d818420475c965",
+    "verified_or_reused_bytes": 31058137613,
+    "verified_or_reused_objects": 4
+  },
+  "root_config": "analysis/vgp_data_root_config.json",
+  "schema_version": "vgp-real-biological-synthesis-v1",
+  "task_id": "synthesize-vgp-real"
+}
