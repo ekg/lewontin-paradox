@@ -1,20 +1,20 @@
 {
   "canonical_root": "/moosefs/erikg/vgp",
   "capacity_after": {
-    "available_bytes": 101120233046016,
+    "available_bytes": 92078887337984,
     "total_bytes": 207344084451328,
-    "used_bytes": 106223851405312
+    "used_bytes": 115265197113344
   },
   "capacity_preflight": {
-    "available_bytes": 101120211419136,
+    "available_bytes": 92078886617088,
     "basis": "live shutil.disk_usage on the canonical MooseFS path; no quota-unavailable or global-byte policy",
     "passed": true,
-    "planned_selected_transfer_bytes": 8082600971,
+    "planned_selected_transfer_bytes": 22975536642,
     "reserved_free_bytes": 5368709120,
     "total_bytes": 207344084451328,
-    "used_bytes": 106223873032192
+    "used_bytes": 115265197834240
   },
-  "completed_utc": "2026-07-18T18:42:02Z",
+  "completed_utc": "2026-07-20T20:11:54Z",
   "legacy_inventory": {
     "candidates": [],
     "canonical_root": "/moosefs/erikg/vgp",
@@ -69,7 +69,7 @@
       "verified_utc": ""
     },
     {
-      "accession_view_path": "",
+      "accession_view_path": "/moosefs/erikg/vgp/views/accession/P07/SRR25606782/SRR25606782_subreads.fastq.gz",
       "base_count": 21353509278,
       "bioproject": "PRJNA1393321",
       "biosample": "SAMN36735485",
@@ -86,11 +86,11 @@
       "library_selection": "RANDOM",
       "library_source": "GENOMIC",
       "library_strategy": "WGS",
-      "local_path": "",
-      "local_sha256": "",
+      "local_path": "/moosefs/erikg/vgp/objects/sha256/99/ff/99ff0c4851f13a20c72df12a19b88476f23f119597023b625cd30233a711227d",
+      "local_sha256": "99ff0c4851f13a20c72df12a19b88476f23f119597023b625cd30233a711227d",
       "metadata_url": "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRR25606782&result=read_run&format=tsv",
       "object_id": "P07:SRR25606782:SRR25606782_subreads.fastq.gz",
-      "observed_bytes": 0,
+      "observed_bytes": 14197468574,
       "platform": "PACBIO_SMRT",
       "quarantine_path": "",
       "read_chemistry": "PacBio primary long reads used by the exact HiFi/Hifiasm assembly; NCBI assembly sequencing technology is HiFi",
@@ -103,16 +103,23 @@
       "source_provider": "ENA",
       "source_url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR256/082/SRR25606782/SRR25606782_subreads.fastq.gz",
       "species": "Spinachia spinachia",
-      "status": "planned",
-      "status_detail": "not selected in this incremental invocation",
+      "status": "reused",
+      "status_detail": "canonical CAS object rehashed and reused",
       "taxid": 206126,
       "transferred_bytes": 0,
       "upstream_checksum": "a3ccb94995d994bde736f96f0feda5f4",
       "upstream_checksum_algorithm": "md5",
-      "verified_utc": ""
+      "verification": {
+        "ena_md5_match": true,
+        "expected_bytes_match": true,
+        "gzip_magic": true,
+        "local_sha256_path_match": true,
+        "post_promotion_reverified": true
+      },
+      "verified_utc": "2026-07-20T20:10:52Z"
     },
     {
-      "accession_view_path": "",
+      "accession_view_path": "/moosefs/erikg/vgp/views/accession/P07/SRR30200290/SRR30200290_1.fastq.gz",
       "base_count": 17887478422,
       "bioproject": "PRJNA1393321",
       "biosample": "SAMN36735485",
@@ -129,11 +136,11 @@
       "library_selection": "RANDOM",
       "library_source": "GENOMIC",
       "library_strategy": "WGS",
-      "local_path": "",
-      "local_sha256": "",
+      "local_path": "/moosefs/erikg/vgp/objects/sha256/44/92/44929d94f96b26e724b7246705500e20549c7c26dbf45e03eb79b9d16e4e21b5",
+      "local_sha256": "44929d94f96b26e724b7246705500e20549c7c26dbf45e03eb79b9d16e4e21b5",
       "metadata_url": "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRR30200290&result=read_run&format=tsv",
       "object_id": "P07:SRR30200290:SRR30200290_1.fastq.gz",
-      "observed_bytes": 0,
+      "observed_bytes": 4346165087,
       "platform": "ILLUMINA",
       "quarantine_path": "",
       "read_chemistry": "Illumina 2x151-bp WGS, mate 1",
@@ -146,16 +153,23 @@
       "source_provider": "ENA",
       "source_url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR302/090/SRR30200290/SRR30200290_1.fastq.gz",
       "species": "Spinachia spinachia",
-      "status": "planned",
-      "status_detail": "not selected in this incremental invocation",
+      "status": "reused",
+      "status_detail": "canonical CAS object rehashed and reused",
       "taxid": 206126,
       "transferred_bytes": 0,
       "upstream_checksum": "0cfd786abcc1262fbdd68d39f123f765",
       "upstream_checksum_algorithm": "md5",
-      "verified_utc": ""
+      "verification": {
+        "ena_md5_match": true,
+        "expected_bytes_match": true,
+        "gzip_magic": true,
+        "local_sha256_path_match": true,
+        "post_promotion_reverified": true
+      },
+      "verified_utc": "2026-07-20T20:11:02Z"
     },
     {
-      "accession_view_path": "",
+      "accession_view_path": "/moosefs/erikg/vgp/views/accession/P07/SRR30200290/SRR30200290_2.fastq.gz",
       "base_count": 17887478422,
       "bioproject": "PRJNA1393321",
       "biosample": "SAMN36735485",
@@ -172,11 +186,11 @@
       "library_selection": "RANDOM",
       "library_source": "GENOMIC",
       "library_strategy": "WGS",
-      "local_path": "",
-      "local_sha256": "",
+      "local_path": "/moosefs/erikg/vgp/objects/sha256/c5/42/c542f6efd9fc1d8f557c89629743fbe4a39584f24002c84185e479057cb443ac",
+      "local_sha256": "c542f6efd9fc1d8f557c89629743fbe4a39584f24002c84185e479057cb443ac",
       "metadata_url": "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRR30200290&result=read_run&format=tsv",
       "object_id": "P07:SRR30200290:SRR30200290_2.fastq.gz",
-      "observed_bytes": 0,
+      "observed_bytes": 4431902981,
       "platform": "ILLUMINA",
       "quarantine_path": "",
       "read_chemistry": "Illumina 2x151-bp WGS, mate 2",
@@ -189,13 +203,20 @@
       "source_provider": "ENA",
       "source_url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR302/090/SRR30200290/SRR30200290_2.fastq.gz",
       "species": "Spinachia spinachia",
-      "status": "planned",
-      "status_detail": "not selected in this incremental invocation",
+      "status": "reused",
+      "status_detail": "canonical CAS object rehashed and reused",
       "taxid": 206126,
       "transferred_bytes": 0,
       "upstream_checksum": "955ef14e6ab3d7126258be146463c4b6",
       "upstream_checksum_algorithm": "md5",
-      "verified_utc": ""
+      "verification": {
+        "ena_md5_match": true,
+        "expected_bytes_match": true,
+        "gzip_magic": true,
+        "local_sha256_path_match": true,
+        "post_promotion_reverified": true
+      },
+      "verified_utc": "2026-07-20T20:11:12Z"
     },
     {
       "accession_view_path": "/moosefs/erikg/vgp/views/accession/P09/SRR29944135/SRR29944135_subreads.fastq.gz",
@@ -225,17 +246,17 @@
       "read_chemistry": "PacBio HiFi; exact submitter library name sHetFra1_PacBio_HiFi_fastq_4 resolves the assembly report's generic PacBio Sequel label",
       "read_count": 495557,
       "read_set_scope": "one complete validation run (SMRT cell) from a seven-run HiFi FASTQ library; not represented as the full assembly read library",
-      "resume_from_bytes": 8082600971,
+      "resume_from_bytes": 0,
       "reused_source": "",
       "run_accession": "SRR29944135",
       "selection_id": "P09",
       "source_provider": "ENA",
       "source_url": "https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR299/035/SRR29944135/SRR29944135_subreads.fastq.gz",
       "species": "Heterodontus francisci",
-      "status": "verified",
-      "status_detail": "recovered, rehashed, and published an atomically promoted CAS object after a manifest/view interruption",
+      "status": "reused",
+      "status_detail": "canonical CAS object rehashed and retained across an incremental invocation that did not select it",
       "taxid": 7792,
-      "transferred_bytes": 8082600971,
+      "transferred_bytes": 0,
       "upstream_checksum": "835004b084811fa992fa79bfaa0de5f0",
       "upstream_checksum_algorithm": "md5",
       "verification": {
@@ -245,7 +266,7 @@
         "local_sha256_path_match": true,
         "post_promotion_reverified": true
       },
-      "verified_utc": "2026-07-18T18:42:02Z"
+      "verified_utc": "2026-07-20T20:11:54Z"
     }
   ],
   "pairs": [
@@ -305,7 +326,7 @@
   "primary_assembly_run_is_not_gated": true,
   "root_config": "analysis/vgp_data_root_config.json",
   "schema_version": "vgp-validation-reads-manifest-v1.0.0",
-  "started_utc": "2026-07-18T18:41:25Z",
+  "started_utc": "2026-07-20T20:10:02Z",
   "summary": {
     "accounting": {
       "bytes_reconciled": true,
@@ -318,12 +339,12 @@
       "objects": 0
     },
     "newly_promoted": {
-      "bytes": 8082600971,
-      "objects": 1
+      "bytes": 0,
+      "objects": 0
     },
     "pending": {
-      "bytes": 65320283335,
-      "objects": 4
+      "bytes": 42344746693,
+      "objects": 1
     },
     "planned": {
       "bytes": 73402884306,
@@ -334,16 +355,16 @@
       "objects": 0
     },
     "reused": {
+      "bytes": 31058137613,
+      "objects": 4
+    },
+    "transferred": {
       "bytes": 0,
       "objects": 0
     },
-    "transferred": {
-      "bytes": 8082600971,
-      "objects": 1
-    },
     "verified": {
-      "bytes": 8082600971,
-      "objects": 1
+      "bytes": 31058137613,
+      "objects": 4
     }
   },
   "task_id": "acquire-vgp-validation-reads",

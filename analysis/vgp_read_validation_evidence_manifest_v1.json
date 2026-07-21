@@ -1,0 +1,60 @@
+{
+  "canonical_and_external_ledgers": [
+    {
+      "bytes": 16443,
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-365/analysis/vgp_validation_reads_manifest_v1.json",
+      "sha256": "feab18591a411ce9873f4b69e9bc9d5005ea88352b9d6f6abd71c172db6d05ff"
+    },
+    {
+      "bytes": 15843,
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-365/analysis/vgp_read_validation_environment_v1.json",
+      "sha256": "79def0a03e16a402eaf42cbf09b32c5f2079579d12a925e5a632656f6de9bce3"
+    },
+    {
+      "bytes": 7317,
+      "path": "/moosefs/erikg/vgp/derived/read-validation/runs/P07/slurm-1787665/output_manifest.tsv",
+      "sha256": "b31d039ff66c97c9875c1f596c721423518c976889b60648c318421d56f5ebd8"
+    },
+    {
+      "bytes": 930,
+      "path": "/moosefs/erikg/vgp/derived/read-validation/runs/P09/slurm-1787124/output_manifest.tsv",
+      "sha256": "319f5ed40f57980fda9fb9d40b350e05ae3905b75eb3723cc1a929c47929b4df"
+    },
+    {
+      "bytes": 997,
+      "path": "/moosefs/erikg/vgp/derived/read-validation/runs/P09/P09_mapping_summary_refined_v2.json",
+      "sha256": "7a7f1ccdc5ef9c33338a7fec5f5a23662da802d45eb564a6fb9aa1910c9d6400"
+    }
+  ],
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "repository_artifacts": [
+    {
+      "bytes": 541497,
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-365/analysis/vgp_read_validation_results_v1.json",
+      "sha256": "cb5a4b4ade7c408d707b4efa6930e1f9ad8c764c5831c6832984288b1ac46c54"
+    },
+    {
+      "bytes": 1595,
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-365/analysis/vgp_read_validation_per_pair_v1.tsv",
+      "sha256": "67528b2ef3de0005c9f77bfa1009f0e447f7ed3a77163ce09ce4d16bd73e2af2"
+    },
+    {
+      "bytes": 2466,
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-365/analysis/vgp_read_validation_mask_sensitivity_v1.tsv",
+      "sha256": "976c1e4bf3f1af8cabe5e0940aeffab673af25688056422c41f36e16ba56ef76"
+    },
+    {
+      "bytes": 9767,
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-365/analysis/vgp_read_validation_report_v1.md",
+      "sha256": "ea71cfa02fd06efcbcb00b94f5aaa7c30ed386a43ab60dfa5b5223cee6b4cfd6"
+    },
+    {
+      "bytes": 1813,
+      "path": "/moosefs/erikg/lewontin-paradox/.wg-worktrees/agent-365/analysis/vgp_read_validation_sacct_v1.tsv",
+      "sha256": "09b58f7464568da8e8e27a1c2e8fc8f4b11165a2e170829d28720a80028dca8f"
+    }
+  ],
+  "schema_version": "vgp-read-validation-evidence-manifest-v1",
+  "scope": "SHA-256 binding for final repository summaries and immutable acquisition, environment, promoted-run, and P09-refinement ledgers; promoted-run ledgers were independently rehashed before this manifest was emitted",
+  "task_id": "validate-vgp-pilot-reads"
+}

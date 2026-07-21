@@ -1,0 +1,9 @@
+canonical_vgp_root	task_id	JobIDRaw	JobName	Partition	State	Elapsed	ElapsedRaw	Timelimit	AllocCPUS	ReqMem	MaxRSS	CPUTimeRAW	TotalCPU	ExitCode	NodeList	Start	End	Submit
+/moosefs/erikg/vgp	validate-vgp-pilot-reads	1787121	vgp-readval-P09	workers	FAILED	00:00:00	0	1-00:00:00	32	160G		0	00:00:00	1:0	octopus08	2026-07-20T16:35:24	2026-07-20T16:35:24	2026-07-20T16:35:24
+/moosefs/erikg/vgp	validate-vgp-pilot-reads	1787122	vgp-readval-P09	workers	CANCELLED by 1001	00:04:12	252	1-00:00:00	32	160G		8064	00:00:00	0:0	octopus08	2026-07-20T16:36:10	2026-07-20T16:40:22	2026-07-20T16:36:10
+/moosefs/erikg/vgp	validate-vgp-pilot-reads	1787124	vgp-readval-P09	workers	COMPLETED	00:41:22	2482	1-00:00:00	32	160G		79424	00:00:00	0:0	octopus08	2026-07-20T16:40:48	2026-07-20T17:22:10	2026-07-20T16:40:48
+/moosefs/erikg/vgp	validate-vgp-pilot-reads	1787557	vgp-readval-P07	workers	CANCELLED by 1001	00:00:00	0	2-00:00:00	0	220G		0	00:00:00	0:0	None assigned	None	2026-07-20T19:19:17	2026-07-20T19:17:23
+/moosefs/erikg/vgp	validate-vgp-pilot-reads	1787561	vgp-readval-P07	highmem	FAILED	02:53:23	10403	2-00:00:00	32	220G		332896	00:00:00	1:0	octopus02	2026-07-20T19:19:17	2026-07-20T22:12:40	2026-07-20T19:19:17
+/moosefs/erikg/vgp	validate-vgp-pilot-reads	1787663	vgp-readval-P07	highmem	FAILED	00:00:14	14	2-00:00:00	32	220G		448	00:00:00	1:0	octopus02	2026-07-20T22:14:31	2026-07-20T22:14:45	2026-07-20T22:14:31
+/moosefs/erikg/vgp	validate-vgp-pilot-reads	1787664	vgp-readval-P07	highmem	FAILED	00:00:12	12	2-00:00:00	32	220G		384	00:00:00	1:0	octopus02	2026-07-20T22:15:25	2026-07-20T22:15:37	2026-07-20T22:15:23
+/moosefs/erikg/vgp	validate-vgp-pilot-reads	1787665	vgp-readval-P07	highmem	COMPLETED	19:50:45	71445	2-00:00:00	32	220G		2286240	00:00:00	0:0	octopus02	2026-07-20T22:16:16	2026-07-21T18:07:01	2026-07-20T22:16:16

@@ -683,6 +683,33 @@ def run(
     for index, plan_row in enumerate(plan["objects"]):
         spec = dict(plan_row)
         if str(spec["object_id"]) not in selected_ids:
+            # An incremental invocation must not erase the verified state of
+            # an object acquired by an earlier invocation.  Revalidate the
+            # immutable object and its accession view locally when the prior
+            # ledger supplies its content address; this performs no network
+            # transfer and makes the newly published manifest cumulative.
+            known_sha256 = prior.get(str(spec["object_id"]), "")
+            if not known_sha256:
+                known_sha256 = recover_unmanifested_cas_sha(
+                    data_root, spec, str(layout["immutable_objects"])
+                )
+            if known_sha256:
+                row = acquire_object(
+                    spec,
+                    data_root,
+                    known_sha256=known_sha256,
+                    raw_reads_relative=raw_reads_relative,
+                    immutable_objects_relative=str(layout["immutable_objects"]),
+                    staging_partials_relative=str(layout["staging_partials"]),
+                    quarantine_relative=str(layout["quarantine"]),
+                )
+                if row["status"] == "reused":
+                    row["status_detail"] = (
+                        "canonical CAS object rehashed and retained across an "
+                        "incremental invocation that did not select it"
+                    )
+                rows.append(row)
+                continue
             row = dict(spec)
             row.update(
                 status="planned", status_detail="not selected in this incremental invocation",

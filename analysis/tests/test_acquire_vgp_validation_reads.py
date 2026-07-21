@@ -100,6 +100,94 @@ def test_recover_unmanifested_promotion_without_redownload(tmp_path: Path) -> No
     assert Path(str(result["accession_view_path"])).resolve() == target.resolve()
 
 
+def test_incremental_reuse_retains_verified_object_without_redownload(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    payload_a = gzip.compress(b"@a\nACGT\n+\nIIII\n", mtime=0)
+    payload_b = gzip.compress(b"@b\nTGCA\n+\nIIII\n", mtime=0)
+    root = tmp_path / "vgp"
+    config = tmp_path / "root.json"
+    output = tmp_path / reads.CANONICAL_MANIFEST_NAME
+    config.write_text(
+        json.dumps(
+            {
+                "root": str(root),
+                "layout": {
+                    "immutable_objects": "objects/sha256",
+                    "staging_partials": "staging/partials",
+                    "quarantine": "quarantine",
+                    "pilot_manifests": "pilot/manifests",
+                    "raw_reads": "views/accession",
+                },
+                "migration_input_only": str(tmp_path / "legacy"),
+            }
+        )
+    )
+    specs = []
+    for selection, filename, payload in (
+        ("P07", "a.fastq.gz", payload_a),
+        ("P09", "b.fastq.gz", payload_b),
+    ):
+        spec = object_spec(payload)
+        spec.update(
+            object_id=f"{selection}:SRRTEST:{filename}",
+            selection_id=selection,
+            filename=filename,
+        )
+        specs.append(spec)
+        digest = hashlib.sha256(payload).hexdigest()
+        target = reads.cas_path(root, digest)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+        target.chmod(0o440)
+        view = reads.read_view_path(root, spec, "views/accession")
+        reads._atomic_symlink(target, view)
+
+    prior_rows = []
+    for spec, payload in zip(specs, (payload_a, payload_b), strict=True):
+        digest = hashlib.sha256(payload).hexdigest()
+        row = dict(spec)
+        row.update(
+            status="verified",
+            local_sha256=digest,
+            local_path=str(reads.cas_path(root, digest)),
+            accession_view_path=str(reads.read_view_path(root, spec, "views/accession")),
+            observed_bytes=len(payload),
+            transferred_bytes=len(payload),
+        )
+        prior_rows.append(row)
+    # Simulate an incremental manifest rewrite that omitted P09's content
+    # address even though its verified CAS object and view remain canonical.
+    reads.atomic_json(output, {"objects": prior_rows[:1]})
+
+    monkeypatch.setattr(reads, "ROOT_CONFIG", config)
+    monkeypatch.setattr(reads, "REPOSITORY_ROOT", tmp_path)
+    monkeypatch.setattr(reads, "load_plan", lambda: {
+        "canonical_root": str(root),
+        "pairs": [
+            {"selection_id": "P07"},
+            {"selection_id": "P09"},
+        ],
+        "objects": specs,
+    })
+    monkeypatch.setattr(reads, "validate_plan", lambda _plan: None)
+    monkeypatch.setattr(reads, "inventory_legacy", lambda *_args: {
+        "canonical_root": str(root),
+        "legacy_root": str(tmp_path / "legacy"),
+        "legacy_root_role": "migration_input_only",
+        "candidates": [],
+        "matching_candidate_objects": 0,
+        "matching_candidate_bytes": 0,
+    })
+
+    manifest = reads.run(output=output, only={"P07"}, delay_seconds=0, reserve_bytes=0)
+    by_id = {row["object_id"]: row for row in manifest["objects"]}
+    retained = by_id["P09:SRRTEST:b.fastq.gz"]
+    assert retained["status"] == "reused"
+    assert retained["local_sha256"] == hashlib.sha256(payload_b).hexdigest()
+    assert "retained across an incremental invocation" in retained["status_detail"]
+
+
 def test_validate_plan_binds_every_object_to_exact_pair() -> None:
     plan = reads.load_plan()
     reads.validate_plan(plan)
