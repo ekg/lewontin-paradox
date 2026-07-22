@@ -1,0 +1,138 @@
+{
+  "alternates": [
+    {
+      "activation_rule": "Activate only if P07 immutable source objects fail a pre-biological digest/readability gate; never activate for an observed biological value.",
+      "h1_accession_version": "GCA_017639655.1",
+      "h1_fasta_sha256": "796be41c34fc02be72571570c3a8385125f0ad0e5c26430e6a24db670713bde4",
+      "h2_accession_version": "GCA_017639645.1",
+      "h2_fasta_sha256": "49badcedd50ea1a4dc3bed237968e2473a60750a024e55aead48281975bf30a6",
+      "individual_or_isolate": "bFalNau1",
+      "replaces_failure_class": "previously_successful_exact_annotation_pair",
+      "selection_id": "P04",
+      "species": "Falco naumanni"
+    },
+    {
+      "activation_rule": "Activate only if P03 immutable source objects fail a pre-biological digest/readability gate; a FastGA or WFMASH execution failure does not activate an alternate.",
+      "h1_accession_version": "GCA_027789765.1",
+      "h1_fasta_sha256": "97b3904c55e7fccff425dd56dfe6f71e86ccb11638463b0f22539af4206e36e3",
+      "h2_accession_version": "GCA_027789725.1",
+      "h2_fasta_sha256": "bb5b2dd37967a449e764de4daa3422d13be50c42ec465cdc48c8acf1b3295d49",
+      "individual_or_isolate": "aDenEbr1",
+      "replaces_failure_class": "prior_fastga_execution_failure",
+      "selection_id": "P06",
+      "species": "Dendropsophus ebraccatus"
+    },
+    {
+      "activation_rule": "Activate only if P02 immutable source objects fail a pre-biological digest/readability gate; a graph/FASTA identifier mismatch does not activate an alternate.",
+      "h1_accession_version": "GCA_035149785.1",
+      "h1_fasta_sha256": "e613177be408823e216a61b568dc4e66ac0e54e50ac3c64a4cf0967800405f68",
+      "h2_accession_version": "GCA_035125265.1",
+      "h2_fasta_sha256": "ffe0e8582d655e10882e1d204bfdc374b79249f2e0daf8d9220b281e89547975",
+      "individual_or_isolate": "rCanAsp1",
+      "replaces_failure_class": "prior_impg_graph_fasta_identifier_failure",
+      "selection_id": "P05",
+      "species": "Candoia aspera"
+    }
+  ],
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "execution_contract": {
+    "annotation_missing_policy": "Stop only annotation outputs; core outputs continue.",
+    "fastga_corrected_retry_trigger": {
+      "corrected_private_scratch_contract_passed": true,
+      "fastga_failure_reproduced": true,
+      "historical_job_id": "1787016",
+      "selection_id": "P03",
+      "trigger_record": "analysis/vgp_real_pilot_fastga_scratch_v1.json"
+    },
+    "graph_identifier_policy": "Rebuild index, partitions, and queries from the exact staged H1/H2 FASTA dictionaries. Resolve an alias only when sequence length and SHA-256 digest are identical. Unresolved or ambiguous identifiers are fatal; no region may be omitted.",
+    "mapping_contract": "whole staged H2 query against whole staged H1 reference; deterministic SweepGA bidirectional removal-only --num-mappings 1:1; H1 is the PAF target axis and H2 is the query axis",
+    "psmc_bootstrap_contract": "200 deterministic 5-Mb blocks sampled from the complete primary PSMCFA N/K/T bin population; primary theta must lie in the nearest-index central 95% bootstrap interval",
+    "wfmash_fallback": "Pinned WFMASH backend through pinned SweepGA on byte-identical staged P03 FASTAs; apply the same deterministic bidirectional 1:1 contract; retain the FastGA failure as infrastructure telemetry, not a species exclusion."
+  },
+  "frozen_at_utc": "2026-07-22T22:59:41Z",
+  "run_id": "vgp-three-pair-20260722-v1",
+  "schema_version": "vgp-three-pair-selection-v1",
+  "selections": [
+    {
+      "annotation": {
+        "annotation_accession_version": "GCA_048126635.1-GB_2025_08_04",
+        "assembly_accession_version": "GCA_048126635.1",
+        "binding_status": "EXACT_DICTIONARY",
+        "gff_path": "/moosefs/erikg/vgp/objects/sha256/8f/64/8f640543accd8081d1b7048eda32c9f1eef33b02f321b7b0f8adcf3b01dd6838",
+        "gff_sha256": "8f640543accd8081d1b7048eda32c9f1eef33b02f321b7b0f8adcf3b01dd6838"
+      },
+      "failure_class": "previously_successful_exact_annotation_pair",
+      "h1_accession_version": "GCA_048126635.1",
+      "h1_source_bgzf": "/moosefs/erikg/vgp/derived/clean-canary-bgzf/GCA_048126635.1.fa.gz",
+      "h1_source_cas_sha256": "2b758e606304f7cb5e795d7939979b08c21bf4f3eac7ea3cf1c6ab0a463733c7",
+      "h2_accession_version": "GCA_048127205.1",
+      "h2_source_bgzf": "/moosefs/erikg/vgp/derived/clean-canary-bgzf/GCA_048127205.1.fa.gz",
+      "h2_source_cas_sha256": "6e7e9d88b88a3d030d80009191a06c525fbcc50044db05da4d81a8e9ad97ed40",
+      "individual_or_isolate": "fSpiSpi1",
+      "input_contract": "fresh expansion of frozen BGZF objects into private scratch",
+      "selection_id": "P07",
+      "species": "Spinachia spinachia",
+      "upstream_preexecution_freeze": {
+        "path": "analysis/vgp_clean_canary_selection_v1.json",
+        "sha256": "ecbf1fb9f62e422c7379acc49ff146eec99f475f5cc521fef00a8ef58da92e45"
+      }
+    },
+    {
+      "annotation": null,
+      "failure_class": "prior_fastga_execution_failure",
+      "h1_accession_version": "GCA_028858725.2",
+      "h1_fasta_path": "/moosefs/erikg/vgp/pilot/inputs/P03/h1.fa",
+      "h1_fasta_sha256": "92697b850b625467f5811658007e512c4067bfaa24a155c0e786e01b60133672",
+      "h1_fasta_size_bytes": 1227638920,
+      "h1_sequence_count": 190,
+      "h2_accession_version": "GCA_028858625.2",
+      "h2_fasta_path": "/moosefs/erikg/vgp/pilot/inputs/P03/h2.fa",
+      "h2_fasta_sha256": "8270fea27f1deb9e265890d096ef80d3366aec2e38c7f1a20f481a4a89025b05",
+      "h2_fasta_size_bytes": 1167945683,
+      "h2_sequence_count": 242,
+      "individual_or_isolate": "bColStr4",
+      "input_manifest_sha256": "6100dda767d4b16a9843d922ef85e46b6da352d760c6e08c91eb1c661a276be0",
+      "mapping_policy": "WFMASH fallback already triggered by corrected FastGA retry 1787016",
+      "selection_id": "P03",
+      "species": "Colius striatus"
+    },
+    {
+      "annotation": null,
+      "failure_class": "prior_impg_graph_fasta_identifier_failure",
+      "h1_accession_version": "GCA_039906515.1",
+      "h1_fasta_path": "/moosefs/erikg/vgp/pilot/inputs/P02/h1.fa",
+      "h1_fasta_sha256": "acf7ebfe60002b72246897e7220b02c4f97ec1d9df79a2bb6448f3a3acaea090",
+      "h1_fasta_size_bytes": 2708085716,
+      "h1_sequence_count": 439,
+      "h2_accession_version": "GCA_039906525.1",
+      "h2_fasta_path": "/moosefs/erikg/vgp/pilot/inputs/P02/h2.fa",
+      "h2_fasta_sha256": "1064e5eca36fd13cc116b51f049ced08747c3ae97a0081469bfbdd119b49e66a",
+      "h2_fasta_size_bytes": 2712054878,
+      "h2_sequence_count": 416,
+      "individual_or_isolate": "mPseCra1",
+      "input_manifest_sha256": "d17424d0a1e2a7472269d9de8120d8be4acd27e689dcd6029df739f497040639",
+      "prohibited_inputs": "All graph/index/partition/query artifacts from failed IMPG job 1782558",
+      "selection_id": "P02",
+      "species": "Pseudorca crassidens"
+    }
+  ],
+  "task_id": "run-vgp-three-pair",
+  "toolchain": {
+    "environment_capture": {
+      "path": "analysis/guix/vgp_10_pilot/realization.json",
+      "sha256": "c37690b52536a5573c9a172375464247f826e4f904443d2181c00c725f897a12"
+    },
+    "fastga_amendment": {
+      "path": "analysis/vgp_real_pilot_fastga_amendment_v1.json",
+      "sha256": "75819319c54432b9cbfa8f6bb3d271a5a9dbfca757c9158dd7f4f18ecb5733c4"
+    },
+    "sweepga": {
+      "path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/sweepga",
+      "sha256": "fa7f0edb9b7e275c288db254046020e136d4267dd5ee043379227ef80da0573b"
+    },
+    "wfmash": {
+      "path": "/moosefs/erikg/tier3scratch/sweepga-origin-main-018e4ce/bin-1/wfmash",
+      "sha256": "2a62fa8dde7685d6895cfb786cc4d514b43f765ca2a5c127af649e6dbfce7e45"
+    }
+  }
+}
