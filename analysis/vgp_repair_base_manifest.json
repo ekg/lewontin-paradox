@@ -1,0 +1,844 @@
+{
+  "artifact_status_ledger": "analysis/vgp_repair_base_artifact_status.tsv",
+  "audited_main_head": "0c20b121b25a8ff139e8c9704b6fa9f4f0de743f",
+  "historical_review_dependency": {
+    "commit": "f7e48cba9294ebf7a233dd4798e443f347bdf240",
+    "role": "identified bootstrap defect; review conclusions remain historical"
+  },
+  "integration_delta": {
+    "analysis/build_vgp_freeze1_bgzf.py": "remove undeclared mkfifo/coreutils runtime while retaining one-pass streaming conversion",
+    "analysis/build_vgp_repair_base.py": "freeze lineage selection, status binding, and fail-closed contract validation",
+    "analysis/tests/test_vgp_repair_base.py": "regress claim boundaries, statuses, source enumeration, and required paths",
+    "analysis/vgp_repair_base_artifact_status.tsv": "bind unchanged historical packet bytes to explicit status",
+    "analysis/vgp_repair_base_handoff.md": "human-readable integration decision and order"
+  },
+  "job_submission_count": 0,
+  "lineages": [
+    {
+      "main_integration_commit": "7a727349b657b61cbf9a2fb29ef3cb76316c8c5a",
+      "patches": [
+        {
+          "commit": "66a3aaeee3f99fd9ef9cb20f31152fea535e9058",
+          "disposition": "SELECTED_IMPLEMENTATION_WITH_HISTORICAL_OUTPUT",
+          "reason": "implementation retained; emitted run packet is historical evidence only",
+          "sequence": 1,
+          "subject": "feat: freeze resumable VGP mirror inventory (mirror-vgp-freeze1)"
+        }
+      ],
+      "source_branch": "wg/agent-258/mirror-vgp-freeze1",
+      "task": "mirror-vgp-freeze1"
+    },
+    {
+      "main_integration_commit": "8e62848e11d7974f674a2bb24043a4fcb116ba2e",
+      "patches": [
+        {
+          "commit": "7f0740b4fee5a09c37969b02831d503d42488039",
+          "disposition": "DEPENDENCY_ALREADY_INTEGRATED",
+          "reason": "prerequisite already represented by its own main integration",
+          "sequence": 1,
+          "subject": "feat: authorize VGP ten-pair canary execution (repair-vgp-pilot-authorization)"
+        },
+        {
+          "commit": "561adfec6dd57d7f2a89423e31763796aa4e06eb",
+          "disposition": "MERGE_METADATA_NOT_REPLAYED",
+          "reason": "source-branch merge topology recorded but not replayed as a patch",
+          "sequence": 2,
+          "subject": "Merge commit '7f0740b' into wg/agent-306/resume-vgp-freeze1-mirror-real"
+        },
+        {
+          "commit": "f865c692e88f33ba2f2574acaa5c1772b806edcb",
+          "disposition": "SELECTED_IMPLEMENTATION_WITH_HISTORICAL_OUTPUT",
+          "reason": "implementation retained; emitted run packet is historical evidence only",
+          "sequence": 3,
+          "subject": "feat: resume canonical VGP Freeze 1 mirror (resume-vgp-freeze1-mirror-real)"
+        },
+        {
+          "commit": "1465befaa79e47b4c79b6cf1f774610538a54d7d",
+          "disposition": "SELECTED_IMPLEMENTATION_WITH_HISTORICAL_OUTPUT",
+          "reason": "implementation retained; emitted run packet is historical evidence only",
+          "sequence": 4,
+          "subject": "fix: isolate VGP metadata checksum conflicts (resume-vgp-freeze1-mirror-real)"
+        },
+        {
+          "commit": "260a7001eb47df735bd472f93a9da97a8f388854",
+          "disposition": "SELECTED_IMPLEMENTATION_WITH_HISTORICAL_OUTPUT",
+          "reason": "implementation retained; emitted run packet is historical evidence only",
+          "sequence": 5,
+          "subject": "feat: supervise resumable VGP mirror (resume-vgp-freeze1-mirror-real)"
+        },
+        {
+          "commit": "603b825d7ff2aca0a65a9ee38afc52fb683e273e",
+          "disposition": "SELECTED_IMPLEMENTATION_WITH_HISTORICAL_OUTPUT",
+          "reason": "implementation retained; emitted run packet is historical evidence only",
+          "sequence": 6,
+          "subject": "feat: complete VGP Freeze 1 mirror (resume-vgp-freeze1-mirror-real)"
+        },
+        {
+          "commit": "271da58532ff361c2f3039725cadcec357188ae8",
+          "disposition": "MERGE_METADATA_NOT_REPLAYED",
+          "reason": "source-branch merge topology recorded but not replayed as a patch",
+          "sequence": 7,
+          "subject": "Merge remote-tracking branch 'origin/main' into wg/agent-306/resume-vgp-freeze1-mirror-real"
+        }
+      ],
+      "source_branch": "wg/agent-306/resume-vgp-freeze1-mirror-real",
+      "task": "resume-vgp-freeze1-mirror-real"
+    },
+    {
+      "main_integration_commit": "47c9d91953dd6fcbd491c72973166251ee2dea83",
+      "patches": [
+        {
+          "commit": "5c10bd0204a9a739ef9a8fefcaf4aff72e099da6",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 1,
+          "subject": "test: specify VGP BGZF pipeline behavior (bgzip-vgp-freeze1-assemblies)"
+        },
+        {
+          "commit": "3a99c9fb2cf7be2b3909d45a55089cca673a497a",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 2,
+          "subject": "feat: build validated VGP Freeze 1 BGZF view (bgzip-vgp-freeze1-assemblies)"
+        },
+        {
+          "commit": "c86758731b0931a870b633ef0b50fb7a4328cf5d",
+          "disposition": "SELECTED_IMPLEMENTATION_WITH_HISTORICAL_OUTPUT",
+          "reason": "implementation retained; emitted run packet is historical evidence only",
+          "sequence": 3,
+          "subject": "feat: finalize VGP Freeze 1 BGZF view (bgzip-vgp-freeze1-assemblies)"
+        }
+      ],
+      "source_branch": "wg/agent-323/bgzip-vgp-freeze1-assemblies",
+      "task": "bgzip-vgp-freeze1-assemblies"
+    },
+    {
+      "main_integration_commit": "a017809f44814f660093bec55b986b91daf9bcce",
+      "patches": [
+        {
+          "commit": "60bc724bc86ccac2faf5dcaa6ad2f3798d4e9087",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 1,
+          "subject": "feat: harden real VGP scale-out execution (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "23764c40fcccf5c99fabca958ba426c67b1f70e1",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 2,
+          "subject": "feat: generalize exact VGP annotation partitions (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "9ca6df91abb9833c7466e491a0e878feaf9d5da8",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 3,
+          "subject": "fix: bind VGP stages from Slurm submit root (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "0c28617932aec60e4241cf63110d3c819173b628",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 4,
+          "subject": "fix: retain failed VGP stage diagnostics (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "099a26c3e35c631a5af3c794354651e4b0c9b3d8",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 5,
+          "subject": "fix: stage VGP FASTAs on node-local scratch (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "7d8c9261d726f0c0ea5abcf9cce5ec57dbc1cdba",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 6,
+          "subject": "fix: route VGP compute to canary-proven highmem nodes (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "d84506ea7f5715e6f3b58897ba82a3e765c34652",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 7,
+          "subject": "fix: prebuild pinned FastGA sidecars for SweepGA (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "eeb076241f3d7f86ba4ae4e10df3ef885ab4bb61",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 8,
+          "subject": "fix: pin canary-proven FastGA companions (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "17b7f5941de649d8b81df352dd226abcdd59c979",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 9,
+          "subject": "fix: route P08 mapping to proven scratch node (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "d668a2af7dac75cfde4c7459409dbde1df2e129c",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 10,
+          "subject": "fix: isolate VGP mapping scale-out entrypoint (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "010619e1b0123f3bdb3a8097d3c3d8dbed6ec560",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 11,
+          "subject": "fix: bind FastGA temporaries to mapped scratch (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "d1cb15c93a3b231e989e27bedf995df05385affd",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 12,
+          "subject": "fix: root IMPG audit in canonical VGP store (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "069cae8c87f210b1a28484bc05c471b69ebd44eb",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 13,
+          "subject": "feat: parameterize independent VGP pair audit (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "866e36c89f6c5a99c92e09ab11ed76e4dcae1190",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 14,
+          "subject": "feat: audit closed-world VGP pilot outcomes (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "c6026eb33f5bcf4b383c00f4394ef53f433fd41d",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 15,
+          "subject": "test: follow hierarchical IMPG lace owner (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "29f690b2e69a43cb7e7e5e655e050c89747ae30c",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 16,
+          "subject": "feat: resume VGP submission after durable sentinels (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "6205dac2040fcd9386a11c204d137f1c99546d4f",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 17,
+          "subject": "feat: collect closed-world VGP sacct telemetry (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "79a0297b9cdb231a5c9ce7467755338cef5e4f6f",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 18,
+          "subject": "fix: bound IMPG scheduler logging volume (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "79e958e0ef2550e14120e478981f721e09b1097e",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 19,
+          "subject": "perf: index eligible IMPG partition intersections (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "d67e6cc31336c328a693d8a84e799a87f6ed67ce",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 20,
+          "subject": "perf: shard IMPG query extraction in allocation (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "7eb0d31f78dc933b77384c6a035816cca88a8a91",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 21,
+          "subject": "test: follow sharded IMPG query owner (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "6684774317d645380cf1be39b8cbad888601c419",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 22,
+          "subject": "test: inventory parallel IMPG query owner (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "4dff358fc306bd97da5c67a73850266740cb707e",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 23,
+          "subject": "fix: retain concise IMPG partition diagnostics (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "52e18707b3a0308de8c4b4e828039e484ca8686b",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 24,
+          "subject": "fix: increase P03 mapping retry headroom (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "9fee444da3ffac48ac4ee3d7ef46479fee925780",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 25,
+          "subject": "perf: saturate IMPG query allocation (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "357e816bb4085564cb3321a5d5b974936f6bf773",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 26,
+          "subject": "fix: exclude failed scratch node on mapping retries (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "6e6a0727aa331469ceba826e35c8c28cf5f8f401",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 27,
+          "subject": "fix: keep large mappings off failed scratch node (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "0c622ce32c5850ff9266eaf4cb9faee57f85a3fb",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 28,
+          "subject": "fix: exclude failed node from scratch-writing stages (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "642ae186936a6708f4069345d3ce9f48756b64ed",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 29,
+          "subject": "feat: make independent mapping recomputation resumable (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "306b5b0acab6db474d8bb9a1a6b1a1ebc8384e64",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 30,
+          "subject": "feat: audit pilot pairs without eligible annotations (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "e0f20710f2cf8124fa00fab5ce963f5fe54b1abf",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 31,
+          "subject": "fix: resize P04 IMPG from live scratch telemetry (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "48aafe61c8525bf9d9115907b10ffe8dce81f50d",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 32,
+          "subject": "fix: compress scale-out IMPG lace intermediates (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "910b402765bdab29d749c0742408c3f11d3ba2bb",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 33,
+          "subject": "feat: account terminal primary failures per pair (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "9f0cb7b5741a623118fa208a850a6117b926e2a3",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 34,
+          "subject": "feat: independently audit stratified variant windows (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "5c0a6c870c9a62e20c031f2eb5f38d205891724a",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 35,
+          "subject": "fix: protect large shark mappings from scratch contention (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "0b3272e612ea20fc45b1d7ae1be04e24a849ccc8",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 36,
+          "subject": "perf: index assembly ambiguity projection (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "8d29d53482a0ebab73ea56e8fe6123f96cbb3f7e",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 37,
+          "subject": "fix: resize P01 mapping from live memory (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "12337d73b1c674f8f3bd859bbdd5c0ec2dd6fd5f",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 38,
+          "subject": "perf: schedule fitted pilot stages independently (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "636575319d6d9ff2db6352e5772b5059d186411d",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 39,
+          "subject": "perf: use measured IMPG lace core width (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "f9666613d7d75e2b4ecd8bf9b2e78e2e39290e54",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 40,
+          "subject": "fix: decode pinned IMPG lace streams losslessly (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "629b6e863e611fd1c84e97a12444b9ea34a6d023",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 41,
+          "subject": "fix: enforce viable IMPG lace threads (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "67c135348ae59d0fdabb4f9029088a944c573774",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 42,
+          "subject": "fix: prebuild IMPG query FASTA indexes (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "593d8722ced588b4a533f4e79bb14d89e321c364",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 43,
+          "subject": "fix: support login-node audit Python (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "460f1ba76482957b10737310634c9df117b70204",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 44,
+          "subject": "fix: retain PSMC array telemetry (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "f19132baf637d9bb5251cfaed6485879855be0f1",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 45,
+          "subject": "fix: make IMPG projection pipeline executable (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "9f26e0c4e3354f424858c8ca4c8e7a05544930f0",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 46,
+          "subject": "perf: reuse PSMCFA IUPAC lookup (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "870715e509fe9ea01afaed6fba18ed103c025629",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 47,
+          "subject": "fix: enforce FastGA private scratch cwd (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "82ce5838382ce88c35f7856c4f366bc2f3503bd3",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 48,
+          "subject": "fix: keep P08 retry off failed scratch node (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "2acce079e78d114943b1735df61099deaaf53158",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 49,
+          "subject": "fix: retain retryable FastGA infrastructure outcomes (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "ab1fa8cf7d82aeeee91ceedb5afc40fe8c6e1c8c",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 50,
+          "subject": "perf: compact repeated FastGA path telemetry (run-vgp-real-pilot)"
+        },
+        {
+          "commit": "fdd2e8a4eff270dc6dff697e7214a2e6af9a8833",
+          "disposition": "HISTORICAL_OUTPUT_ONLY",
+          "reason": "output packet preserved without granting execution or conclusion authority",
+          "sequence": 51,
+          "subject": "feat: publish real VGP pilot outcomes (run-vgp-real-pilot)"
+        }
+      ],
+      "source_branch": "wg/agent-318/run-vgp-real-pilot",
+      "task": "run-vgp-real-pilot"
+    },
+    {
+      "main_integration_commit": "ee451c91bdcabebdfcfd17d77bcce91f428f6361",
+      "patches": [
+        {
+          "commit": "7ed1967de41ab02723fc2cdaf88dfad9c730619b",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 1,
+          "subject": "fix: resample VGP PSMCFA bootstrap blocks (repair-vgp-psmc)"
+        },
+        {
+          "commit": "aeadf1442b27f29b298873b19c5f5bc2df0e5015",
+          "disposition": "HISTORICAL_OUTPUT_ONLY",
+          "reason": "output packet preserved without granting execution or conclusion authority",
+          "sequence": 2,
+          "subject": "data: record repaired PSMC diagnostics (repair-vgp-psmc)"
+        },
+        {
+          "commit": "1e386d658f951d220584325dec9eba0802542b3a",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 3,
+          "subject": "fix: freeze repaired bootstrap design identity (repair-vgp-psmc)"
+        }
+      ],
+      "source_branch": "wg/agent-368/repair-vgp-psmc",
+      "task": "repair-vgp-psmc"
+    },
+    {
+      "main_integration_commit": "d3ca516541f37698bd8afbb8bad64d6de54ba160",
+      "patches": [
+        {
+          "commit": "811d8d01faa4e0df4753ae2fa62966f531d5e400",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 1,
+          "subject": "feat: add pinned VGP read validation pipeline (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "02fd12121cab661b66f7396206a64f7960aa105a",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 2,
+          "subject": "fix: preserve exact read-validation covariance (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "35f0fc178ac860df77fe2c3450a1f4b2625f042b",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 3,
+          "subject": "fix: preserve cumulative VGP raw-read evidence (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "273904bffeee69f8e213b5630d5f9472dab8703f",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 4,
+          "subject": "test: audit VGP validation packet assembly (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "cf4197f88157b8640f6d940d12f61f13181ce63c",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 5,
+          "subject": "fix: harden VGP read validation PSMC retry (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "01a5a372b7f3c470b63c7da70bed79be2eacc62c",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 6,
+          "subject": "fix: accept reverified VGP read objects (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "92eeddbac565391f943fe9bc8531027a1dc5faec",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 7,
+          "subject": "refactor: preserve validation attempt and ratio evidence (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "920f028efaa0f9ffb880da0761576021b3dac18a",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 8,
+          "subject": "feat: classify raw-read validation evidence conservatively (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "69f39d34e900bb2939fa325f4b9b097efaa679a4",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 9,
+          "subject": "feat: quantify primary-mask exclusion enrichment (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "445efc179f8220fbdebcd41c41af1e8c4dbd9c53",
+          "disposition": "SKIPPED_CONCLUSION_ONLY",
+          "reason": "presentation or conclusion patch excluded from the corrective implementation base",
+          "sequence": 10,
+          "subject": "docs: state paired false-positive and false-negative bounds (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "ba1ba9a999e0abd0c4b41744585350c6cab34910",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 11,
+          "subject": "feat: bind VGP validation evidence in canonical manifest (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "095c2fdd58a9e6758c472f6773eec9c379c3d3e3",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 12,
+          "subject": "chore: capture allocation-level Slurm telemetry (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "74cf49ccf4c88bc016a35d7c821d8b353efb0682",
+          "disposition": "SKIPPED_CONCLUSION_ONLY",
+          "reason": "presentation or conclusion patch excluded from the corrective implementation base",
+          "sequence": 13,
+          "subject": "docs: interpret callable-mask sensitivity direction (validate-vgp-pilot-reads)"
+        },
+        {
+          "commit": "b86bcce00e5709b04da61973a1f85da3f94584d8",
+          "disposition": "HISTORICAL_OUTPUT_ONLY",
+          "reason": "output packet preserved without granting execution or conclusion authority",
+          "sequence": 14,
+          "subject": "analysis: publish VGP raw-read validation (validate-vgp-pilot-reads)"
+        }
+      ],
+      "source_branch": "wg/agent-365/validate-vgp-pilot-reads",
+      "task": "validate-vgp-pilot-reads"
+    },
+    {
+      "main_integration_commit": "2044765ca50fc6526c7656da161bcc3f113d1276",
+      "patches": [
+        {
+          "commit": "769aa5b5243ef8d32c1b8a5ffe79a954caa30575",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 1,
+          "subject": "feat: reconcile real VGP scale-out (scale-vgp-real)"
+        },
+        {
+          "commit": "7b1e6c54ae7d590615a5ef105ea2c90eab50df49",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 2,
+          "subject": "fix: resolve node-local verification cwd (scale-vgp-real)"
+        },
+        {
+          "commit": "4e4ddae1ba6f4b0b615265bd83f32d8994e12b49",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 3,
+          "subject": "fix: use realized Guix profile on Slurm (scale-vgp-real)"
+        },
+        {
+          "commit": "277e87d27447f02fd9364ff0727aa9004708e140",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 4,
+          "subject": "feat: revalidate P07 FastGA under node scratch (scale-vgp-real)"
+        },
+        {
+          "commit": "e384dc8ee34a95a665e7202d8a5c133a396a8973",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 5,
+          "subject": "feat: require live FastGA contracts in scale ledger (scale-vgp-real)"
+        },
+        {
+          "commit": "ae818339de304d4edd8853d8bd7e1715ce3092b8",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 6,
+          "subject": "fix: distinguish requested and resolved scratch roots (scale-vgp-real)"
+        },
+        {
+          "commit": "bfbe0d555db8b2d51bca9f37ba5d915466b9832f",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 7,
+          "subject": "fix: preserve requested scratch alias in P07 contract (scale-vgp-real)"
+        },
+        {
+          "commit": "787d402f9d9c073087dcbba600e3253cff9d78cd",
+          "disposition": "SELECTED_IMPLEMENTATION",
+          "reason": "implementation, environment, worker, test, or provenance patch retained",
+          "sequence": 8,
+          "subject": "fix: guard cleanup across scratch mount alias (scale-vgp-real)"
+        },
+        {
+          "commit": "73c9a955df4b3625d551835ee47e4a682141b0c7",
+          "disposition": "SELECTED_IMPLEMENTATION_WITH_SUPERSEDED_OUTPUT",
+          "reason": "implementation fix retained; emitted accounting/conclusion is superseded",
+          "sequence": 9,
+          "subject": "feat: finalize real VGP biological scale-out (scale-vgp-real)"
+        }
+      ],
+      "source_branch": "wg/agent-371/scale-vgp-real",
+      "task": "scale-vgp-real"
+    },
+    {
+      "main_integration_commit": "0c20b121b25a8ff139e8c9704b6fa9f4f0de743f",
+      "patches": [
+        {
+          "commit": "296ac54d96d62d2bd31e33e011024ec163c027eb",
+          "disposition": "SKIPPED_CONCLUSION_ONLY",
+          "reason": "presentation or conclusion patch excluded from the corrective implementation base",
+          "sequence": 1,
+          "subject": "feat: synthesize real VGP biological evidence (synthesize-vgp-real)"
+        },
+        {
+          "commit": "36c0212c9e3efe90ed800eb1e6e92c387fb36b54",
+          "disposition": "SKIPPED_CONCLUSION_ONLY",
+          "reason": "presentation or conclusion patch excluded from the corrective implementation base",
+          "sequence": 2,
+          "subject": "fix: normalize VGP synthesis report formatting (synthesize-vgp-real)"
+        }
+      ],
+      "source_branch": "wg/agent-376/synthesize-vgp-real",
+      "task": "synthesize-vgp-real"
+    }
+  ],
+  "logical_integration_order": [
+    {
+      "commit": "f83edbdc8c84c0993ac7b6a3e0239d734ea5e09f",
+      "order": 1,
+      "role": "canonical root and authorization contracts"
+    },
+    {
+      "commit": "8e62848e11d7974f674a2bb24043a4fcb116ba2e",
+      "order": 2,
+      "role": "completed resumable mirror tooling and provenance"
+    },
+    {
+      "commit": "47c9d91953dd6fcbd491c72973166251ee2dea83",
+      "order": 3,
+      "role": "BGZF resource classes, worker, indexes, and tests"
+    },
+    {
+      "commit": "3aea32edb52a2bdf9b2eef7f1329dba743d5ff26",
+      "order": 4,
+      "role": "SweepGA/IMPG canary implementation prerequisite"
+    },
+    {
+      "commit": "a017809f44814f660093bec55b986b91daf9bcce",
+      "order": 5,
+      "role": "general pilot, annotation, provenance, and scratch workflow"
+    },
+    {
+      "commit": "ee451c91bdcabebdfcfd17d77bcce91f428f6361",
+      "order": 6,
+      "role": "PSMCFA bootstrap constructor repair"
+    },
+    {
+      "commit": "2044765ca50fc6526c7656da161bcc3f113d1276",
+      "order": 7,
+      "role": "final /scratch alias, live guard, cleanup, and resource fixes; results superseded"
+    },
+    {
+      "commit": "8a605e310d3ff55fc4960a0a667335d558b6b7a7",
+      "order": 8,
+      "role": "raw-read acquisition and immutable evidence inputs"
+    },
+    {
+      "commit": "d3ca516541f37698bd8afbb8bad64d6de54ba160",
+      "order": 9,
+      "role": "raw-read paired sensitivity tooling and pinned environment; decisions superseded"
+    }
+  ],
+  "observed_main_integration_order": [
+    "f83edbdc8c84c0993ac7b6a3e0239d734ea5e09f",
+    "8a605e310d3ff55fc4960a0a667335d558b6b7a7",
+    "3aea32edb52a2bdf9b2eef7f1329dba743d5ff26",
+    "8e62848e11d7974f674a2bb24043a4fcb116ba2e",
+    "47c9d91953dd6fcbd491c72973166251ee2dea83",
+    "a017809f44814f660093bec55b986b91daf9bcce",
+    "f7e48cba9294ebf7a233dd4798e443f347bdf240",
+    "ee451c91bdcabebdfcfd17d77bcce91f428f6361",
+    "2044765ca50fc6526c7656da161bcc3f113d1276",
+    "d3ca516541f37698bd8afbb8bad64d6de54ba160",
+    "0c20b121b25a8ff139e8c9704b6fa9f4f0de743f"
+  ],
+  "pinned_guix_channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+  "required_contracts": {
+    "analysis/build_vgp_freeze1_bgzf.py": [
+      "VGP_FREEZE1_ASSEMBLY_BGZF_ROOT",
+      "RESOURCE_CLASSES",
+      "scratch_multiplier"
+    ],
+    "analysis/compile_vgp_read_validation_results.py": [
+      "candidate_false_positive",
+      "mask_sensitivity"
+    ],
+    "analysis/fastga_scratch_guard.py": [
+      "/proc/{pid}/cwd",
+      "temp_environment_resolved",
+      "managed_open_paths_resolved"
+    ],
+    "analysis/guix/vgp-freeze1-bgzf-manifest.scm": [
+      "samtools",
+      "htslib",
+      "python-pytest"
+    ],
+    "analysis/guix/vgp_read_validation/manifest.scm": [
+      "psmc-vgp-pinned",
+      "minimap2",
+      "jellyfish"
+    ],
+    "analysis/repair_vgp_psmc_bootstrap.py": [
+      "bootstrap_manifest.tsv",
+      "sampled_unit_indices",
+      "primary_psmcfa_NKT_bins"
+    ],
+    "analysis/slurm/scale_vgp_real/revalidate_p07_fastga.sh": [
+      "node_local_base_resolved",
+      "scratch_resolved",
+      "refusing cleanup outside validated requested/resolved scratch roots"
+    ],
+    "analysis/slurm/vgp_10_pilot/impg_hierarchical_lace.sh": [
+      "VGP_IMPG_LACE_THREADS",
+      "IMPG"
+    ],
+    "analysis/slurm/vgp_10_pilot/mapping_stage.sh": [
+      "VGP_NODE_LOCAL_BASE:=/scratch",
+      "mktemp -d -- \"$VGP_NODE_LOCAL_BASE/",
+      "export TMPDIR=",
+      "export TMP=",
+      "export TEMP=",
+      "fastga_scratch_guard",
+      "sweepga"
+    ],
+    "analysis/slurm/vgp_10_pilot/pair_stage.sh": [
+      "IMPG",
+      "impg_hierarchical_lace.sh"
+    ],
+    "analysis/vgp_10_pilot.py": [
+      "freeze_psmcfa_bootstrap_units",
+      "bootstrap_psmcfa",
+      "primary_psmcfa_NKT_bins"
+    ],
+    "analysis/vgp_read_validation.py": [
+      "paired sensitivity",
+      "stream_depth_masks",
+      "assembly_evidence"
+    ]
+  },
+  "schema_version": "vgp-corrective-repair-base-v1",
+  "selection_policy": {
+    "forbidden_inferences": [
+      "P07 is assembly-invalid",
+      "technical pipeline failure is a biological exclusion",
+      "two completed result packets constitute full VGP scale-out"
+    ],
+    "historical_outputs": "preserve bytes and bind their status in vgp_repair_base_artifact_status.tsv",
+    "implementation": "retain dependency-correct code, pinned environments, tests, workers, manifests, and provenance tooling"
+  },
+  "skipped_main_conclusion": {
+    "commit": "0c20b121b25a8ff139e8c9704b6fa9f4f0de743f",
+    "role": "files preserved and status-bound, but synthesis claims are excluded from this base"
+  },
+  "status": "CURRENT_IMPLEMENTATION_BASE",
+  "task_id": "integrate-vgp-repair-base"
+}

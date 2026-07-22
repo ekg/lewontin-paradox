@@ -16,6 +16,7 @@ import dataclasses
 import datetime as dt
 import errno
 import fcntl
+import gzip
 import hashlib
 import json
 import os
@@ -364,48 +365,76 @@ def _capture_source_and_compress(row: InventoryRow, work: Path, bgzip_threads: i
     source_bytes = work / "source.bytes"
     source_sequences = work / "source.sequences.tsv"
     output = work / "payload.fa.gz"
-    script = r'''
-set -euo pipefail
-source_path=$1
-source_format=$2
-output=$3
-sha_output=$4
-bytes_output=$5
-sequences_output=$6
-threads=$7
-fifo_sha=$8
-fifo_sequences=$9
-fifo_bytes=${10}
-mkfifo "$fifo_sha" "$fifo_sequences" "$fifo_bytes"
-sha256sum <"$fifo_sha" >"$sha_output" & sha_pid=$!
-wc -c <"$fifo_bytes" >"$bytes_output" & bytes_pid=$!
-awk 'BEGIN{OFS="\t"}
-  /^>/ {
-    if (seen) print name, seq_len;
-    header=substr($0,2); sub(/\r$/, "", header); split(header, field, /[ \t]/);
-    name=field[1]; seq_len=0; seen=1; next
-  }
-  {gsub(/[ \t\r]/, "", $0); seq_len += length($0)}
-  END {if (seen) print name, seq_len}' <"$fifo_sequences" >"$sequences_output" & seq_pid=$!
-case "$source_format" in
-  gzip) gzip -dc -- "$source_path" ;;
-  uncompressed_fasta) coreutils_cat=$(command -v cat); "$coreutils_cat" -- "$source_path" ;;
-  *) exit 64 ;;
-esac | tee "$fifo_sha" "$fifo_sequences" "$fifo_bytes" | bgzip -@ "$threads" -c >"$output"
-wait "$sha_pid"
-wait "$seq_pid"
-wait "$bytes_pid"
-rm -f "$fifo_sha" "$fifo_sequences" "$fifo_bytes"
-'''
-    command = [
-        "bash", "-c", script, "bgzf-worker", row.source_path, row.source_format,
-        str(output), str(source_sha), str(source_bytes), str(source_sequences),
-        str(max(1, bgzip_threads)), str(work / "sha.fifo"), str(work / "seq.fifo"),
-        str(work / "bytes.fifo"),
-    ]
-    _run(command)
-    sha_value = source_sha.read_text().split()[0]
-    byte_value = int(source_bytes.read_text().strip())
+    if row.source_format == "gzip":
+        source_handle = gzip.open(row.source_path, "rb")
+    elif row.source_format == "uncompressed_fasta":
+        source_handle = Path(row.source_path).open("rb")
+    else:
+        raise ValidationError(f"unsupported source format for compression: {row.source_format}")
+
+    digest = hashlib.sha256()
+    byte_value = 0
+    sequence_rows: list[tuple[str, int]] = []
+    sequence_name: str | None = None
+    sequence_length = 0
+    with source_handle as source, output.open("wb") as sink:
+        try:
+            process = subprocess.Popen(
+                ["bgzip", "-@", str(max(1, bgzip_threads)), "-c"],
+                stdin=subprocess.PIPE,
+                stdout=sink,
+                stderr=subprocess.PIPE,
+            )
+        except FileNotFoundError as error:
+            raise ToolError("tool absent: bgzip") from error
+        assert process.stdin is not None and process.stderr is not None
+        try:
+            for line in source:
+                digest.update(line)
+                byte_value += len(line)
+                process.stdin.write(line)
+                if line.startswith(b">"):
+                    if sequence_name is not None:
+                        sequence_rows.append((sequence_name, sequence_length))
+                    header = line[1:].rstrip(b"\r\n").split(None, 1)
+                    if not header:
+                        raise ValidationError("empty FASTA sequence name")
+                    sequence_name = header[0].decode("utf-8")
+                    sequence_length = 0
+                else:
+                    sequence_length += len(b"".join(line.split()))
+        except Exception as error:
+            try:
+                process.stdin.close()
+            except BrokenPipeError:
+                pass
+            if process.poll() is None:
+                process.terminate()
+            stderr = process.stderr.read()
+            process.wait()
+            if isinstance(error, PipelineError):
+                raise
+            raise ToolError(
+                f"BGZF compression stream failed: {stderr.decode(errors='replace')[-2000:]}"
+            ) from error
+        process.stdin.close()
+        stderr = process.stderr.read()
+        returncode = process.wait()
+        if returncode:
+            raise ToolError(
+                f"BGZF compression failed ({returncode}): {stderr.decode(errors='replace')[-2000:]}"
+            )
+    if sequence_name is not None:
+        sequence_rows.append((sequence_name, sequence_length))
+    if not sequence_rows:
+        raise ValidationError("source FASTA has no sequences")
+
+    sha_value = digest.hexdigest()
+    source_sha.write_text(f"{sha_value}  -\n")
+    source_bytes.write_text(f"{byte_value}\n")
+    with source_sequences.open("w", newline="") as handle:
+        writer = csv.writer(handle, delimiter="\t", lineterminator="\n")
+        writer.writerows(sequence_rows)
     if not output.is_file() or output.stat().st_size == 0:
         raise ValidationError("BGZF_ZERO_OUTPUT: compressor produced no payload")
     return {
