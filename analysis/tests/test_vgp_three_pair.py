@@ -5,7 +5,11 @@ from pathlib import Path
 import pytest
 
 from analysis.vgp_10_pilot import PilotError, sha256_file
-from analysis.vgp_three_pair import audit_graph_identifiers, materialize_exact_staged_fastas
+from analysis.vgp_three_pair import (
+    audit_graph_identifiers,
+    compare_controlled_pafs,
+    materialize_exact_staged_fastas,
+)
 
 
 ROOT = Path(__file__).parents[2]
@@ -111,3 +115,18 @@ def test_slurm_contract_has_dictionary_rebuild_and_pinned_wfmash_fallback():
     assert "--aligner wfmash" in mapping
     assert "same_staged_fasta_bytes_as_corrected_retry" in mapping
     assert "enforce-paf" in mapping and "audit-paf" in mapping
+
+
+def test_controlled_backend_comparison_uses_common_coverage_and_exact_alleles(tmp_path):
+    h1, h2 = tmp_path / "h1.fa", tmp_path / "h2.fa"
+    h1.write_text(">H1\n" + "A" * 100 + "\n")
+    h2.write_text(">H2\n" + "A" * 20 + "C" + "A" * 79 + "\n")
+    fastga, wfmash = tmp_path / "fastga.paf", tmp_path / "wfmash.paf"
+    fastga.write_text("H2\t100\t0\t100\t+\tH1\t100\t0\t100\t99\t100\t60\tcg:Z:20=1X79=\n")
+    wfmash.write_text("H2\t100\t10\t100\t+\tH1\t100\t10\t100\t89\t90\t60\tcg:Z:10=1X79=\n")
+    result = compare_controlled_pafs(fastga, wfmash, h1, h2, tmp_path / "comparison")
+    assert result["overlapping_target_bp"] == 90
+    assert result["target_coverage_jaccard"] == 0.9
+    assert result["shared_exact_variants"] == 1
+    assert result["exact_variant_jaccard"] == 1.0
+    assert result["fastga_ref_alt_reconstruction"]["reconstruction_failures"] == 0

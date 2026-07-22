@@ -17,7 +17,18 @@ import json
 from pathlib import Path
 from typing import Iterator, Mapping, Sequence
 
-from analysis.vgp_10_pilot import PilotError, canonical_json, sha256_file
+from analysis.vgp_10_pilot import (
+    PilotError,
+    canonical_json,
+    intersect_intervals,
+    interval_bp,
+    merge_intervals,
+    paf_h1_intervals,
+    paf_to_exact_vcf,
+    parse_paf,
+    parse_vcf,
+    sha256_file,
+)
 
 
 def _fasta_records(path: Path) -> Iterator[tuple[str, str]]:
@@ -235,6 +246,62 @@ def audit_graph_identifiers(
     return result
 
 
+def compare_controlled_pafs(
+    fastga_paf: Path | str, wfmash_paf: Path | str, h1_fasta: Path | str,
+    h2_fasta: Path | str, output_dir: Path | str,
+) -> dict[str, object]:
+    """Compare both SweepGA backends only where their target coverage overlaps."""
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    fastga_records, wfmash_records = parse_paf(fastga_paf), parse_paf(wfmash_paf)
+    fastga_regions = merge_intervals(paf_h1_intervals(fastga_records))
+    wfmash_regions = merge_intervals(paf_h1_intervals(wfmash_records))
+    common = intersect_intervals(fastga_regions, wfmash_regions)
+    fastga_bp, wfmash_bp, common_bp = (
+        interval_bp(fastga_regions), interval_bp(wfmash_regions), interval_bp(common)
+    )
+    if common_bp <= 0:
+        raise PilotError("controlled FastGA/WFMASH comparison has no overlapping target coverage")
+    union_bp = fastga_bp + wfmash_bp - common_bp
+
+    def variants(label: str, paf: Path | str):
+        vcf, audit = output / f"{label}.vcf", output / f"{label}.reconstruction.json"
+        reconstruction = paf_to_exact_vcf(paf, h1_fasta, h2_fasta, vcf)
+        audit.write_text(canonical_json(reconstruction), encoding="utf-8")
+        values = parse_vcf(vcf)
+        return {
+            (value.contig, value.pos0, value.ref, value.alt)
+            for value in values
+            if any(
+                region.contig == value.contig and region.start <= value.pos0 < region.end
+                for region in common
+            )
+        }, reconstruction
+
+    fastga_variants, fastga_reconstruction = variants("fastga", fastga_paf)
+    wfmash_variants, wfmash_reconstruction = variants("wfmash", wfmash_paf)
+    shared_variants = fastga_variants & wfmash_variants
+    all_variants = fastga_variants | wfmash_variants
+    result = {
+        "schema_version": "vgp-three-pair-controlled-backend-comparison-v1",
+        "comparison_scope": "same staged chromosome-1 FASTAs; common target coverage only",
+        "fastga_target_bp": fastga_bp,
+        "wfmash_target_bp": wfmash_bp,
+        "overlapping_target_bp": common_bp,
+        "target_coverage_jaccard": common_bp / union_bp,
+        "fastga_variants_in_overlap": len(fastga_variants),
+        "wfmash_variants_in_overlap": len(wfmash_variants),
+        "shared_exact_variants": len(shared_variants),
+        "exact_variant_jaccard": len(shared_variants) / len(all_variants) if all_variants else 1.0,
+        "fastga_ref_alt_reconstruction": fastga_reconstruction,
+        "wfmash_ref_alt_reconstruction": wfmash_reconstruction,
+        "coordinates_and_strands_checked_by_paf_parser": True,
+        "comparison_is_diagnostic_not_a_biological_exclusion": True,
+    }
+    (output / "comparison.json").write_text(canonical_json(result), encoding="utf-8")
+    return result
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -248,13 +315,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     audit.add_argument("partitions")
     audit.add_argument("output_json")
     audit.add_argument("--aliases")
+    compare = sub.add_parser("compare-pafs")
+    compare.add_argument("fastga_paf")
+    compare.add_argument("wfmash_paf")
+    compare.add_argument("h1_fasta")
+    compare.add_argument("h2_fasta")
+    compare.add_argument("output_dir")
     args = parser.parse_args(argv)
     try:
         if args.command == "stage-fastas":
             result = materialize_exact_staged_fastas(args.manifest, args.output_dir, args.audit_json)
-        else:
+        elif args.command == "audit-graph-ids":
             result = audit_graph_identifiers(
                 args.dictionary_json, args.paf, args.partitions, args.output_json, args.aliases
+            )
+        else:
+            result = compare_controlled_pafs(
+                args.fastga_paf, args.wfmash_paf, args.h1_fasta, args.h2_fasta,
+                args.output_dir,
             )
     except (PilotError, OSError, json.JSONDecodeError, ValueError) as error:
         print(f"ERROR: {error}", file=__import__("sys").stderr)
