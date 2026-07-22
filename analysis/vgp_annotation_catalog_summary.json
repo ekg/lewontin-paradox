@@ -1,0 +1,64 @@
+{
+  "accepted_annotations": 1833,
+  "annotation_binding_status": {
+    "DICTIONARY_MISMATCH": 1,
+    "EXACT_DICTIONARY": 1828,
+    "VALIDATED_ALIAS": 5
+  },
+  "assembly_accounting": {
+    "status_counts": {
+      "EXACT_DICTIONARY": 581
+    },
+    "total": 581
+  },
+  "closed_world": {
+    "all_physical_annotation_bytes": 15879123133,
+    "all_physical_annotation_objects": 1834,
+    "fetched_official_annotation_bytes": 5138794094,
+    "fetched_official_annotation_objects": 353,
+    "mirror_annotation_bytes": 10740329039,
+    "mirror_annotation_objects": 1481,
+    "ncbi_metadata_closed_world_accessions": 581,
+    "ncbi_metadata_reports": 535,
+    "ncbi_metadata_unresolved": 46,
+    "official_fetch_failures": {},
+    "unique_payload_bytes": 15765149194,
+    "unique_payloads": 1832
+  },
+  "compression": {
+    "GZIP": 1834
+  },
+  "formats": {
+    "GFF3": 355,
+    "GTF": 1479
+  },
+  "generated_at_utc": "2026-07-22T18:02:10Z",
+  "origins": {
+    "FETCHED_NCBI_OFFICIAL": 353,
+    "MIRRORED_FREEZE1": 1481
+  },
+  "parse_validation": {
+    "PASS": 1834
+  },
+  "pilot_accounting": {
+    "status_counts": {
+      "EXACT_DICTIONARY": 10
+    },
+    "total": 10
+  },
+  "schema_version": "vgp-annotation-catalog-v1",
+  "validation_errors": {
+    "cds_phase_errors": 0,
+    "circular_coordinate_wrap_count": 2,
+    "column_errors": 0,
+    "coordinate_errors": 0,
+    "coordinate_overrun_count": 0,
+    "decompression_errors": 0,
+    "duplicate_declared_sequence_regions": 0,
+    "gtf_parent_attribute_errors": 0,
+    "length_mismatch_count": 0,
+    "missing_parent_references": 0,
+    "unresolved_sequence_count": 90,
+    "utf8_errors": 0
+  }
+}

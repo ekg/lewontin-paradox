@@ -1,0 +1,36 @@
+{
+  "accepted_annotations": 1833,
+  "assembly_bindings": 581,
+  "binding_status_counts": {
+    "DICTIONARY_MISMATCH": 1,
+    "EXACT_DICTIONARY": 1828,
+    "VALIDATED_ALIAS": 5
+  },
+  "catalog_json_sha256": "dcb1e3c627f32bccb7c107d51114bfff9d74cb9e5145499c95191ff793f67d3b",
+  "catalog_sha256": "7042e69a735f7875dbc34f6c34b44860bb12b94d02c1e7776931a30d825ca404",
+  "circular_origin_spanning_sequences": 2,
+  "fetched_official_annotations": 353,
+  "mirrored_annotations": 1481,
+  "parsed_annotations": 1834,
+  "physical_annotation_bytes": 15879123133,
+  "physical_annotations": 1834,
+  "pilot_bindings": 10,
+  "pilot_status_counts": {
+    "EXACT_DICTIONARY": 10
+  },
+  "preferred_assembly_status_counts": {
+    "EXACT_DICTIONARY": 581
+  },
+  "rejected_exceptions": [
+    {
+      "assembly_accession_version": "GCF_014108235.1",
+      "binding_reason": "90 unresolved names",
+      "binding_status": "DICTIONARY_MISMATCH",
+      "physical_path": "/moosefs/erikg/vgp/freeze1/objects/GCF/014/108/235/GCF_014108235.1/genes/veupathGenes.gtf.gz"
+    }
+  ],
+  "schema_version": "vgp-annotation-catalog-validation-v1",
+  "sequence_dictionary_sha256": "efe957eebac9808872dbfe4e3187509d77d8ae1c92d55efba9e67a879ab182fc",
+  "status": "PASS",
+  "validated_at_utc": "2026-07-22T18:04:34Z"
+}
