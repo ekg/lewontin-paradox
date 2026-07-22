@@ -685,7 +685,8 @@ def test_slurm_entrypoints_are_resumable_atomic_ordered_and_have_no_global_memor
     assert pair.index("impg.normalized.vcf.gz") < pair.index("paf-vcf")
     assert pair.index('"$bcftools" norm -f "$h1" -m -any') < pair.index(split_index)
     assert pair.find('"$bcftools" view -R', pair.index(split_index)) > pair.index(split_index)
-    assert '"$input_dir/h1_universe.bed" "$VGP_STAGE_PARTIAL/focus.native.bed"' in pair
+    assert '"$h1_universe" "$VGP_STAGE_PARTIAL/focus.native.bed"' in pair
+    assert 'h1_universe="$SLURM_TMPDIR/inputs/h1_universe.bed"' in pair
     assert '"$input_dir/eligible_query_regions.bed" "$VGP_STAGE_PARTIAL/focus.native.bed"' not in pair
     assert "regional_vcf_audit.json" in pair
     assert pair.index('regional_vcf_audit.json') < pair.index('impg_hierarchical_lace.sh')

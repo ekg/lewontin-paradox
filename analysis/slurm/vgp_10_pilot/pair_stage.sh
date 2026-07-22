@@ -20,6 +20,7 @@ begin_stage "$VGP_STAGE_NAME"
 input_dir="$VGP_DATA_ROOT/pilot/inputs/$VGP_SELECTION_ID"
 h1="$input_dir/h1.fa"
 h2="$input_dir/h2.fa"
+h1_universe="$input_dir/h1_universe.bed"
 threads=${SLURM_CPUS_PER_TASK:-1}
 
 # FastGA/IMPG create indexes and companion files relative to their sequence
@@ -27,8 +28,19 @@ threads=${SLURM_CPUS_PER_TASK:-1}
 # private node-local working copies sized by resources.json.
 if [[ $VGP_STAGE_NAME != preflight ]]; then
     mkdir -p "$SLURM_TMPDIR/inputs"
-    cp "$h1" "$SLURM_TMPDIR/inputs/h1.fa"
-    cp "$h2" "$SLURM_TMPDIR/inputs/h2.fa"
+    if [[ $VGP_STAGE_NAME == impg ]]; then
+        # Rebuild the graph reader's FASTAs from the frozen logical sequence
+        # dictionaries.  This fixes representation/index incompatibilities
+        # without changing, aliasing, or omitting any biological sequence.
+        python3 -m analysis.vgp_three_pair stage-fastas \
+            "$input_dir/input-manifest.json" "$SLURM_TMPDIR/inputs" \
+            "$VGP_STAGE_PARTIAL/staged_fasta_dictionary.json" \
+            >"$VGP_STAGE_PARTIAL/staged_fasta_dictionary.stdout.json"
+        h1_universe="$SLURM_TMPDIR/inputs/h1_universe.bed"
+    else
+        cp "$h1" "$SLURM_TMPDIR/inputs/h1.fa"
+        cp "$h2" "$SLURM_TMPDIR/inputs/h2.fa"
+    fi
     h1="$SLURM_TMPDIR/inputs/h1.fa"
     h2="$SLURM_TMPDIR/inputs/h2.fa"
 fi
@@ -131,8 +143,13 @@ impg)
         -w 2000 -d 0 --min-missing-size 1 --min-boundary-distance 0 \
         -o bed --output-folder "$VGP_STAGE_PARTIAL/partitions" -t "$threads" \
         2> >(awk '!/ INFO  /' >"$VGP_STAGE_PARTIAL/impg.partition.stderr")
+    python3 -m analysis.vgp_three_pair audit-graph-ids \
+        "$VGP_STAGE_PARTIAL/staged_fasta_dictionary.json" "$paf" \
+        "$VGP_STAGE_PARTIAL/partitions/partitions.bed" \
+        "$VGP_STAGE_PARTIAL/graph_identifier_audit.json" \
+        >"$VGP_STAGE_PARTIAL/graph_identifier_audit.stdout.json"
     python3 - "$VGP_STAGE_PARTIAL/partitions/partitions.bed" \
-        "$input_dir/h1_universe.bed" "$VGP_STAGE_PARTIAL/focus.native.bed" <<'PY'
+        "$h1_universe" "$VGP_STAGE_PARTIAL/focus.native.bed" <<'PY'
 import sys
 from analysis.vgp_10_pilot import read_bed,select_native_partitions
 select_native_partitions(sys.argv[1],read_bed(sys.argv[2]),sys.argv[3])

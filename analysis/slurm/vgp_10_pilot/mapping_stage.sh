@@ -11,6 +11,12 @@ VGP_REPO_ROOT=${SLURM_SUBMIT_DIR:?submit from the repository root}
 : "${VGP_FASTGA_AMENDMENT:=$VGP_REPO_ROOT/analysis/vgp_real_pilot_fastga_amendment_v1.json}"
 : "${VGP_NODE_LOCAL_BASE:=/scratch}"
 : "${VGP_RESOURCE_PLAN:=}"
+: "${VGP_MAPPING_BACKEND:=fastga}"
+case "$VGP_MAPPING_BACKEND" in
+    fastga|wfmash) ;;
+    *) echo "unsupported mapping backend: $VGP_MAPPING_BACKEND" >&2; exit 2 ;;
+esac
+export VGP_MAPPING_BACKEND
 export PYTHONPATH=$VGP_REPO_ROOT
 
 input_dir="$VGP_DATA_ROOT/pilot/inputs/$VGP_SELECTION_ID"
@@ -103,21 +109,31 @@ cwd_resolved=$(readlink -f -- /proc/$$/cwd)
     exit 70
 }
 threads=${SLURM_CPUS_PER_TASK:-1}
-"$sweepga" "$scratch/inputs/h2.fa" "$scratch/inputs/h1.fa" \
-    --output-file "$partial/h2_to_h1.native.1to1.paf" \
-    --num-mappings 1:1 --scaffold-jump 0 --overlap 0 \
-    --scoring log-length-ani --threads "$threads" \
-    >"$partial/sweepga.stdout" 2>"$partial/sweepga.stderr" &
+mapping_args=(
+    "$sweepga" "$scratch/inputs/h2.fa" "$scratch/inputs/h1.fa"
+    --output-file "$partial/h2_to_h1.native.1to1.paf"
+    --num-mappings 1:1 --scaffold-jump 0 --overlap 0
+    --scoring log-length-ani --threads "$threads"
+)
+if [[ $VGP_MAPPING_BACKEND == wfmash ]]; then
+    # The fallback changes only the pinned aligner implementation.  It uses the
+    # byte-identical staged FASTAs and then enters the same removal-only exact
+    # bidirectional 1:1 filter and audit below.
+    mapping_args+=(--aligner wfmash --map-pct-identity 90 --min-aln-length 25000)
+fi
+"${mapping_args[@]}" >"$partial/sweepga.stdout" 2>"$partial/sweepga.stderr" &
 sweepga_pid=$!
 guard_log="$partial/fastga_scratch_snapshots.jsonl"
 guard_failed=0
 while [[ $(ps -o stat= -p "$sweepga_pid" 2>/dev/null) != *Z* ]] && kill -0 "$sweepga_pid" 2>/dev/null; do
-    if ! python3 "$VGP_REPO_ROOT/analysis/fastga_scratch_guard.py" check \
-        --parent-pid "$sweepga_pid" --scratch "$scratch" --audit-jsonl "$guard_log"; then
-        guard_failed=1
-        pkill -TERM -P "$sweepga_pid" 2>/dev/null || true
-        kill -TERM "$sweepga_pid" 2>/dev/null || true
-        break
+    if [[ $VGP_MAPPING_BACKEND == fastga ]]; then
+        if ! python3 "$VGP_REPO_ROOT/analysis/fastga_scratch_guard.py" check \
+            --parent-pid "$sweepga_pid" --scratch "$scratch" --audit-jsonl "$guard_log"; then
+            guard_failed=1
+            pkill -TERM -P "$sweepga_pid" 2>/dev/null || true
+            kill -TERM "$sweepga_pid" 2>/dev/null || true
+            break
+        fi
     fi
     sleep "${VGP_FASTGA_GUARD_INTERVAL_SECONDS:-2}"
 done
@@ -131,9 +147,26 @@ fi
     exit 70
 }
 (( sweepga_status == 0 )) || exit "$sweepga_status"
-python3 "$VGP_REPO_ROOT/analysis/fastga_scratch_guard.py" finalize \
-    --scratch "$scratch" --audit-jsonl "$guard_log" \
-    --output "$partial/fastga_scratch_contract.json"
+if [[ $VGP_MAPPING_BACKEND == fastga ]]; then
+    python3 "$VGP_REPO_ROOT/analysis/fastga_scratch_guard.py" finalize \
+        --scratch "$scratch" --audit-jsonl "$guard_log" \
+        --output "$partial/fastga_scratch_contract.json"
+else
+    python3 - "$partial/wfmash_fallback_contract.json" "$scratch/inputs/h1.fa" \
+        "$scratch/inputs/h2.fa" <<'PY'
+import json,os,sys
+from pathlib import Path
+from analysis.vgp_10_pilot import sha256_file
+Path(sys.argv[1]).write_text(json.dumps({
+ "schema_version":"vgp-three-pair-wfmash-fallback-v1",
+ "selection_id":os.environ["VGP_SELECTION_ID"],
+ "fallback_trigger":"reproducible corrected FastGA failure in frozen selection evidence",
+ "same_staged_fasta_bytes_as_corrected_retry":True,
+ "h1_sha256":sha256_file(sys.argv[2]),"h2_sha256":sha256_file(sys.argv[3]),
+ "downstream_contract":"deterministic removal-only absolute bidirectional 1:1",
+},sort_keys=True)+"\n")
+PY
+fi
 python3 -m analysis.vgp_10_pilot enforce-paf \
     "$partial/h2_to_h1.native.1to1.paf" "$partial/h2_to_h1.1to1.paf" \
     >"$partial/exact_multiplicity_filter.json"
@@ -165,6 +198,8 @@ Path(sys.argv[1]).write_text(json.dumps({
  "task_id":os.environ.get("VGP_TASK_ID","run-vgp-real-pilot"),
  "authorization_id":"vgp10-auth-20260718-v2","canonical_vgp_root":sys.argv[2],
  "selection_id":sys.argv[3],"slurm_job_id":os.environ["SLURM_JOB_ID"],
+ "mapping_backend":os.environ["VGP_MAPPING_BACKEND"],
+ "fallback_is_species_exclusion":False,
  "required_option":"--num-mappings 1:1","environment_capture":{"path":sys.argv[4],"sha256":sys.argv[5]},
  "fastga_amendment":{"path":sys.argv[6],"sha256":sys.argv[7]},
 },sort_keys=True)+"\n")
