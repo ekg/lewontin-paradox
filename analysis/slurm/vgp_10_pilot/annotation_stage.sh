@@ -59,7 +59,7 @@ python3 "$VGP_REPO_ROOT/analysis/vgp_real_canary_annotation.py" \
     --selection-id "$VGP_SELECTION_ID" \
     --assembly-accession-version "${annotation_fields[2]}" \
     --annotation-accession-version "${annotation_fields[3]}" \
-    --task-id run-vgp-real-pilot \
-    --schema-version vgp-real-pilot-exact-annotation-v1 \
+    --task-id "${VGP_TASK_ID:-run-vgp-real-pilot}" \
+    --schema-version "${VGP_ANNOTATION_SCHEMA_VERSION:-vgp-real-pilot-exact-annotation-v1}" \
     --output "$VGP_STAGE_PARTIAL/exact_partitions.json"
 promote_stage

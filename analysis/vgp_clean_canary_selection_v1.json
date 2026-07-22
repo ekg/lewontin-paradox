@@ -1,0 +1,38 @@
+{
+  "annotation": {
+    "annotation_accession_version": "GCA_048126635.1-GB_2025_08_04",
+    "assembly_accession_version": "GCA_048126635.1",
+    "binding_status": "EXACT_DICTIONARY",
+    "gff_path": "/moosefs/erikg/vgp/objects/sha256/8f/64/8f640543accd8081d1b7048eda32c9f1eef33b02f321b7b0f8adcf3b01dd6838",
+    "gff_sha256": "8f640543accd8081d1b7048eda32c9f1eef33b02f321b7b0f8adcf3b01dd6838"
+  },
+  "comparison_target": {
+    "callable_bp": 267379237,
+    "callable_bp_absolute_tolerance": 0,
+    "pi": 0.0021472198306856562,
+    "pi_absolute_tolerance": 1e-12,
+    "source": "analysis/vgp_real_canary_execution_v1.json"
+  },
+  "decision_recorded_at_utc": "2026-07-22T18:20:00Z",
+  "immutable_bgzf_inputs": {
+    "h1": {
+      "accession_version": "GCA_048126635.1",
+      "derived_bgzf_path": "/moosefs/erikg/vgp/derived/clean-canary-bgzf/GCA_048126635.1.fa.gz",
+      "source_cas_path": "/moosefs/erikg/vgp/objects/sha256/2b/75/2b758e606304f7cb5e795d7939979b08c21bf4f3eac7ea3cf1c6ab0a463733c7",
+      "source_cas_sha256": "2b758e606304f7cb5e795d7939979b08c21bf4f3eac7ea3cf1c6ab0a463733c7"
+    },
+    "h2": {
+      "accession_version": "GCA_048127205.1",
+      "derived_bgzf_path": "/moosefs/erikg/vgp/derived/clean-canary-bgzf/GCA_048127205.1.fa.gz",
+      "source_cas_path": "/moosefs/erikg/vgp/objects/sha256/6e/7e/6e7e9d88b88a3d030d80009191a06c525fbcc50044db05da4d81a8e9ad97ed40",
+      "source_cas_sha256": "6e7e9d88b88a3d030d80009191a06c525fbcc50044db05da4d81a8e9ad97ed40"
+    }
+  },
+  "individual_or_isolate": "fSpiSpi1",
+  "reason": "P07 is the smallest authorized same-individual pair by immutable summed compressed input bytes and has an exact H1 accession/dictionary annotation binding; P04 is larger and its cataloged annotation is bound to GCF_017639655.2 rather than the H1 GCA dictionary.",
+  "run_id": "vgp-clean-canary-20260722-v1",
+  "schema_version": "vgp-clean-canary-selection-v1",
+  "selection_id": "P07",
+  "species": "Spinachia spinachia",
+  "task_id": "run-vgp-clean-canary"
+}

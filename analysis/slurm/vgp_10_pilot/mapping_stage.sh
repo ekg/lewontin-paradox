@@ -161,7 +161,8 @@ python3 - "$partial/mapping_execution.json" "$VGP_DATA_ROOT" "$VGP_SELECTION_ID"
 import json,os,sys
 from pathlib import Path
 Path(sys.argv[1]).write_text(json.dumps({
- "schema_version":"vgp-real-pilot-mapping-execution-v1","task_id":"run-vgp-real-pilot",
+ "schema_version":os.environ.get("VGP_MAPPING_SCHEMA_VERSION","vgp-real-pilot-mapping-execution-v1"),
+ "task_id":os.environ.get("VGP_TASK_ID","run-vgp-real-pilot"),
  "authorization_id":"vgp10-auth-20260718-v2","canonical_vgp_root":sys.argv[2],
  "selection_id":sys.argv[3],"slurm_job_id":os.environ["SLURM_JOB_ID"],
  "required_option":"--num-mappings 1:1","environment_capture":{"path":sys.argv[4],"sha256":sys.argv[5]},

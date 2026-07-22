@@ -1,0 +1,19 @@
+{
+  "canonical_vgp_root": "/moosefs/erikg/vgp",
+  "cigar_operation_bases": {
+    "=": 274174454,
+    "D": 520463,
+    "I": 521353,
+    "X": 1350745
+  },
+  "paf_records_reconstructed": 4297,
+  "paf_sha256": "0bcf45366bca9217cd012242cedf79921a6cafd6b1fb1f5247db7e54512d00fa",
+  "raw_variant_records": 1488893,
+  "raw_vcf_sha256": "356433d3e4f4b8c278c82202b569088982b9e51686dd89f0f11074b44af0acdd",
+  "reconstructed_h2_sha256": "a7872335377953082849d6c02a5f3b7f8f8205998798cffb2cacab6af0815fa0",
+  "reconstruction_failures": 0,
+  "schema_version": "vgp-exact-paf-variant-audit-v1",
+  "zero_effect_blocks_removed": 105
+}
+{"output": "/scratch/vgp-clean-P07-1791510-KMUN0E/vgp-vgp-clean-canary-20260722-v1-P07-annotation-1791510.partial/exact_partitions.json", "partitions": [{"callable_bp": 26185407, "estimate": 0.000605260785138837, "estimator": "normalized heterozygous allele records / callable CDS bp", "heterozygous_variants": 15849, "partition": "CDS"}, {"callable_bp": 4230801, "estimate": 0.0008475936353423382, "estimator": "heterozygous SNPs / callable fourfold bp", "heterozygous_variants": 3586, "partition": "fourfold"}, {"callable_bp": 1455109, "estimate": 0.0011662356565728066, "estimator": "heterozygous SNPs / callable fourfold AT bp", "heterozygous_variants": 1697, "partition": "fourfold_W"}, {"callable_bp": 2775692, "estimate": 0.0006805510121439986, "estimator": "heterozygous SNPs / callable fourfold GC bp", "heterozygous_variants": 1889, "partition": "fourfold_S"}, {"callable_bp": 1455109, "estimate": 0.0009250166138756615, "estimator": "AT-to-GC SNPs / callable fourfold AT bp", "heterozygous_variants": 1346, "partition": "WS"}, {"callable_bp": 2775692, "estimate": 0.0004748365452651087, "estimator": "GC-to-AT SNPs / callable fourfold GC bp", "heterozygous_variants": 1318, "partition": "SW"}]}
+/moosefs/erikg/vgp/pilot/clean-canary/vgp-clean-canary-20260722-v1/P07

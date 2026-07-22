@@ -1,0 +1,844 @@
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+[2026-07-22T18:56:36Z INFO  impg] Found 1 alignment file(s)
+[2026-07-22T18:56:36Z INFO  impg] Using single indexing mode
+[2026-07-22T18:56:36Z INFO  impg] Building 1 bidirectional index file processing 1 alignment file(s)...
+[2026-07-22T18:56:36Z INFO  impg] Index created successfully
+Checking the headers and starting positions of 16 files
+Writing to /scratch/vgp-clean-P07-1791510-KMUN0E/impg-hierarchical-P07-1791510/final-tempo8nQrp
+Merging 1 temporary files
+Cleaning
+Done
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+Lines   total/split/realigned/skipped:	577259/12/106119/0
+Lines   total/split/realigned/skipped:	572464/0/0/0
+Lines   total/split/realigned/skipped:	1488893/0/135625/0
+Lines   total/split/realigned/skipped:	1488892/0/0/0
+Lines   total/split/realigned/skipped:	1488892/0/0/0
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+sacct: error: _open_persist_conn: failed to open persistent connection to host:localhost:6819: Connection refused
+sacct: error: Sending PersistInit msg: Connection refused
+sacct: error: Problem talking to the database: Connection refused
