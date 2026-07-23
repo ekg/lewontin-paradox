@@ -112,6 +112,7 @@ def test_slurm_contract_has_dictionary_rebuild_and_pinned_wfmash_fallback():
     assert "stage-fastas" in pair and "audit-graph-ids" in pair
     assert 'h1_universe="$SLURM_TMPDIR/inputs/h1_universe.bed"' in pair
     assert "fastga|wfmash" in mapping
+    assert "export VGP_SELECTION_ID" in mapping
     assert "--aligner wfmash" in mapping
     assert "same_staged_fasta_bytes_as_corrected_retry" in mapping
     assert "enforce-paf" in mapping and "audit-paf" in mapping

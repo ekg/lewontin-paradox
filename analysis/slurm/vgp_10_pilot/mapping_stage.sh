@@ -4,6 +4,7 @@ set -euo pipefail
 
 VGP_SELECTION_ID=${1:?usage: mapping_stage.sh SELECTION_ID}
 [[ $VGP_SELECTION_ID =~ ^P(0[1-9]|10)$ ]] || { echo "invalid selection" >&2; exit 2; }
+export VGP_SELECTION_ID
 VGP_REPO_ROOT=${SLURM_SUBMIT_DIR:?submit from the repository root}
 : "${VGP_DATA_ROOT:?VGP_DATA_ROOT is required}"
 : "${VGP_RUN_ID:?VGP_RUN_ID is required}"
