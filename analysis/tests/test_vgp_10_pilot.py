@@ -903,6 +903,17 @@ def test_p07_impg_rescue_uses_boundary_safe_hierarchical_lacing():
     assert rescue.index('[[ -s $partial/laced.vcf ]]') < rescue.index('rm -rf -- "$partial/calls"')
 
 
+def test_hierarchical_lace_preserves_chunks_without_h2_samples():
+    helper = (SLURM / "impg_hierarchical_lace.sh").read_text()
+    assert "IMPG chunk has no H2 region sample" not in helper
+    assert '"chunks_without_h2_samples"' in helper
+    assert '"header_only_no_h2_samples"' in helper
+    assert '"empty_chunk_rule"' in helper
+    assert '[[ -s $work/h2-samples/$chunk_stem.txt ]]' in helper
+    assert '"$bcftools" view --header-only --drop-genotypes' in helper
+    assert '"$bcftools" index -f -t' in helper
+
+
 def test_authorized_canary_runs_psmc_in_checkpointed_inallocation_batches():
     canary = (SLURM / "authorized/v2.0.0/run_canary.sh").read_text()
     assert "P07_CANARY_PSMC_PARALLELISM:=20" in canary

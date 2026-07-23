@@ -98,18 +98,20 @@ for chunk in sorted(chunk_root.glob("[0-9][0-9][0-9].vcf.bz2")):
                 samples=line.rstrip("\n").split("\t")[9:]; break
     if samples is None: raise SystemExit(f"IMPG chunk lacks sample header: {chunk}")
     h2_samples=[sample for sample in samples if sample.split(":",1)[0] not in h1_contigs]
-    if not h2_samples: raise SystemExit(f"IMPG chunk has no H2 region sample: {chunk}")
     chunk_id=chunk.name.removesuffix(".vcf.bz2")
     (output_root/f"{chunk_id}.txt").write_text("".join(f"{sample}\n" for sample in h2_samples))
     all_h2.extend(h2_samples)
     rows.append({"chunk":chunk_id,"total_sample_count":len(samples),
-                 "h2_sample_count":len(h2_samples),"h1_sample_count":len(samples)-len(h2_samples)})
+                 "h2_sample_count":len(h2_samples),"h1_sample_count":len(samples)-len(h2_samples),
+                 "projection_action":"select_h2_nonreference" if h2_samples else "header_only_no_h2_samples"})
 manifest.write_text(json.dumps({
     "schema_version":"vgp-impg-h2-sample-projection-v1",
     "canonical_vgp_root":canonical_root,"selection_id":selection,
     "h1_contig_count":len(h1_contigs),"chunk_count":len(rows),
     "h2_sample_count":len(all_h2),"unique_h2_sample_count":len(set(all_h2)),
+    "chunks_without_h2_samples":sum(not row["h2_sample_count"] for row in rows),
     "chunks":rows,"projection_rule":"sample contig prefix absent from H1 dictionary",
+    "empty_chunk_rule":"retain every split partition as a header-only site shard when it has no H2 samples",
     "chunk_compression":"bzip2 (observed BZ stream from pinned IMPG --compress bgzip)",
 },sort_keys=True)+"\n")
 PY
@@ -117,12 +119,22 @@ PY
 for chunk_vcf in "$work/lace-chunks"/[0-9][0-9][0-9].vcf.bz2; do
     chunk_name=${chunk_vcf##*/}; chunk_stem=${chunk_name%.vcf.bz2}
     site_vcf="$work/lace-sites/$chunk_stem.vcf.gz"
-    python3 -c \
-        'import bz2,shutil,sys; source=bz2.open(sys.argv[1],"rb"); shutil.copyfileobj(source,sys.stdout.buffer,1024*1024); source.close()' \
-        "$chunk_vcf" |
-        "$bcftools" view --samples-file "$work/h2-samples/$chunk_stem.txt" \
-        --trim-alt-alleles --min-ac 1:nref -Ou - | \
-        "$bcftools" view --drop-genotypes --no-update -Oz -o "$site_vcf"
+    if [[ -s $work/h2-samples/$chunk_stem.txt ]]; then
+        python3 -c \
+            'import bz2,shutil,sys; source=bz2.open(sys.argv[1],"rb"); shutil.copyfileobj(source,sys.stdout.buffer,1024*1024); source.close()' \
+            "$chunk_vcf" |
+            "$bcftools" view --samples-file "$work/h2-samples/$chunk_stem.txt" \
+            --trim-alt-alleles --min-ac 1:nref -Ou - | \
+            "$bcftools" view --drop-genotypes --no-update -Oz -o "$site_vcf"
+    else
+        # A bounded chunk can contain only H1-axis regions. Preserve its place in
+        # the exhaustive split with an indexed header-only shard; it has no H2
+        # genotype from which an H2-derived non-reference site could be emitted.
+        python3 -c \
+            'import bz2,shutil,sys; source=bz2.open(sys.argv[1],"rb"); shutil.copyfileobj(source,sys.stdout.buffer,1024*1024); source.close()' \
+            "$chunk_vcf" |
+            "$bcftools" view --header-only --drop-genotypes --no-update -Oz -o "$site_vcf" -
+    fi
     "$bcftools" index -f -t "$site_vcf"
 done
 python3 - "$work/lace-sites" "$work/lace-sites.list" <<'PY'
