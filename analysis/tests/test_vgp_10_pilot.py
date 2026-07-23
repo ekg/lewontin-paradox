@@ -728,7 +728,10 @@ def test_generic_scaleout_uses_node_local_scratch_and_cross_filesystem_promotion
     assert "hierarchical" in lace
     assert "lace_threads=${VGP_IMPG_LACE_THREADS:-2}" in lace
     assert "lace_threads >= 2" in lace
-    assert "chunk_count=$((available_cpus / lace_threads))" in lace
+    assert "worker_count=$((available_cpus / lace_threads))" in lace
+    assert "max_inputs_per_chunk=${VGP_IMPG_LACE_MAX_INPUTS:-4096}" in lace
+    assert 'count=max(workers,math.ceil(len(rows)/maximum))' in lace
+    assert 'for ((batch_start=0; batch_start<${#chunk_lists[@]}; batch_start+=worker_count))' in lace
     assert "chunk_count > 16" not in lace
     assert "--compress bgzip" in lace
     assert 'bz2.open(chunk,"rt")' in lace

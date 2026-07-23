@@ -11,23 +11,27 @@ set -euo pipefail
 : "${bcftools:?bcftools is required}"
 
 lace_threads=${VGP_IMPG_LACE_THREADS:-2}
+max_inputs_per_chunk=${VGP_IMPG_LACE_MAX_INPUTS:-4096}
 available_cpus=${SLURM_CPUS_PER_TASK:-1}
-(( lace_threads >= 2 && available_cpus >= lace_threads )) || \
+(( lace_threads >= 2 && available_cpus >= lace_threads && max_inputs_per_chunk >= 1 )) || \
     fail "hierarchical IMPG lace has an invalid CPU/thread allocation"
-chunk_count=$((available_cpus / lace_threads))
+worker_count=$((available_cpus / lace_threads))
 work="$SLURM_TMPDIR/impg-hierarchical-${VGP_SELECTION_ID}-${SLURM_JOB_ID:-local}"
 mkdir -p "$work/chunk-lists" "$work/lace-chunks" "$work/chunk-temp" \
     "$work/chunk-logs" "$work/h2-samples" "$work/lace-sites" "$work/final-temp"
 
-python3 - "$VGP_STAGE_PARTIAL/vcf.list" "$work/chunk-lists" "$chunk_count" \
-    "$VGP_DATA_ROOT" "$VGP_SELECTION_ID" <<'PY'
+python3 - "$VGP_STAGE_PARTIAL/vcf.list" "$work/chunk-lists" "$worker_count" \
+    "$max_inputs_per_chunk" "$VGP_DATA_ROOT" "$VGP_SELECTION_ID" <<'PY'
 import json,math,sys
 from pathlib import Path
 source,output=Path(sys.argv[1]),Path(sys.argv[2])
-requested,canonical_root,selection=int(sys.argv[3]),sys.argv[4],sys.argv[5]
+workers,maximum=int(sys.argv[3]),int(sys.argv[4])
+canonical_root,selection=sys.argv[5],sys.argv[6]
 rows=[line.strip() for line in source.read_text().splitlines() if line.strip()]
 if not rows: raise SystemExit("IMPG VCF list is empty")
-count=min(requested,len(rows)); width=math.ceil(len(rows)/count); chunks=[]
+count=max(workers,math.ceil(len(rows)/maximum)); count=min(count,len(rows))
+if count > 1000: raise SystemExit("hierarchical lace requires more than 1000 bounded chunks")
+width=math.ceil(len(rows)/count); chunks=[]
 for number,start in enumerate(range(0,len(rows),width)):
     values=rows[start:start+width]
     path=output/f"{number:03d}.list"
@@ -40,28 +44,34 @@ if sum(row["input_count"] for row in chunks) != len(rows):
     "schema_version":"vgp-impg-hierarchical-lace-split-v1",
     "canonical_vgp_root":canonical_root,"selection_id":selection,
     "input_count":len(rows),"chunk_count":len(chunks),"chunks":chunks,
+    "parallel_worker_count":workers,"maximum_inputs_per_chunk":maximum,
     "split_is_disjoint_and_exhaustive":True,
 },sort_keys=True)+"\n")
 PY
 
-declare -a lace_pids=()
-declare -a lace_ids=()
-for chunk_list in "$work/chunk-lists"/[0-9][0-9][0-9].list; do
-    chunk_id=${chunk_list##*/}; chunk_id=${chunk_id%.list}
-    mkdir -p "$work/chunk-temp/$chunk_id"
-    "$impg" lace -l "$chunk_list" --format vcf \
-        -o "$work/lace-chunks/$chunk_id.vcf.bz2" --reference "$h1" \
-        --temp-dir "$work/chunk-temp/$chunk_id" --compress bgzip -t "$lace_threads" \
-        >"$work/chunk-logs/$chunk_id.log" 2>&1 &
-    lace_pids+=("$!"); lace_ids+=("$chunk_id")
-done
+mapfile -t chunk_lists < <(printf '%s\n' "$work/chunk-lists"/[0-9][0-9][0-9].list)
 lace_failed=0
-for index in "${!lace_pids[@]}"; do
-    if wait "${lace_pids[$index]}"; then
-        [[ -s "$work/lace-chunks/${lace_ids[$index]}.vcf.bz2" ]] || lace_failed=1
-    else
-        lace_failed=1
-    fi
+for ((batch_start=0; batch_start<${#chunk_lists[@]}; batch_start+=worker_count)); do
+    declare -a lace_pids=()
+    declare -a lace_ids=()
+    for ((index=batch_start; index<${#chunk_lists[@]} && index<batch_start+worker_count; index++)); do
+        chunk_list=${chunk_lists[$index]}
+        chunk_id=${chunk_list##*/}; chunk_id=${chunk_id%.list}
+        mkdir -p "$work/chunk-temp/$chunk_id"
+        "$impg" lace -l "$chunk_list" --format vcf \
+            -o "$work/lace-chunks/$chunk_id.vcf.bz2" --reference "$h1" \
+            --temp-dir "$work/chunk-temp/$chunk_id" --compress bgzip -t "$lace_threads" \
+            >"$work/chunk-logs/$chunk_id.log" 2>&1 &
+        lace_pids+=("$!"); lace_ids+=("$chunk_id")
+    done
+    for index in "${!lace_pids[@]}"; do
+        if wait "${lace_pids[$index]}"; then
+            [[ -s "$work/lace-chunks/${lace_ids[$index]}.vcf.bz2" ]] || lace_failed=1
+        else
+            lace_failed=1
+        fi
+    done
+    (( lace_failed == 0 )) || break
 done
 if (( lace_failed != 0 )); then
     for log in "$work/chunk-logs"/*.log; do tail -n 40 -- "$log" >&2 || true; done
@@ -134,11 +144,12 @@ PY
 python3 - "$work/chunk-lists/split_manifest.json" "$work/lace-chunks" \
     "$work/lace-sites" "$VGP_STAGE_PARTIAL/laced.vcf" \
     "$VGP_STAGE_PARTIAL/hierarchical_lace_audit.json" "$VGP_DATA_ROOT" \
-    "$VGP_SELECTION_ID" "$lace_threads" <<'PY'
+    "$VGP_SELECTION_ID" "$lace_threads" "$worker_count" "$max_inputs_per_chunk" <<'PY'
 import hashlib,json,sys
 from pathlib import Path
 split_path,chunk_root,site_root,final_path,output=map(Path,sys.argv[1:6])
-canonical_root,selection,threads=sys.argv[6],sys.argv[7],int(sys.argv[8])
+canonical_root,selection=sys.argv[6],sys.argv[7]
+threads,workers,maximum=map(int,sys.argv[8:11])
 split=json.loads(split_path.read_text())
 def record(path):
     digest=hashlib.sha256()
@@ -153,7 +164,8 @@ output.write_text(json.dumps({
     "schema_version":"vgp-impg-hierarchical-lace-audit-v1",
     "canonical_vgp_root":canonical_root,"selection_id":selection,
     "source_regional_vcf_count":split["input_count"],"chunk_count":len(chunks),
-    "worker_threads":threads,"split_is_disjoint_and_exhaustive":True,
+    "worker_threads":threads,"parallel_worker_count":workers,
+    "maximum_inputs_per_chunk":maximum,"split_is_disjoint_and_exhaustive":True,
     "chunk_compression":"bzip2 (observed BZ stream from pinned IMPG --compress bgzip)",
     "site_only_projection":True,"h2_nonreference_projection":True,
     "boundary_reconciliation_engine":"pinned bcftools concat -a -d exact then coordinate sort",
