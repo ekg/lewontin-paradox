@@ -112,6 +112,7 @@ def test_alias_requires_matching_sequence_digest_and_source_fasta_digest(tmp_pat
 def test_slurm_contract_has_dictionary_rebuild_and_pinned_wfmash_fallback():
     pair = (ROOT / "analysis/slurm/vgp_10_pilot/pair_stage.sh").read_text()
     mapping = (ROOT / "analysis/slurm/vgp_10_pilot/mapping_stage.sh").read_text()
+    parallel_query = (ROOT / "analysis/slurm/vgp_10_pilot/impg_parallel_query.sh").read_text()
     assert "stage-fastas" in pair and "audit-graph-ids" in pair
     assert 'h1_universe="$SLURM_TMPDIR/inputs/h1_universe.bed"' in pair
     assert "fastga|wfmash" in mapping
@@ -119,6 +120,7 @@ def test_slurm_contract_has_dictionary_rebuild_and_pinned_wfmash_fallback():
     assert "--aligner wfmash" in mapping
     assert "same_staged_fasta_bytes_as_corrected_retry" in mapping
     assert "enforce-paf" in mapping and "audit-paf" in mapping
+    assert "--force-large-region" in parallel_query
 
 
 def test_controlled_backend_comparison_uses_common_coverage_and_exact_alleles(tmp_path):
