@@ -7,6 +7,7 @@ from analysis.vgp_10_pilot import PilotError
 from analysis.vgp_bounded_ranges import (
     choose_validation_ranges,
     emit_range_bed,
+    finalize_callable_masks,
     freeze_range_plan,
 )
 
@@ -104,3 +105,39 @@ def test_slurm_contract_queries_and_laces_only_one_bounded_range_at_a_time():
     assert '"$bcftools" concat' in production
     assert "convenience genome-wide file" in production
     assert "global_partition_assignment_ledger_materialized" in production
+
+
+def test_finalize_callable_masks_closes_indel_accounting_and_splits_ranges(tmp_path):
+    plan = tmp_path / "plan.json"
+    plan.write_text(json.dumps({"ranges": [
+        {"range_id": "r0", "contig": "chr1", "start": 0, "end": 5},
+        {"range_id": "r1", "contig": "chr1", "start": 5, "end": 10},
+        {"range_id": "r2", "contig": "chr2", "start": 0, "end": 4},
+    ]}))
+    consensus = tmp_path / "consensus.fa"
+    consensus.write_text(">chr1\nAANNCAAGNN\n>chr2\nNNAT\n")
+    root = tmp_path / "consensus"
+    (root / "masks").mkdir(parents=True)
+    (root / "masks/callable.bed").write_text("chr1\t0\t10\nchr2\t0\t4\n")
+    (root / "join_qc.json").write_text(json.dumps({
+        "mask": {
+            "callable_bp": 14, "callable_fraction": 1.0, "universe_bp": 14,
+            "excluded_bp_by_primary_reason": {"not_1to1": 0},
+            "reason_order": ["not_1to1"], "accounting_discrepancy_bp": 0,
+        },
+        "consensus": {"consensus_callable_bp": 8},
+    }))
+    result = finalize_callable_masks(plan, consensus, root, tmp_path / "ranges")
+    assert result["final_callable_bp"] == 8
+    assert result["variant_indel_flank_excluded_bp"] == 6
+    assert (root / "masks/callable.prevariant.bed").is_file()
+    assert (root / "masks/callable.bed").read_text().splitlines() == [
+        "chr1\t0\t2", "chr1\t4\t8", "chr2\t2\t4"
+    ]
+    assert (tmp_path / "ranges/r0/callable.bed").read_text().splitlines() == [
+        "chr1\t0\t2", "chr1\t4\t5"
+    ]
+    assert (tmp_path / "ranges/r1/callable.bed").read_text().strip() == "chr1\t5\t8"
+    mask = json.loads((root / "masks/mask_reconciliation.json").read_text())
+    assert mask["accounting_discrepancy_bp"] == 0
+    assert mask["excluded_bp_by_primary_reason"]["variant_indel_flank"] == 6

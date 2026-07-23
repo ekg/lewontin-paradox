@@ -11,13 +11,15 @@ post-hoc ownership guessing at an artificial tile edge.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 from typing import Iterable, Mapping, Sequence
 
-from analysis.vgp_10_pilot import Interval, PilotError, canonical_json, sha256_file
+from analysis.vgp_10_pilot import (
+    Interval, PilotError, canonical_json, interval_bp, sha256_file,
+)
 
 
 PLAN_SCHEMA = "vgp-bounded-h1-range-plan-v1"
@@ -264,6 +266,143 @@ def choose_validation_ranges(plan: Mapping[str, object]) -> list[str]:
     return [str(ranges[index]["range_id"]) for index in indices]
 
 
+def finalize_callable_masks(
+    plan_path: Path | str, consensus_path: Path | str, consensus_root: Path | str,
+    ranges_root: Path | str,
+) -> dict[str, object]:
+    """Derive final callable masks from non-N consensus and close indel accounting.
+
+    ``materialize_mask_consensus_psmc`` first constructs the reason mask and
+    then masks callable indel flanks in consensus. This step makes that final
+    variant-aware denominator explicit globally and for every bounded range.
+    """
+    plan = json.loads(Path(plan_path).read_text())
+    ranges = list(plan.get("ranges", []))
+    by_contig: dict[str, list[Mapping[str, object]]] = defaultdict(list)
+    for row in ranges:
+        by_contig[str(row["contig"])].append(row)
+    for values in by_contig.values():
+        values.sort(key=lambda row: int(row["start"]))
+
+    callable_rows: list[Interval] = []
+    contig: str | None = None
+    position = 0
+
+    def append(interval: Interval) -> None:
+        if callable_rows and (
+            callable_rows[-1].contig == interval.contig
+            and callable_rows[-1].end == interval.start
+        ):
+            previous = callable_rows[-1]
+            callable_rows[-1] = Interval(previous.contig, previous.start, interval.end)
+        else:
+            callable_rows.append(interval)
+
+    with Path(consensus_path).open(encoding="ascii") as handle:
+        for number, line in enumerate(handle, 1):
+            if line.startswith(">"):
+                contig, position = line[1:].split()[0], 0
+                if contig not in by_contig:
+                    raise PilotError(f"consensus contig absent from range plan: {contig}")
+                continue
+            sequence = line.strip().upper()
+            if not sequence:
+                continue
+            if contig is None:
+                raise PilotError(f"consensus sequence precedes header at line {number}")
+            cursor = 0
+            for match in re.finditer("N+", sequence):
+                if cursor < match.start():
+                    append(Interval(contig, position + cursor, position + match.start()))
+                cursor = match.end()
+            if cursor < len(sequence):
+                append(Interval(contig, position + cursor, position + len(sequence)))
+            position += len(sequence)
+
+    consensus_root = Path(consensus_root)
+    masks = consensus_root / "masks"
+    prevariant = masks / "callable.prevariant.bed"
+    current = masks / "callable.bed"
+    if prevariant.exists():
+        raise PilotError("prevariant callable mask already exists")
+    current.replace(prevariant)
+    current.write_text(
+        "".join(f"{row.contig}\t{row.start}\t{row.end}\n" for row in callable_rows),
+        encoding="ascii",
+    )
+
+    per_range: dict[str, list[Interval]] = {
+        str(row["range_id"]): [] for row in ranges
+    }
+    for interval in callable_rows:
+        remaining = interval.length
+        for row in by_contig[interval.contig]:
+            start, end = int(row["start"]), int(row["end"])
+            if start >= interval.end:
+                break
+            left, right = max(start, interval.start), min(end, interval.end)
+            if left < right:
+                per_range[str(row["range_id"])].append(
+                    Interval(interval.contig, left, right)
+                )
+                remaining -= right - left
+        if remaining:
+            raise PilotError(f"final callable interval lacks one range owner: {interval}")
+    ranges_root = Path(ranges_root)
+    for row in ranges:
+        range_id = str(row["range_id"])
+        output = ranges_root / range_id
+        output.mkdir(parents=True, exist_ok=True)
+        (output / "callable.bed").write_text(
+            "".join(
+                f"{item.contig}\t{item.start}\t{item.end}\n"
+                for item in per_range[range_id]
+            ),
+            encoding="ascii",
+        )
+
+    join_path = consensus_root / "join_qc.json"
+    join = json.loads(join_path.read_text())
+    mask = join["mask"]
+    prevariant_bp = int(mask["callable_bp"])
+    final_bp = interval_bp(callable_rows)
+    expected = int(join["consensus"]["consensus_callable_bp"])
+    if final_bp != expected or final_bp > prevariant_bp:
+        raise PilotError("final callable consensus denominator does not reconcile")
+    indel_bp = prevariant_bp - final_bp
+    mask["prevariant_callable_bp"] = prevariant_bp
+    mask["callable_bp"] = final_bp
+    mask["callable_fraction"] = final_bp / int(mask["universe_bp"])
+    mask["variant_indel_flank_excluded_bp"] = indel_bp
+    mask["excluded_bp_by_primary_reason"]["variant_indel_flank"] = indel_bp
+    if "variant_indel_flank" not in mask["reason_order"]:
+        mask["reason_order"].append("variant_indel_flank")
+    mask["accounting_discrepancy_bp"] = (
+        int(mask["universe_bp"])
+        - sum(int(value) for value in mask["excluded_bp_by_primary_reason"].values())
+        - final_bp
+    )
+    if mask["accounting_discrepancy_bp"] != 0:
+        raise PilotError("final reason mask has an accounting discrepancy")
+    mask["final_callable_includes_indel_flank_policy"] = True
+    join["masked_and_callable_population_preserved"] = True
+    join_path.write_text(canonical_json(join))
+    (masks / "mask_reconciliation.json").write_text(canonical_json(mask))
+    result = {
+        "schema_version": "vgp-bounded-final-callable-v1",
+        "prevariant_callable_bp": prevariant_bp,
+        "variant_indel_flank_excluded_bp": indel_bp,
+        "final_callable_bp": final_bp,
+        "range_count": len(ranges),
+        "ranges_with_callable_bp": sum(bool(rows) for rows in per_range.values()),
+        "unowned_callable_bp": 0,
+        "multiply_owned_callable_bp": 0,
+        "accounting_discrepancy_bp": 0,
+    }
+    (masks / "bounded_callable_audit.json").write_text(canonical_json(result))
+    return result
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -281,6 +420,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     emit.add_argument("output_bed")
     strata = sub.add_parser("validation-ranges")
     strata.add_argument("plan_json")
+    callable_masks = sub.add_parser("finalize-callable")
+    callable_masks.add_argument("plan_json")
+    callable_masks.add_argument("consensus_fasta")
+    callable_masks.add_argument("consensus_root")
+    callable_masks.add_argument("ranges_root")
     args = parser.parse_args(argv)
     try:
         if args.command == "freeze-plan":
@@ -293,9 +437,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = emit_range_bed(
                 args.plan_json, args.partitions, args.range_id, args.output_bed
             )
-        else:
+        elif args.command == "validation-ranges":
             plan = json.loads(Path(args.plan_json).read_text(encoding="utf-8"))
             result = {"range_ids": choose_validation_ranges(plan)}
+        else:
+            result = finalize_callable_masks(
+                args.plan_json, args.consensus_fasta, args.consensus_root,
+                args.ranges_root,
+            )
     except (PilotError, OSError, ValueError, KeyError, json.JSONDecodeError) as error:
         print(f"ERROR: {error}", file=__import__("sys").stderr)
         return 2

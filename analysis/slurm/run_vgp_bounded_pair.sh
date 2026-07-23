@@ -309,6 +309,11 @@ materialize_mask_consensus_psmc(
  aligned_regions=paf_concordance_regions(parse_paf(source/"mapping/h2_to_h1.1to1.paf")),
 )
 PY
+python3 -m analysis.vgp_bounded_ranges finalize-callable \
+    "$scratch/plan/range_plan.json" \
+    "$scratch/results/consensus/consensus/consensus.fa" \
+    "$scratch/results/consensus" "$scratch/results/ranges" \
+    >"$scratch/results/consensus/final_callable.stdout.json"
 
 mkdir -p "$scratch/results/psmc/replicate-000"
 "$psmc" -N25 -t15 -r5 -p '4+25*2+4+6' \
