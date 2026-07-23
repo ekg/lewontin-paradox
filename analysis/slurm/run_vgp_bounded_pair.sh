@@ -163,8 +163,19 @@ for line in vcf.open():
 if samples is None: raise SystemExit("range lace lacks #CHROM")
 out.write_text("".join(f"{s}\n" for s in samples if s.split(":",1)[0] not in h1))
 PY
-    printf '%s\t%s\t%s\n' "$contig" "$start" "$end" >"$work/ownership.bed"
-    if [[ -s $work/h2.samples ]]; then
+    python3 - "$source_run/mapping/h1.1to1.bed" "$contig" "$start" "$end" \
+        "$work/ownership.bed" <<'PY'
+import sys
+from pathlib import Path
+source=Path(sys.argv[1]); contig=sys.argv[2]; start,end=map(int,sys.argv[3:5]); rows=[]
+for line in source.open():
+ f=line.split()
+ if f[0] != contig: continue
+ left,right=max(start,int(f[1])),min(end,int(f[2]))
+ if left < right: rows.append((contig,left,right))
+Path(sys.argv[5]).write_text("".join(f"{c}\t{s}\t{e}\n" for c,s,e in rows))
+PY
+    if [[ -s $work/h2.samples && -s $work/ownership.bed ]]; then
         "$bcftools" view --samples-file "$work/h2.samples" --trim-alt-alleles \
             --min-ac 1:nref -Ou "$work/laced.vcf" |
             "$bcftools" view --drop-genotypes --no-update -Ou |

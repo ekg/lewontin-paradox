@@ -116,7 +116,18 @@ out.write_text("".join(f"{sample}\n" for sample in h2))
 PY
 
 ownership="$scratch/range/ownership.bed"
-printf '%s\t%s\t%s\n' "$contig" "$start" "$end" >"$ownership"
+python3 - "$clean/mapping/h1.1to1.bed" "$contig" "$start" "$end" "$ownership" <<'PY'
+import sys
+from pathlib import Path
+source=Path(sys.argv[1]); contig=sys.argv[2]; start,end=map(int,sys.argv[3:5]); rows=[]
+for line in source.open():
+ f=line.split()
+ if f[0] != contig: continue
+ left,right=max(start,int(f[1])),min(end,int(f[2]))
+ if left < right: rows.append((contig,left,right))
+Path(sys.argv[5]).write_text("".join(f"{c}\t{s}\t{e}\n" for c,s,e in rows))
+if not rows: raise SystemExit("bounded canary range has no exact 1:1 ownership")
+PY
 site="$scratch/range/site.vcf.gz"
 if [[ -s $scratch/range/h2.samples ]]; then
     "$bcftools" view --samples-file "$scratch/range/h2.samples" --trim-alt-alleles \
