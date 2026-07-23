@@ -219,6 +219,10 @@ def audit_pair(selection: Mapping[str, object], root: Path, p07_execution: Mappi
     scenario_path = root / "psmc/finalize/scenario_scaled_trajectories.tsv"
     with scenario_path.open(newline="", encoding="utf-8") as handle:
         scenarios = {row["scenario_id"] for row in csv.DictReader(handle, delimiter="\t")}
+    if len(scenarios) != 9:
+        raise PilotError(f"{selection_id}: expected nine predeclared PSMC scenarios")
+    if join.get("masked_and_callable_population_preserved") is not True:
+        raise PilotError(f"{selection_id}: PSMC N/K/T population was not preserved")
     graph: Mapping[str, object]
     if selection_id == "P07":
         if p07_execution is None:
@@ -232,6 +236,8 @@ def audit_pair(selection: Mapping[str, object], root: Path, p07_execution: Mappi
         if graph["unresolved_ids"] != 0 or graph["silently_omitted_regions"] != 0:
             raise PilotError(f"{selection_id}: graph identifier audit failed")
         annotation = {"annotation_status": "missing_nonblocking", "core_outputs_stopped": False}
+    if graph.get("unresolved_ids") != 0 or graph.get("silently_omitted_regions", 0) != 0:
+        raise PilotError(f"{selection_id}: graph identifier census is not closed")
 
     mapping_records = 0
     strands = Counter()
