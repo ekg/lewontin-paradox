@@ -210,6 +210,7 @@ def audit_graph_identifiers(
 
     partition_rows = 0
     partition_contigs: set[str] = set()
+    partition_roles = {"h1_fasta": 0, "h2_fasta": 0}
     with Path(partitions_path).open(encoding="utf-8") as handle:
         for number, line in enumerate(handle, 1):
             if not line.strip() or line.startswith("#"):
@@ -219,14 +220,20 @@ def audit_graph_identifiers(
                 raise PilotError(f"partition row {number} has fewer than four columns")
             observed = fields[0]
             resolved = aliases.get(observed, observed)
-            if resolved not in h1:
+            in_h1, in_h2 = resolved in h1, resolved in h2
+            if not in_h1 and not in_h2:
                 raise PilotError(f"unresolved partition ID at row {number}: {observed}")
+            if in_h1 and in_h2 and h1[resolved] != h2[resolved]:
+                raise PilotError(f"partition ID is ambiguous between staged haplotypes: {observed}")
+            role = "h1_fasta" if in_h1 else "h2_fasta"
+            record = h1[resolved] if in_h1 else h2[resolved]
             start, end = int(fields[1]), int(fields[2])
-            if start < 0 or end <= start or end > int(h1[resolved]["length"]):
+            if start < 0 or end <= start or end > int(record["length"]):
                 raise PilotError(f"partition coordinate outside staged FASTA at row {number}")
             if observed in aliases:
                 resolved_aliases.add(observed)
             partition_contigs.add(resolved)
+            partition_roles[role] += 1
             partition_rows += 1
     if partition_rows == 0:
         raise PilotError("graph partitions are empty")
@@ -235,6 +242,7 @@ def audit_graph_identifiers(
         "paf_rows": paf_rows,
         "partition_rows": partition_rows,
         "partition_contigs": len(partition_contigs),
+        "partition_rows_by_staged_role": partition_roles,
         "staged_h1_records": len(h1),
         "staged_h2_records": len(h2),
         "unresolved_ids": 0,

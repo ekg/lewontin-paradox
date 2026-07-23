@@ -71,11 +71,14 @@ def test_graph_id_census_validates_orientation_lengths_coordinates_and_no_omissi
     materialize_exact_staged_fastas(manifest, staged, dictionary)
     paf, partitions, output = tmp_path / "map.paf", tmp_path / "partitions.bed", tmp_path / "audit.json"
     paf.write_text("H2.chr\t35\t0\t20\t+\tH1.chr\t35\t0\t20\t20\t20\t60\tcg:Z:20=\n")
-    partitions.write_text("H1.chr\t0\t20\tpart0\nH1.extra\t0\t20\tpart1\n")
+    partitions.write_text(
+        "H1.chr\t0\t20\tpart0\nH1.extra\t0\t20\tpart1\nH2.extra\t0\t20\tpart2\n"
+    )
     result = audit_graph_identifiers(dictionary, paf, partitions, output)
     assert result["unresolved_ids"] == 0
     assert result["silently_omitted_regions"] == 0
-    assert result["partition_rows"] == 2
+    assert result["partition_rows"] == 3
+    assert result["partition_rows_by_staged_role"] == {"h1_fasta": 2, "h2_fasta": 1}
 
     partitions.write_text("missing\t0\t20\tpart0\n")
     with pytest.raises(PilotError, match="unresolved partition ID"):
