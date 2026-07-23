@@ -139,8 +139,12 @@ region="$contig:$((start + 1))-$end"
     "$clean/variants/normalized.vcf.gz" | LC_ALL=C sort -u >"$scratch/range/expected.keys"
 "$bcftools" query -f '%CHROM\t%POS\t%REF\t%ALT\n' \
     "$scratch/range/output/$range_id.vcf.gz" | LC_ALL=C sort -u >"$scratch/range/observed.keys"
-cmp "$scratch/range/expected.keys" "$scratch/range/observed.keys" || \
-    fail "bounded P07 range variant keys differ from clean canary subset"
+python3 - "$scratch/range/expected.keys" "$scratch/range/observed.keys" <<'PY'
+import sys
+from pathlib import Path
+if Path(sys.argv[1]).read_bytes() != Path(sys.argv[2]).read_bytes():
+    raise SystemExit("bounded P07 range variant keys differ from clean canary subset")
+PY
 
 python3 - "$clean/consensus/masks/callable.bed" "$contig" "$start" "$end" \
     "$scratch/range/callable.bed" "$scratch/range/callable.json" <<'PY'
