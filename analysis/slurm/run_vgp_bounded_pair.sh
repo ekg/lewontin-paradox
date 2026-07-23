@@ -27,6 +27,14 @@ cleanup() {
     if (( status != 0 )); then
         failure="$failure_root/bounded-production-$SLURM_JOB_ID"
         mkdir -p "$failure"
+        # Technical failure must not erase completed bounded work. Preserve
+        # range products, biological outputs, the frozen plan, and graph
+        # dictionaries so a retry can validate/reuse exact completed stages.
+        # Staged FASTAs remain reproducible from the immutable input manifest
+        # and canonical BGZF/object sources and are not duplicated here.
+        for directory in results plan index; do
+            [[ ! -d $scratch/$directory ]] || cp -a "$scratch/$directory" "$failure/"
+        done
         find "$scratch" -type f \( -name '*.json' -o -name '*.log' -o -name '*.txt' \) \
             -size -16M -exec cp --parents {} "$failure" \; 2>/dev/null || true
     fi
