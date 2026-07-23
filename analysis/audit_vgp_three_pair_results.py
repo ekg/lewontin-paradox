@@ -178,6 +178,17 @@ def _telemetry(root: Path) -> list[dict[str, object]]:
     return values
 
 
+def pipeline_limitations() -> list[str]:
+    """Return frozen technical limitations that must accompany the results."""
+    return [
+        "FastGA remains unreliable for P03 at whole-assembly scale; pinned WFMASH is the recorded infrastructure fallback.",
+        "Backend-specific gap placement lowers exact raw-variant concordance despite high shared target coverage; normalized biological estimates retain backend provenance.",
+        "Pinned IMPG lace -t 1 was non-progressing on a controlled two-file probe, so hierarchical lacing retains a two-thread minimum and cannot use one worker per allocated CPU.",
+        "P02 and P03 have no cataloged exact native annotation, so only their annotation outputs are absent.",
+        "Assembly-derived diversity is a same-individual haplotype comparison and is not a population sample-size substitute.",
+    ]
+
+
 def audit_pair(selection: Mapping[str, object], root: Path, p07_execution: Mapping[str, object] | None = None) -> dict[str, object]:
     selection_id = str(selection["selection_id"])
     required = ["mapping", "impg", "variants", "consensus", "psmc/finalize"]
@@ -306,12 +317,7 @@ def audit_results(selection_path: Path, output_path: Path) -> dict[str, object]:
         "run_id": freeze["run_id"], "selection_freeze_sha256": sha256_file(selection_path),
         "actual_core_biological_results": len(pairs), "completion_gate_passed": len(pairs) == 3,
         "pairs": pairs, "controlled_fastga_wfmash_comparison": comparison,
-        "remaining_pipeline_limitations": [
-            "FastGA remains unreliable for P03 at whole-assembly scale; pinned WFMASH is the recorded infrastructure fallback.",
-            "Backend-specific gap placement lowers exact raw-variant concordance despite high shared target coverage; normalized biological estimates retain backend provenance.",
-            "P02 and P03 have no cataloged exact native annotation, so only their annotation outputs are absent.",
-            "Assembly-derived diversity is a same-individual haplotype comparison and is not a population sample-size substitute.",
-        ],
+        "remaining_pipeline_limitations": pipeline_limitations(),
         "limitations_are_not_biological_exclusions": True,
     }
     output_path.write_text(canonical_json(result), encoding="utf-8")

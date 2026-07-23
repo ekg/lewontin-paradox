@@ -3,6 +3,7 @@ from collections import Counter
 from analysis.audit_vgp_three_pair_results import (
     fasta_lengths,
     fasta_non_n_counts,
+    pipeline_limitations,
     psmc_population_counts,
     select_strata,
     variant_counts,
@@ -40,3 +41,9 @@ def test_independent_stratified_reaudit_counts_fasta_vcf_and_psmc_populations(tm
     assert populations[regions[0]] == Counter(K=50_000)
     assert populations[regions[1]] == Counter(N=50_000)
     assert populations[regions[2]] == Counter(T=50_000)
+
+
+def test_pipeline_limitations_retain_pinned_impg_single_thread_stall():
+    limitations = pipeline_limitations()
+    assert any("lace -t 1" in limitation and "non-progressing" in limitation
+               for limitation in limitations)
