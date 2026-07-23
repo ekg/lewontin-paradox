@@ -30,7 +30,8 @@ cleanup() {
     if (( status != 0 )); then
         failure=/moosefs/erikg/vgp/pilot/three-pair/$VGP_RUN_ID/P07/failures/bounded-canary-$SLURM_JOB_ID
         mkdir -p "$failure"
-        find "$scratch" -type f -size -8M -exec cp --parents {} "$failure" \; 2>/dev/null || true
+        find "$scratch" -type f \( -size -8M -o -name '*.keys' -o -name '*.vcf.gz' \) \
+            -exec cp --parents {} "$failure" \; 2>/dev/null || true
     fi
     [[ $scratch == "/scratch/vgp-P07-bounded-${SLURM_JOB_ID}-"* ]] && rm -rf -- "$scratch"
     exit "$status"
@@ -136,7 +137,7 @@ cp "$site.tbi" "$scratch/range/output/$range_id.vcf.gz.tbi"
 
 region="$contig:$((start + 1))-$end"
 "$bcftools" query -f '%CHROM\t%POS\t%REF\t%ALT\n' -r "$region" \
-    "$clean/variants/normalized.vcf.gz" | LC_ALL=C sort -u >"$scratch/range/expected.keys"
+    "$clean/variants/impg.normalized.vcf.gz" | LC_ALL=C sort -u >"$scratch/range/expected.keys"
 "$bcftools" query -f '%CHROM\t%POS\t%REF\t%ALT\n' \
     "$scratch/range/output/$range_id.vcf.gz" | LC_ALL=C sort -u >"$scratch/range/observed.keys"
 python3 - "$scratch/range/expected.keys" "$scratch/range/observed.keys" <<'PY'
