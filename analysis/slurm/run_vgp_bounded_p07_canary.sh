@@ -77,26 +77,26 @@ python3 -m analysis.vgp_bounded_ranges emit-range-bed \
     "$range_id" "$focus" >"$scratch/plan/emit.stdout.json"
 
 started=$(date +%s)
-/usr/bin/time -v -o "$scratch/range/query.time.txt" \
-    "$impg" query -a "$clean/mapping/h2_to_h1.1to1.paf" \
+"$impg" query -a "$clean/mapping/h2_to_h1.1to1.paf" \
     -i "$scratch/index/h1_h2.impg" -b "$focus" -d 0 \
     --min-transitive-len 1 --force-large-region \
     --temp-dir "$scratch/range/temp" -o vcf:poa \
     --sequence-files "$scratch/inputs/h1.fa" "$scratch/inputs/h2.fa" \
     -O "$scratch/range/calls" -t 4 >"$scratch/range/query.log" 2>&1
 query_ended=$(date +%s)
+printf 'elapsed_seconds\t%s\n' "$((query_ended - started))" >"$scratch/range/query.time.txt"
 find "$scratch/range/calls" -type f -name '*.vcf' -print | LC_ALL=C sort \
     >"$scratch/range/vcf.list"
 vcf_count=$(wc -l <"$scratch/range/vcf.list")
 [[ $vcf_count -eq $partition_count ]] || fail "range query VCF census mismatch"
 query_bytes=$(du -sb "$scratch/range/calls" "$scratch/range/temp" | awk '{n+=$1} END {print n+0}')
 
-/usr/bin/time -v -o "$scratch/range/lace.time.txt" \
-    "$impg" lace -l "$scratch/range/vcf.list" --format vcf \
+"$impg" lace -l "$scratch/range/vcf.list" --format vcf \
     -o "$scratch/range/laced.vcf" --reference "$scratch/inputs/h1.fa" \
     --temp-dir "$scratch/range/temp" --compress none -t 4 \
     >"$scratch/range/lace.log" 2>&1
 lace_ended=$(date +%s)
+printf 'elapsed_seconds\t%s\n' "$((lace_ended - query_ended))" >"$scratch/range/lace.time.txt"
 
 python3 - "$scratch/range/laced.vcf" "$scratch/inputs/h1.fa.fai" \
     "$scratch/range/h2.samples" <<'PY'
