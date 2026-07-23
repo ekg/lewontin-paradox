@@ -123,6 +123,14 @@ def test_slurm_contract_has_dictionary_rebuild_and_pinned_wfmash_fallback():
     assert "--force-large-region" in parallel_query
 
 
+def test_p03_impg_resource_plan_matches_observed_bounded_retry():
+    plan = json.loads((ROOT / "analysis/vgp_three_pair_resource_plan_v1.json").read_text())
+    impg = plan["pairs"]["P03"]["stages"]["impg"]
+    assert impg["cpus_per_task"] == 16
+    assert impg["slurm_mem"] == "64G"
+    assert impg["scratch_bytes_high"] == 128849018880
+
+
 def test_controlled_backend_comparison_uses_common_coverage_and_exact_alleles(tmp_path):
     h1, h2 = tmp_path / "h1.fa", tmp_path / "h2.fa"
     h1.write_text(">H1\n" + "A" * 100 + "\n")

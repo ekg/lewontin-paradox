@@ -32,7 +32,7 @@
     "P03": {
       "stages": {
         "consensus": {"cpus_per_task": 24, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_partition": "highmem", "slurm_time": "2-00:00:00"},
-        "impg": {"cpus_per_task": 32, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_partition": "highmem", "slurm_time": "3-00:00:00"},
+        "impg": {"cpus_per_task": 16, "scratch_bytes_high": 128849018880, "slurm_mem": "64G", "slurm_partition": "highmem", "slurm_time": "3-00:00:00"},
         "mapping": {"cpus_per_task": 32, "scratch_bytes_high": 214748364800, "slurm_mem": "256G", "slurm_partition": "highmem", "slurm_time": "4-00:00:00"},
         "variants": {"cpus_per_task": 24, "scratch_bytes_high": 128849018880, "slurm_mem": "160G", "slurm_partition": "highmem", "slurm_time": "1-00:00:00"}
       }
