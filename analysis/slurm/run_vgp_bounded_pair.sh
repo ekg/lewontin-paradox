@@ -67,6 +67,18 @@ if [[ $selection == P07 ]]; then
         >"$scratch/inputs/h1_universe.bed"
     cp "$source_run/impg/h1_h2.impg" "$scratch/index/h1_h2.impg"
     cp "$source_run/impg/partitions/partitions.bed" "$scratch/index/partitions/partitions.bed"
+    python3 - "$ROOT/analysis/vgp_clean_canary_execution_v1.json" \
+        "$scratch/index/graph_identifier_audit.json" <<'PY'
+import json,sys
+from pathlib import Path
+source=json.load(open(sys.argv[1]))["graph_sequence_digest_ledger"]
+Path(sys.argv[2]).write_text(json.dumps({
+ "schema_version":"vgp-bounded-p07-graph-id-audit-v1",
+ "resolved_ids":source["resolved_ids"],"unresolved_ids":source["unresolved_ids"],
+ "silently_omitted_regions":0,"digest_validated_aliases_used":[],
+ "source_ledger_path":source["path"],"source_ledger_sha256":source["sha256"],
+},sort_keys=True)+"\n")
+PY
     python3 - "$source_run" "$scratch/inputs/input-manifest.json" \
         "$scratch/inputs/h1.fa" "$scratch/inputs/h2.fa" <<'PY'
 import json,sys
@@ -382,6 +394,14 @@ if [[ $selection == P07 ]]; then
         --annotation-accession-version GCA_048126635.1-GB_2025_08_04 \
         --task-id run-vgp-three-pair --schema-version vgp-three-pair-bounded-annotation-v1 \
         --output "$scratch/results/annotation/exact_partitions.json"
+    python3 - "$scratch/results/annotation/exact_partitions.json" <<'PY'
+import json,sys
+from pathlib import Path
+p=Path(sys.argv[1]); value=json.loads(p.read_text())
+value["query_scope"]="exact native GFF features intersected with bounded-range-derived variants and mask"
+value["additional_impg_graph_queries_for_annotation"]=False
+p.write_text(json.dumps(value,sort_keys=True)+"\n")
+PY
 fi
 
 python3 - "$scratch" "$selection" "$SLURM_JOB_ID" <<'PY'
