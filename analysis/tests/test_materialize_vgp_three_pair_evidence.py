@@ -77,6 +77,7 @@ def test_report_names_three_results_and_backend_limitation(execution, tmp_path: 
     assert "three actual core biological results" in text
     assert all(selection_id in text for selection_id in ("P07", "P03", "P02"))
     assert "gap placement" in text and "not biological exclusions" in text
+    assert "vgp_three_pair_lace_boundary_validation_v1.json" in text
 
 
 def test_refuses_fewer_than_three_results(execution, tmp_path: Path):

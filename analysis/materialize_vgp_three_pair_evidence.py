@@ -152,6 +152,9 @@ def materialize_report(
         "and N/K/T PSMC populations. It also rechecked every PAF coordinate and strand, exact "
         "REF/ALT reconstruction, the reason-mask universe, graph identifiers, and all 201 PSMC "
         "stage ledgers.",
+        "A separate real-data boundary audit compared one 4,096-input pinned IMPG lace with four "
+        "consecutive 1,024-input laces. Their 8,658 H2 non-reference REF/ALT records were identical "
+        "(zero records unique to either representation), validating bounded hierarchical waves.",
         "",
         "## Controlled FastGA/WFMASH overlap",
         "",
@@ -196,6 +199,7 @@ def materialize_report(
         "- `analysis/vgp_three_pair_independent_reaudit_v1.json`: three-stratum and contract re-audit",
         "- `analysis/vgp_three_pair_sacct_v1.tsv`: scheduler allocations, including failed/canceled attempts",
         "- `analysis/vgp_three_pair_stage_telemetry_v1.tsv`: stage-level resource and retry telemetry",
+        "- `analysis/vgp_three_pair_lace_boundary_validation_v1.json`: digest-closed real-data lace boundary invariance",
         "- `analysis/vgp_three_pair_output_digests_v1.txt`: closed repository evidence digest ledger",
         "",
     ])
