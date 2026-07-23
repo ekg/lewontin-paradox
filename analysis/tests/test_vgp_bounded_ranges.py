@@ -105,6 +105,7 @@ def test_slurm_contract_queries_and_laces_only_one_bounded_range_at_a_time():
     assert '"$bcftools" concat' in production
     assert "convenience genome-wide file" in production
     assert "global_partition_assignment_ledger_materialized" in production
+    assert "finalize-callable" in production
 
 
 def test_finalize_callable_masks_closes_indel_accounting_and_splits_ranges(tmp_path):

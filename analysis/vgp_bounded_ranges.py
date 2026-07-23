@@ -11,6 +11,9 @@ post-hoc ownership guessing at an artificial tile edge.
 from __future__ import annotations
 
 import argparse
+import gzip
+import hashlib
+import io
 import json
 import re
 from collections import defaultdict
@@ -18,7 +21,8 @@ from pathlib import Path
 from typing import Iterable, Mapping, Sequence
 
 from analysis.vgp_10_pilot import (
-    Interval, PilotError, canonical_json, interval_bp, sha256_file,
+    Interval, PilotError, canonical_json, consensus_to_psmcfa, interval_bp,
+    sha256_file,
 )
 
 
@@ -361,6 +365,114 @@ def finalize_callable_masks(
             encoding="ascii",
         )
 
+    # Retain bounded consensus and PSMCFA blocks. The primary files remain
+    # contig records, so neither their 100-bp bins nor bootstrap units ever
+    # cross a contig boundary.
+    global_sequence_digest = hashlib.sha256()
+    range_sequence_digest = hashlib.sha256()
+    block_rows: list[dict[str, object]] = []
+    contig: str | None = None
+    contig_ranges: list[Mapping[str, object]] = []
+    range_index = 0
+    range_parts: list[str] = []
+    position = 0
+
+    def close_block() -> None:
+        nonlocal range_parts
+        if not contig_ranges or range_index >= len(contig_ranges):
+            return
+        row = contig_ranges[range_index]
+        sequence = "".join(range_parts)
+        expected_length = int(row["end"]) - int(row["start"])
+        if len(sequence) != expected_length:
+            raise PilotError(f"bounded consensus block length mismatch: {row['range_id']}")
+        range_id = str(row["range_id"])
+        output = ranges_root / range_id
+        record_name = f"{contig}:{row['start']}-{row['end']}|{range_id}"
+        with (output / "consensus.fa.gz").open("wb") as raw:
+            with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
+                with io.TextIOWrapper(
+                    compressed, encoding="ascii", newline="\n"
+                ) as handle:
+                    handle.write(f">{record_name}\n")
+                    for offset in range(0, len(sequence), 60):
+                        handle.write(sequence[offset:offset + 60] + "\n")
+        (output / "input.psmcfa").write_text(
+            consensus_to_psmcfa({record_name: sequence}), encoding="ascii"
+        )
+        range_sequence_digest.update(sequence.encode("ascii"))
+        block_rows.append({
+            "range_id": range_id, "contig": contig,
+            "start": int(row["start"]), "end": int(row["end"]),
+            "consensus_bp": len(sequence),
+            "consensus_non_n_bp": sum(
+                item.length for item in per_range[range_id]
+            ),
+            "consensus_fasta_gzip_sha256": sha256_file(output / "consensus.fa.gz"),
+            "psmcfa_sha256": sha256_file(output / "input.psmcfa"),
+        })
+        range_parts = []
+
+    with Path(consensus_path).open(encoding="ascii") as handle:
+        for number, line in enumerate(handle, 1):
+            if line.startswith(">"):
+                if contig is not None:
+                    if range_parts or range_index != len(contig_ranges):
+                        raise PilotError(f"consensus ended before all ranges on {contig}")
+                contig = line[1:].split()[0]
+                contig_ranges = by_contig.get(contig, [])
+                if not contig_ranges:
+                    raise PilotError(f"consensus block contig absent from plan: {contig}")
+                range_index, range_parts, position = 0, [], 0
+                continue
+            sequence = line.strip().upper()
+            if not sequence:
+                continue
+            if contig is None:
+                raise PilotError(f"consensus sequence precedes header at line {number}")
+            global_sequence_digest.update(sequence.encode("ascii"))
+            cursor = 0
+            while cursor < len(sequence):
+                row = contig_ranges[range_index]
+                remaining = int(row["end"]) - position
+                take = min(remaining, len(sequence) - cursor)
+                range_parts.append(sequence[cursor:cursor + take])
+                cursor += take
+                position += take
+                if position == int(row["end"]):
+                    close_block()
+                    range_index += 1
+                    if range_index < len(contig_ranges):
+                        if int(contig_ranges[range_index]["start"]) != position:
+                            raise PilotError("range consensus blocks are not contiguous")
+                    elif cursor < len(sequence):
+                        raise PilotError(f"consensus exceeds frozen range plan on {contig}")
+    if contig is not None:
+        # The final block closes at the last sequence line; close_block was
+        # already called when its coordinate end was reached.
+        if range_parts or range_index != len(contig_ranges):
+            raise PilotError(f"consensus ended before all frozen blocks on {contig}")
+    if len(block_rows) != len(ranges):
+        raise PilotError("bounded consensus/PSMCFA block census differs from range plan")
+    if global_sequence_digest.hexdigest() != range_sequence_digest.hexdigest():
+        raise PilotError("bounded consensus blocks do not reconstruct contig consensus")
+    block_audit = {
+        "schema_version": "vgp-bounded-consensus-block-audit-v1",
+        "range_count": len(block_rows),
+        "consensus_bp": sum(int(row["consensus_bp"]) for row in block_rows),
+        "global_sequence_sha256": global_sequence_digest.hexdigest(),
+        "reconstructed_range_sequence_sha256": range_sequence_digest.hexdigest(),
+        "range_blocks_reconstruct_global_sequence": True,
+        "primary_consensus_records": "H1 contigs",
+        "primary_psmcfa_records": "H1 contigs",
+        "primary_psmcfa_bins_cross_contigs": False,
+        "bootstrap_units_cross_contigs": False,
+        "blocks": block_rows,
+    }
+    (consensus_root / "bounded_consensus_block_audit.json").write_text(
+        canonical_json(block_audit)
+    )
+
     join_path = consensus_root / "join_qc.json"
     join = json.loads(join_path.read_text())
     mask = join["mask"]
@@ -398,6 +510,8 @@ def finalize_callable_masks(
         "unowned_callable_bp": 0,
         "multiply_owned_callable_bp": 0,
         "accounting_discrepancy_bp": 0,
+        "range_consensus_blocks": len(block_rows),
+        "range_blocks_reconstruct_global_sequence": True,
     }
     (masks / "bounded_callable_audit.json").write_text(canonical_json(result))
     return result

@@ -235,6 +235,16 @@ def audit_pair(
         raise PilotError(f"{selection_id}: graph identifier audit failed")
     range_audit = audit_range_variants(root, plan)
     callable_audit = audit_callable_ownership(root, plan)
+    block_audit = json.loads(
+        (root / "consensus/bounded_consensus_block_audit.json").read_text()
+    )
+    if (
+        block_audit.get("range_count") != plan["range_count"]
+        or block_audit.get("range_blocks_reconstruct_global_sequence") is not True
+        or block_audit.get("primary_psmcfa_bins_cross_contigs") is not False
+        or block_audit.get("bootstrap_units_cross_contigs") is not False
+    ):
+        raise PilotError(f"{selection_id}: bounded consensus/PSMCFA block audit failed")
     psmc = json.loads((root / "psmc/finalize/psmc_qc.json").read_text())
     if (
         psmc.get("finite_bootstraps") != 200
@@ -275,6 +285,7 @@ def audit_pair(
         },
         "range_variant_audit": range_audit,
         "callable_ownership_audit": callable_audit,
+        "consensus_block_audit": block_audit,
         "graph_identifier_audit": graph,
         "coordinate_and_strand_audit": audit_mapping(selection_id),
         "ref_alt_reconstruction": json.loads(
