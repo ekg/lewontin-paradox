@@ -84,3 +84,23 @@ def test_emit_one_range_bed_preserves_exact_frozen_partition_census(tmp_path):
         "chr1\t2000\t4000\tquery000000001\tp1",
     ]
     assert choose_validation_ranges(plan) == ["r000000", "r000002", "r000003"]
+
+
+def test_slurm_contract_queries_and_laces_only_one_bounded_range_at_a_time():
+    root = Path(__file__).parents[2]
+    production = (root / "analysis/slurm/run_vgp_bounded_pair.sh").read_text()
+    canary = (root / "analysis/slurm/run_vgp_bounded_p07_canary.sh").read_text()
+    for script in (production, canary):
+        assert "emit-range-bed" in script
+        assert "--target-bp 5000000 --hard-max-bp 20000000" in script
+        assert "--force-large-region" in script
+        assert "--sequence-files" in script
+        assert '"$impg" lace' in script
+        assert "global IMPG lace" not in script
+        assert "emit-range-beds" not in script
+        assert "partition_assignments.tsv" not in script
+    assert '-l "$work/vcf.list"' in production
+    assert 'rm -rf -- "$work"' in production
+    assert '"$bcftools" concat' in production
+    assert "convenience genome-wide file" in production
+    assert "global_partition_assignment_ledger_materialized" in production
