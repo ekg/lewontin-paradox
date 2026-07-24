@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -109,7 +110,48 @@ def test_slurm_contract_queries_and_laces_only_one_bounded_range_at_a_time():
     assert "global_partition_assignment_ledger_materialized" in production
     assert "finalize-callable" in production
     assert "for directory in results plan index" in production
-    assert 'cp -a "$scratch/$directory" "$failure/"' in production
+    assert 'cp -a "$scratch/$directory/." "$failure/$directory/"' in production
+    assert "failure_preservation.json" in production
+    assert '"$bcftools" norm -f "$h1" -c s -m -any' in production
+    assert '"$bcftools" norm -f "$h1" -c e -d exact' in production
+    assert "ref_alt_swaps_against_exact_h1" in production
+
+
+def test_pinned_bcftools_reconstructs_graph_ref_against_exact_h1(tmp_path):
+    root = Path(__file__).parents[2]
+    realization = json.loads(
+        (root / "analysis/guix/vgp_10_pilot/realization.json").read_text()
+    )
+    tools = {row["name"]: row["path"] for row in realization["executables"]}
+    fasta = tmp_path / "h1.fa"
+    vcf = tmp_path / "graph.vcf"
+    reconstructed = tmp_path / "reconstructed.vcf"
+    fasta.write_text(">chr1\nACGT\n")
+    vcf.write_text(
+        "##fileformat=VCFv4.2\n"
+        "##contig=<ID=chr1,length=4>\n"
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        "chr1\t2\t.\tA\tC\t.\tPASS\t.\n"
+    )
+    subprocess.run([tools["samtools"], "faidx", str(fasta)], check=True)
+    subprocess.run(
+        [
+            tools["bcftools"], "norm", "-f", str(fasta), "-c", "s", "-m", "-any",
+            "-Ov", "-o", str(reconstructed), str(vcf),
+        ],
+        check=True,
+    )
+    strict = subprocess.run(
+        [
+            tools["bcftools"], "norm", "-f", str(fasta), "-c", "e", "-d", "exact",
+            "-Ov", str(reconstructed),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    record = next(line for line in strict.stdout.splitlines() if not line.startswith("#"))
+    assert record.split("\t")[3:5] == ["C", "A"]
 
 
 def test_finalize_callable_masks_closes_indel_accounting_and_splits_ranges(tmp_path):

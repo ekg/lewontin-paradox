@@ -32,11 +32,36 @@ cleanup() {
         # dictionaries so a retry can validate/reuse exact completed stages.
         # Staged FASTAs remain reproducible from the immutable input manifest
         # and canonical BGZF/object sources and are not duplicated here.
+        preservation_failures=0
         for directory in results plan index; do
-            [[ ! -d $scratch/$directory ]] || cp -a "$scratch/$directory" "$failure/"
+            [[ ! -d $scratch/$directory ]] && continue
+            mkdir -p "$failure/$directory"
+            if ! cp -a "$scratch/$directory/." "$failure/$directory/"; then
+                echo "WARNING: could not preserve complete $directory tree" >&2
+                preservation_failures=$((preservation_failures + 1))
+            fi
         done
         find "$scratch" -type f \( -name '*.json' -o -name '*.log' -o -name '*.txt' \) \
             -size -16M -exec cp --parents {} "$failure" \; 2>/dev/null || true
+        python3 - "$failure/failure_preservation.json" "$status" \
+            "$preservation_failures" "$scratch" <<'PY' || true
+import json,sys
+from pathlib import Path
+out,status,failures,scratch=Path(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]),Path(sys.argv[4])
+trees={}
+for name in ("results","plan","index"):
+ root=out.parent/name
+ trees[name]={
+  "present":root.is_dir(),
+  "files":sum(path.is_file() for path in root.rglob("*")) if root.is_dir() else 0,
+  "bytes":sum(path.stat().st_size for path in root.rglob("*") if path.is_file()) if root.is_dir() else 0,
+ }
+out.write_text(json.dumps({
+ "schema_version":"vgp-bounded-technical-failure-preservation-v1",
+ "original_exit_status":status,"copy_failures":failures,
+ "source_scratch":str(scratch),"trees":trees,
+},sort_keys=True)+"\n")
+PY
     fi
     [[ $scratch == "/scratch/vgp-$selection-bounded-${SLURM_JOB_ID}-"* ]] && \
         rm -rf -- "$scratch"
@@ -187,9 +212,14 @@ PY
         "$bcftools" view --samples-file "$work/h2.samples" --trim-alt-alleles \
             --min-ac 1:nref -Ou "$work/laced.vcf" |
             "$bcftools" view --drop-genotypes --no-update -Ou |
-            "$bcftools" norm -f "$h1" -m -any -Ou |
+            # IMPG may orient a graph allele as REF even when exact H1 carries
+            # another allele. Reconstruct REF from exact staged H1, recording
+            # every REF/ALT swap, then enforce a second strict reference check.
+            "$bcftools" norm -f "$h1" -c s -m -any -Ou \
+                2>"$work/ref_alt_reconstruction.log" |
             "$bcftools" view -T "$work/ownership.bed" -Ou |
-            "$bcftools" norm -f "$h1" -d exact -Oz -o "$out/normalized.vcf.gz"
+            "$bcftools" norm -f "$h1" -c e -d exact -Oz \
+                -o "$out/normalized.vcf.gz"
     else
         "$bcftools" view --header-only --drop-genotypes --no-update -Oz \
             -o "$out/normalized.vcf.gz" "$work/laced.vcf"
@@ -201,24 +231,31 @@ PY
     variants=$("$bcftools" index -n "$out/normalized.vcf.gz")
     python3 - "$out/range_audit.json" "$selection" "$range_id" "$contig" "$start" \
         "$end" "$expected" "$count" "$variants" "$graph_bytes" "$begin" "$query_end" \
-        "$lace_end" <<'PY'
-import json,sys
+        "$lace_end" "$work/ref_alt_reconstruction.log" <<'PY'
+import json,re,sys
 from pathlib import Path
 out=Path(sys.argv[1])
 selection,rid,contig=sys.argv[2:5]
 start,end,expected,count,variants,peak,begin,qend,lend=map(int,sys.argv[5:14])
+norm_log=Path(sys.argv[14]); swaps=0
+if norm_log.is_file():
+ match=re.search(r"REF/ALT total/modified/added:\\s*\\d+/(\\d+)/\\d+",norm_log.read_text())
+ if match: swaps=int(match.group(1))
 out.write_text(json.dumps({
  "schema_version":"vgp-bounded-range-result-v1","selection_id":selection,
  "range_id":rid,"contig":contig,"start":start,"end":end,"range_bp":end-start,
  "expected_native_partitions":expected,"queried_native_partitions":count,
  "normalized_variant_records":variants,"peak_local_graph_state_bytes":peak,
  "query_elapsed_seconds":qend-begin,"lace_normalize_elapsed_seconds":lend-qend,
+ "ref_alt_swaps_against_exact_h1":swaps,
  "partition_one_owner":True,"variant_half_open_owner":True,
  "all_genome_graph_materialized":False,"global_impg_lace_created":False,
  "local_graph_temporaries_discarded":True,"ref_validation":"bcftools norm -f exact H1",
 },sort_keys=True)+"\n")
 PY
     cp "$work/query.log" "$work/lace.log" "$out/"
+    [[ ! -f $work/ref_alt_reconstruction.log ]] || \
+        cp "$work/ref_alt_reconstruction.log" "$out/"
     rm -rf -- "$work"
 }
 
@@ -276,7 +313,8 @@ PY
 "$bcftools" index -f "$scratch/results/variants/normalized.bcf"
 "$bcftools" view -Ov -o "$scratch/results/variants/normalized.vcf" \
     "$scratch/results/variants/normalized.vcf.gz"
-python3 - "$paf" "$scratch/results/variants/ref_alt_coordinate_audit.json" <<'PY'
+python3 - "$paf" "$scratch/results/variants/ref_alt_coordinate_audit.json" \
+    "$scratch/results/ranges" <<'PY'
 import collections,json,sys
 from pathlib import Path
 strands=collections.Counter(); rows=0
@@ -287,9 +325,14 @@ for number,line in enumerate(Path(sys.argv[1]).open(),1):
  ql,qs,qe,tl,ts,te=map(int,(f[1],f[2],f[3],f[6],f[7],f[8]))
  if not (0<=qs<qe<=ql and 0<=ts<te<=tl): raise SystemExit(f"invalid PAF coordinate {number}")
  strands[f[4]]+=1; rows+=1
+swaps=sum(
+ int(json.loads(path.read_text()).get("ref_alt_swaps_against_exact_h1",0))
+ for path in Path(sys.argv[3]).glob("*/range_audit.json")
+)
 Path(sys.argv[2]).write_text(json.dumps({
  "paf_rows":rows,"strand_counts":dict(strands),"invalid_coordinates":0,
  "normalized_ref_mismatches":0,"ref_alt_reconstruction_failures":0,
+ "ref_alt_swaps_against_exact_staged_h1":swaps,
  "ref_validation":"every retained range passed pinned bcftools norm -f exact staged H1",
 },sort_keys=True)+"\n")
 PY
