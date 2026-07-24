@@ -101,6 +101,8 @@ def test_slurm_contract_queries_and_laces_only_one_bounded_range_at_a_time():
         assert "emit-range-beds" not in script
         assert "partition_assignments.tsv" not in script
     assert '-l "$work/vcf.list"' in production
+    assert "psmc_workers=$cpus" in production
+    assert "psmc_workers > 20" not in production
     assert 'rm -rf -- "$work"' in production
     assert '"$bcftools" concat' in production
     assert "convenience genome-wide file" in production

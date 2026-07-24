@@ -328,7 +328,6 @@ mkdir -p "$scratch/results/psmc/replicate-000"
     -o "$scratch/results/psmc/replicate-000/unscaled.psmc" \
     "$scratch/results/consensus/consensus/input.psmcfa"
 psmc_workers=$cpus
-(( psmc_workers > 20 )) && psmc_workers=20
 for ((batch=1; batch<=200; batch+=psmc_workers)); do
     pids=()
     for ((rep=batch; rep<=200 && rep<batch+psmc_workers; rep++)); do
