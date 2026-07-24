@@ -113,8 +113,13 @@ def test_slurm_contract_queries_and_laces_only_one_bounded_range_at_a_time():
     assert 'cp -a "$scratch/$directory/." "$failure/$directory/"' in production
     assert "failure_preservation.json" in production
     assert '"$bcftools" norm -f "$h1" -c s -m -any' in production
+    assert '"$bcftools" view --min-alleles 2 -Ou' in production
     assert '"$bcftools" norm -f "$h1" -c e -d exact' in production
     assert "ref_alt_swaps_against_exact_h1" in production
+    assert "VGP_RESUME_FAILURE_ROOT" in production
+    assert "fresh resume range plan differs" in production
+    assert "monomorphic_records_removed_after_h1_reconstruction" in production
+    assert "one or more preserved ranges failed strict resume audit" in production
 
 
 def test_pinned_bcftools_reconstructs_graph_ref_against_exact_h1(tmp_path):

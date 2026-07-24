@@ -20,6 +20,14 @@ require_runtime
 
 durable="$VGP_DATA_ROOT/pilot/three-pair/$VGP_RUN_ID/$selection/bounded-production"
 [[ ! -e $durable ]] || fail "bounded production target already exists: $durable"
+resume_root=${VGP_RESUME_FAILURE_ROOT:-}
+if [[ -n $resume_root ]]; then
+    [[ $selection == P02 ]] || fail "bounded range resume is currently authorized only for P02"
+    [[ $resume_root == "$VGP_DATA_ROOT/pilot/three-pair/$VGP_RUN_ID/P02/failures/"* ]] || \
+        fail "resume root is outside the canonical P02 technical-failure tree"
+    [[ -f $resume_root/failure_preservation.json ]] || \
+        fail "resume root lacks failure preservation manifest"
+fi
 scratch=$(mktemp -d -- "/scratch/vgp-$selection-bounded-${SLURM_JOB_ID}-XXXXXX")
 failure_root="$VGP_DATA_ROOT/pilot/three-pair/$VGP_RUN_ID/$selection/failures"
 cleanup() {
@@ -138,13 +146,41 @@ else
     cp "$input_dir/input-manifest.json" "$scratch/inputs/input-manifest.json"
     "$samtools" faidx "$scratch/inputs/h1.fa"
     "$samtools" faidx "$scratch/inputs/h2.fa"
-    "$impg" index -a "$source_run/mapping/h2_to_h1.1to1.paf" \
-        -i "$scratch/index/h1_h2.impg" -t "$cpus" \
-        >"$scratch/index/impg.index.log" 2>&1
-    "$impg" partition -a "$source_run/mapping/h2_to_h1.1to1.paf" \
-        -i "$scratch/index/h1_h2.impg" -w 2000 -d 0 --min-missing-size 1 \
-        --min-boundary-distance 0 -o bed --output-folder "$scratch/index/partitions" \
-        -t "$cpus" >"$scratch/index/impg.partition.log" 2>&1
+    if [[ -n $resume_root ]]; then
+        python3 - "$resume_root" "$scratch/index/staged_fasta_dictionary.json" <<'PY'
+import json,sys
+from pathlib import Path
+failure,fresh=Path(sys.argv[1]),Path(sys.argv[2])
+manifest=json.loads((failure/"failure_preservation.json").read_text())
+if manifest["copy_failures"] != 0:
+ raise SystemExit("technical failure bundle has preservation copy failures")
+for tree in ("results","plan","index"):
+ if not manifest["trees"][tree]["present"] or manifest["trees"][tree]["files"] <= 0:
+  raise SystemExit(f"technical failure bundle lacks preserved {tree}")
+old=json.loads((failure/"index/staged_fasta_dictionary.json").read_text())
+new=json.loads(fresh.read_text())
+for role in ("h1_fasta","h2_fasta"):
+ for key in ("source_sha256","source_size_bytes","staged_sha256","staged_size_bytes",
+             "record_count","total_bp","records"):
+  if old["roles"][role][key] != new["roles"][role][key]:
+   raise SystemExit(f"fresh staged FASTA dictionary differs for {role}.{key}")
+plan=json.loads((failure/"plan/range_plan.json").read_text())
+if plan["selection_id"] != "P02" or plan["range_count"] != 930:
+ raise SystemExit("resume bundle is not the frozen P02 930-range execution")
+PY
+        cp "$resume_root/index/h1_h2.impg" "$scratch/index/h1_h2.impg"
+        cp -a "$resume_root/index/partitions/." "$scratch/index/partitions/"
+        cp "$resume_root/index/impg.index.log" "$scratch/index/" 2>/dev/null || true
+        cp "$resume_root/index/impg.partition.log" "$scratch/index/" 2>/dev/null || true
+    else
+        "$impg" index -a "$source_run/mapping/h2_to_h1.1to1.paf" \
+            -i "$scratch/index/h1_h2.impg" -t "$cpus" \
+            >"$scratch/index/impg.index.log" 2>&1
+        "$impg" partition -a "$source_run/mapping/h2_to_h1.1to1.paf" \
+            -i "$scratch/index/h1_h2.impg" -w 2000 -d 0 --min-missing-size 1 \
+            --min-boundary-distance 0 -o bed --output-folder "$scratch/index/partitions" \
+            -t "$cpus" >"$scratch/index/impg.partition.log" 2>&1
+    fi
     python3 -m analysis.vgp_three_pair audit-graph-ids \
         "$scratch/index/staged_fasta_dictionary.json" \
         "$source_run/mapping/h2_to_h1.1to1.paf" \
@@ -162,6 +198,18 @@ python3 -m analysis.vgp_bounded_ranges freeze-plan \
     "$h1.fai" "$partitions" "$scratch/plan/range_plan.json" \
     --selection-id "$selection" --target-bp 5000000 --hard-max-bp 20000000 \
     >"$scratch/plan/freeze.stdout.json"
+if [[ -n $resume_root ]]; then
+    python3 - "$resume_root/plan/range_plan.json" "$scratch/plan/range_plan.json" <<'PY'
+import json,sys
+old,new=map(lambda path:json.load(open(path)),sys.argv[1:])
+keys=("selection_id","range_count","h1_contig_count","h1_total_bp",
+      "native_h1_partition_rows","partitioned_h1_bp","nonquery_h1_bp",
+      "fai_sha256","partitions_sha256","target_bp","hard_max_bp","ranges")
+for key in keys:
+ if old[key] != new[key]: raise SystemExit(f"fresh resume range plan differs for {key}")
+PY
+    cp -a "$resume_root/results/ranges/." "$scratch/results/ranges/"
+fi
 
 process_range() {
     local range_id=$1 contig=$2 start=$3 end=$4 expected=$5
@@ -217,6 +265,7 @@ PY
             # every REF/ALT swap, then enforce a second strict reference check.
             "$bcftools" norm -f "$h1" -c s -m -any -Ou \
                 2>"$work/ref_alt_reconstruction.log" |
+            "$bcftools" view --min-alleles 2 -Ou |
             "$bcftools" view -T "$work/ownership.bed" -Ou |
             "$bcftools" norm -f "$h1" -c e -d exact -Oz \
                 -o "$out/normalized.vcf.gz"
@@ -266,17 +315,60 @@ for r in json.load(open(sys.argv[1]))["ranges"]:
   print("\t".join(map(str,(r["range_id"],r["contig"],r["start"],r["end"],r["partition_count"]))))
 PY
 )
-failed=0
-for ((batch=0; batch<${#query_rows[@]}; batch+=range_workers)); do
-    pids=()
-    for ((i=batch; i<${#query_rows[@]} && i<batch+range_workers; i++)); do
-        IFS=$'\t' read -r rid contig start end count <<<"${query_rows[$i]}"
-        process_range "$rid" "$contig" "$start" "$end" "$count" &
-        pids+=("$!")
+if [[ -z $resume_root ]]; then
+    failed=0
+    for ((batch=0; batch<${#query_rows[@]}; batch+=range_workers)); do
+        pids=()
+        for ((i=batch; i<${#query_rows[@]} && i<batch+range_workers; i++)); do
+            IFS=$'\t' read -r rid contig start end count <<<"${query_rows[$i]}"
+            process_range "$rid" "$contig" "$start" "$end" "$count" &
+            pids+=("$!")
+        done
+        for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
+        (( failed == 0 )) || fail "one or more bounded H1 ranges failed"
     done
-    for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
-    (( failed == 0 )) || fail "one or more bounded H1 ranges failed"
-done
+else
+    repair_preserved_range() {
+        local rid=$1 out="$scratch/results/ranges/$1"
+        local old_count new_count temp_vcf="$out/normalized.resume.vcf.gz"
+        [[ -f $out/range_audit.json && -f $out/normalized.vcf.gz ]] || \
+            fail "resume range is incomplete: $rid"
+        old_count=$("$bcftools" index -n "$out/normalized.vcf.gz")
+        "$bcftools" view --min-alleles 2 -Ou "$out/normalized.vcf.gz" |
+            "$bcftools" norm -f "$h1" -c e -d exact -Oz -o "$temp_vcf"
+        "$bcftools" index -f -t "$temp_vcf"
+        new_count=$("$bcftools" index -n "$temp_vcf")
+        mv "$temp_vcf" "$out/normalized.vcf.gz"
+        mv "$temp_vcf.tbi" "$out/normalized.vcf.gz.tbi"
+        "$bcftools" view -Ob -o "$out/normalized.resume.bcf" "$out/normalized.vcf.gz"
+        "$bcftools" index -f "$out/normalized.resume.bcf"
+        mv "$out/normalized.resume.bcf" "$out/normalized.bcf"
+        mv "$out/normalized.resume.bcf.csi" "$out/normalized.bcf.csi"
+        python3 - "$out/range_audit.json" "$old_count" "$new_count" \
+            "$resume_root" <<'PY'
+import json,sys
+from pathlib import Path
+path=Path(sys.argv[1]); old,new=map(int,sys.argv[2:4]); value=json.loads(path.read_text())
+if new > old: raise SystemExit("resume normalization increased variant census")
+value["normalized_variant_records"]=new
+value["monomorphic_records_removed_after_h1_reconstruction"]=old-new
+value["resumed_from_preserved_failure_root"]=sys.argv[4]
+value["resume_strict_ref_validation"]="bcftools norm -f exact staged H1 -c e"
+path.write_text(json.dumps(value,sort_keys=True)+"\n")
+PY
+    }
+    failed=0
+    for ((batch=0; batch<${#query_rows[@]}; batch+=cpus)); do
+        pids=()
+        for ((i=batch; i<${#query_rows[@]} && i<batch+cpus; i++)); do
+            IFS=$'\t' read -r rid _ <<<"${query_rows[$i]}"
+            repair_preserved_range "$rid" &
+            pids+=("$!")
+        done
+        for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
+        (( failed == 0 )) || fail "one or more preserved ranges failed strict resume audit"
+    done
+fi
 
 python3 - "$scratch/plan/range_plan.json" "$scratch/results/ranges" \
     "$scratch/results/variants/range_vcfs.list" "$scratch/results/range_completion.json" <<'PY'
