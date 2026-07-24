@@ -8,15 +8,17 @@ import csv
 import gzip
 import json
 import subprocess
+import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Iterable, Mapping, Sequence
 
 from analysis.audit_vgp_three_pair_results import (
     fasta_lengths,
     fasta_non_n_counts,
     psmc_population_counts,
 )
+from analysis.audit_vgp_real_canary import independent_mask_reconstruction
 from analysis.vgp_10_pilot import (
     Interval,
     PilotError,
@@ -25,6 +27,7 @@ from analysis.vgp_10_pilot import (
     read_bed,
     sha256_file,
 )
+from analysis.vgp_three_pair import audit_graph_identifiers
 
 
 RUN_ID = "vgp-three-pair-20260722-v1"
@@ -37,6 +40,18 @@ MAPPING_ROOTS = {
     "P02": Path("/moosefs/erikg/vgp/pilot/runs") / RUN_ID / "P02/mapping",
     "P03": Path("/moosefs/erikg/vgp/pilot/runs") / RUN_ID / "P03/mapping",
 }
+H1_FASTAS = {
+    "P07": Path(
+        "/moosefs/erikg/vgp/derived/clean-canary-bgzf/"
+        "GCA_048126635.1.fa.gz"
+    ),
+    "P02": Path("/moosefs/erikg/vgp/pilot/inputs/P02/h1.fa"),
+    "P03": Path("/moosefs/erikg/vgp/pilot/inputs/P03/h1.fa"),
+}
+P07_GRAPH_LEDGER = Path(
+    "/moosefs/erikg/vgp/pilot/clean-canary/"
+    "vgp-clean-canary-20260722-v1/P07/vgp_clean_canary_graph_sequence_digests.tsv"
+)
 
 
 def audit_closed(root: Path) -> dict[str, object]:
@@ -60,6 +75,117 @@ def _range_map(plan: Mapping[str, object]) -> dict[str, Mapping[str, object]]:
     if len(rows) != int(plan["range_count"]):
         raise PilotError("bounded plan repeats a range identifier")
     return rows
+
+
+def _merge_rows(rows: Iterable[Interval]) -> list[Interval]:
+    merged: list[Interval] = []
+    for row in sorted(rows, key=lambda value: (value.contig, value.start, value.end)):
+        if row.start < 0 or row.end <= row.start:
+            raise PilotError(f"invalid independently audited interval: {row}")
+        if merged and merged[-1].contig == row.contig and row.start <= merged[-1].end:
+            prior = merged[-1]
+            merged[-1] = Interval(prior.contig, prior.start, max(prior.end, row.end))
+        else:
+            merged.append(row)
+    return merged
+
+
+def _intersection_bp(left: Iterable[Interval], right: Iterable[Interval]) -> int:
+    left_by_contig: dict[str, list[Interval]] = defaultdict(list)
+    right_by_contig: dict[str, list[Interval]] = defaultdict(list)
+    for row in _merge_rows(left):
+        left_by_contig[row.contig].append(row)
+    for row in _merge_rows(right):
+        right_by_contig[row.contig].append(row)
+    total = 0
+    for contig, left_rows in left_by_contig.items():
+        right_rows = right_by_contig.get(contig, ())
+        i = j = 0
+        while i < len(left_rows) and j < len(right_rows):
+            row, other = left_rows[i], right_rows[j]
+            total += max(0, min(row.end, other.end) - max(row.start, other.start))
+            if row.end <= other.end:
+                i += 1
+            else:
+                j += 1
+    return total
+
+
+def audit_range_plan(root: Path, plan: Mapping[str, object]) -> dict[str, object]:
+    """Recompute exhaustive ranges and native-partition ownership from promoted files."""
+
+    ranges = list(plan["ranges"])  # type: ignore[index]
+    by_contig: dict[str, list[Mapping[str, object]]] = defaultdict(list)
+    for row in ranges:
+        if int(row["length"]) != int(row["end"]) - int(row["start"]):
+            raise PilotError("range plan contains an inconsistent length")
+        by_contig[str(row["contig"])].append(row)
+    h1_lengths: dict[str, int] = {}
+    total = 0
+    for contig, rows in by_contig.items():
+        rows.sort(key=lambda row: int(row["start"]))
+        cursor = 0
+        for row in rows:
+            if int(row["start"]) != cursor:
+                raise PilotError(f"range plan is not exhaustive/disjoint on {contig}")
+            cursor = int(row["end"])
+            total += int(row["length"])
+        h1_lengths[contig] = cursor
+    if (
+        total != int(plan["h1_total_bp"])
+        or len(h1_lengths) != int(plan["h1_contig_count"])
+        or len(ranges) != int(plan["range_count"])
+    ):
+        raise PilotError("independent range plan census differs from frozen totals")
+
+    owners = Counter()
+    partition_rows = 0
+    partition_bp = 0
+    ranges_by_contig = {
+        contig: sorted(rows, key=lambda row: int(row["start"]))
+        for contig, rows in by_contig.items()
+    }
+    for number, line in enumerate((root / "index/partitions.bed").open(), 1):
+        if not line.strip() or line.startswith("#"):
+            continue
+        fields = line.rstrip("\n").split("\t")
+        if len(fields) < 4:
+            raise PilotError(f"partition row {number} is truncated")
+        contig, start, end = fields[0], int(fields[1]), int(fields[2])
+        if contig not in h1_lengths:
+            continue
+        matches = [
+            row for row in ranges_by_contig[contig]
+            if int(row["start"]) <= start and end <= int(row["end"])
+        ]
+        if len(matches) != 1:
+            raise PilotError(f"H1 partition row {number} does not have exactly one range owner")
+        owners[str(matches[0]["range_id"])] += 1
+        partition_rows += 1
+        partition_bp += end - start
+    for row in ranges:
+        observed = owners[str(row["range_id"])]
+        expected = int(row["partition_count"])
+        if observed != expected:
+            raise PilotError(
+                f"{row['range_id']}: independently owned partitions {observed} != {expected}"
+            )
+    if (
+        partition_rows != int(plan["native_h1_partition_rows"])
+        or partition_bp != int(plan["partitioned_h1_bp"])
+    ):
+        raise PilotError("independent native-partition census differs from frozen plan")
+    return {
+        "range_count": len(ranges),
+        "h1_contig_count": len(h1_lengths),
+        "h1_total_bp": total,
+        "native_h1_partition_rows": partition_rows,
+        "partitioned_h1_bp": partition_bp,
+        "range_plan_disjoint": True,
+        "range_plan_exhaustive": True,
+        "native_partition_one_owner": True,
+        "h1_lengths": h1_lengths,
+    }
 
 
 def audit_range_variants(root: Path, plan: Mapping[str, object]) -> dict[str, object]:
@@ -136,12 +262,104 @@ def audit_callable_ownership(root: Path, plan: Mapping[str, object]) -> dict[str
     }
 
 
+def audit_mask_accounting(
+    root: Path, h1_lengths: Mapping[str, int],
+) -> dict[str, object]:
+    """Rebuild ordered prevariant masks and reconcile the final indel-flank mask."""
+
+    production = json.loads(
+        (root / "consensus/masks/mask_reconciliation.json").read_text()
+    )
+    reason_order = [
+        str(reason) for reason in production["reason_order"]
+        if reason != "variant_indel_flank"
+    ]
+    flags: dict[str, list[tuple[str, int, int]]] = {}
+    for reason in reason_order:
+        path = root / f"consensus/inputs.{reason}.bed"
+        if path.is_file():
+            flags[reason] = [
+                (row.contig, row.start, row.end) for row in read_bed(path)
+            ]
+    try:
+        rebuilt = independent_mask_reconstruction(h1_lengths, reason_order, flags)
+    except RuntimeError as error:
+        raise PilotError(f"independent mask reconstruction failed: {error}") from error
+    prevariant = _merge_rows(read_bed(root / "consensus/masks/callable.prevariant.bed"))
+    rebuilt_prevariant = [
+        Interval(contig, start, end) for contig, start, end in rebuilt["callable"]
+    ]
+    if prevariant != rebuilt_prevariant:
+        raise PilotError("independently reconstructed prevariant callable BED differs")
+    for reason in reason_order:
+        emitted = _merge_rows(
+            read_bed(root / f"consensus/masks/exclusions.{reason}.bed")
+        )
+        independent = [
+            Interval(contig, start, end)
+            for contig, start, end in rebuilt["by_reason"][reason]
+        ]
+        if emitted != independent:
+            raise PilotError(f"independent primary mask differs for {reason}")
+        if (
+            int(production["excluded_bp_by_primary_reason"][reason])
+            != int(rebuilt["excluded_bp_by_primary_reason"][reason])
+        ):
+            raise PilotError(f"independent primary mask count differs for {reason}")
+    final = _merge_rows(read_bed(root / "consensus/masks/callable.bed"))
+    final_bp = interval_bp(final)
+    if _intersection_bp(final, prevariant) != final_bp:
+        raise PilotError("final callable mask is not a subset of prevariant callable")
+    indel_bp = interval_bp(prevariant) - final_bp
+    if (
+        int(rebuilt["universe_bp"]) != int(production["universe_bp"])
+        or int(rebuilt["callable_bp"]) != int(production["prevariant_callable_bp"])
+        or final_bp != int(production["callable_bp"])
+        or indel_bp != int(production["variant_indel_flank_excluded_bp"])
+        or indel_bp
+        != int(production["excluded_bp_by_primary_reason"]["variant_indel_flank"])
+        or int(production["accounting_discrepancy_bp"]) != 0
+    ):
+        raise PilotError("independent final mask accounting differs from production")
+    return {
+        "universe_bp": int(rebuilt["universe_bp"]),
+        "prevariant_callable_bp": int(rebuilt["callable_bp"]),
+        "final_callable_bp": final_bp,
+        "variant_indel_flank_excluded_bp": indel_bp,
+        "excluded_bp_by_primary_reason": production["excluded_bp_by_primary_reason"],
+        "accounting_discrepancy_bp": 0,
+        "final_callable_subset_of_prevariant": True,
+        "independently_reconstructed": True,
+    }
+
+
 def _query_keys(bcftools: str, path: Path) -> list[str]:
     result = subprocess.run(
         [bcftools, "query", "-f", "%CHROM\\t%POS\\t%REF\\t%ALT\\n", str(path)],
         check=True, capture_output=True, text=True,
     )
     return result.stdout.splitlines()
+
+
+def _selected_fasta_sequences(path: Path, names: set[str]) -> dict[str, str]:
+    opener = gzip.open if path.suffix == ".gz" else open
+    parts: dict[str, list[str]] = {}
+    current: str | None = None
+    with opener(path, "rt") as handle:
+        for line in handle:
+            if line.startswith(">"):
+                name = line[1:].split(None, 1)[0]
+                current = name if name in names else None
+                if current is not None:
+                    if current in parts:
+                        raise PilotError(f"FASTA repeats selected identifier: {current}")
+                    parts[current] = []
+            elif current is not None:
+                parts[current].append(line.strip())
+    missing = names - set(parts)
+    if missing:
+        raise PilotError(f"selected staged-H1 FASTA identifiers are absent: {sorted(missing)}")
+    return {name: "".join(value).upper() for name, value in parts.items()}
 
 
 def stratified_reaudit(
@@ -154,6 +372,9 @@ def stratified_reaudit(
     regions = [
         Interval(str(row["contig"]), int(row["start"]), int(row["end"])) for row in chosen
     ]
+    h1_sequences = _selected_fasta_sequences(
+        H1_FASTAS[selection_id], {region.contig for region in regions}
+    )
     consensus = root / "consensus/consensus/consensus.fa"
     non_n = fasta_non_n_counts(consensus, regions)
     population = psmc_population_counts(root / "consensus/consensus/input.psmcfa", regions)
@@ -166,9 +387,21 @@ def stratified_reaudit(
         vcf_keys, bcf_keys = _query_keys(bcftools, vcf), _query_keys(bcftools, bcf)
         if vcf_keys != bcf_keys:
             raise PilotError(f"{selection_id}:{label}: range VCF and BCF differ")
-        # Independently make bcftools re-check every selected REF against the
-        # staged H1 dictionary embedded in the normalized header is not enough;
-        # range production's norm -f audit plus exact key equality is retained.
+        reference = h1_sequences[region.contig]
+        ref_mismatches = 0
+        for key in vcf_keys:
+            chrom, pos, ref, _ = key.split("\t")
+            pos0 = int(pos) - 1
+            if (
+                chrom != region.contig
+                or not region.start <= pos0 < region.end
+                or reference[pos0:pos0 + len(ref)].upper() != ref.upper()
+            ):
+                ref_mismatches += 1
+        if ref_mismatches:
+            raise PilotError(
+                f"{selection_id}:{label}: staged-H1 REF reconstruction mismatches"
+            )
         callable_bp = sum(
             max(0, min(item.end, region.end) - max(item.start, region.start))
             for item in callable_rows if item.contig == region.contig
@@ -180,16 +413,135 @@ def stratified_reaudit(
             "stratum": label, "range_id": row["range_id"], "contig": region.contig,
             "start": region.start, "end": region.end, "variant_records": len(vcf_keys),
             "vcf_bcf_exact_keys_equal": True, "callable_bp": callable_bp,
+            "staged_h1_ref_alleles_revalidated": len(vcf_keys),
+            "staged_h1_ref_mismatches": 0,
             "consensus_non_N_bp": non_n[region],
             "psmc_population_bins": {symbol: pop[symbol] for symbol in "NKT"},
         })
     return result
 
 
-def audit_mapping(selection_id: str) -> dict[str, object]:
+def _axis_overlap_depth(rows: Iterable[tuple[str, int, int]]) -> int:
+    events: dict[str, list[tuple[int, int]]] = defaultdict(list)
+    for name, start, end in rows:
+        events[name].extend(((start, 1), (end, -1)))
+    maximum = 0
+    for values in events.values():
+        depth = 0
+        for _, delta in sorted(values, key=lambda value: (value[0], value[1])):
+            depth += delta
+            maximum = max(maximum, depth)
+    return maximum
+
+
+def _graph_lengths(
+    selection_id: str, root: Path,
+) -> tuple[dict[str, int], dict[str, int]]:
+    if selection_id == "P07":
+        sides: dict[str, dict[str, int]] = {"H1": {}, "H2": {}}
+        with P07_GRAPH_LEDGER.open(newline="") as handle:
+            for row in csv.DictReader(handle, delimiter="\t"):
+                if (
+                    row["side"] not in sides
+                    or len(row["sequence_sha256"]) != 64
+                    or row["sequence_id"] in sides[row["side"]]
+                ):
+                    raise PilotError("P07 graph sequence digest ledger is malformed")
+                sides[row["side"]][row["sequence_id"]] = int(row["length"])
+        return sides["H1"], sides["H2"]
+    dictionary = json.loads(
+        (root / "index/staged_fasta_dictionary.json").read_text()
+    )
+    roles = dictionary["roles"]
+    return (
+        {
+            str(row["name"]): int(row["length"])
+            for row in roles["h1_fasta"]["records"]
+        },
+        {
+            str(row["name"]): int(row["length"])
+            for row in roles["h2_fasta"]["records"]
+        },
+    )
+
+
+def audit_graph_ids_independent(
+    selection_id: str, root: Path, production: Mapping[str, object],
+) -> dict[str, object]:
+    paf = MAPPING_ROOTS[selection_id] / "h2_to_h1.1to1.paf"
+    partitions = root / "index/partitions.bed"
+    if selection_id != "P07":
+        with tempfile.TemporaryDirectory(prefix=f"vgp-{selection_id}-graph-audit-") as tmp:
+            output = Path(tmp) / "audit.json"
+            rebuilt = audit_graph_identifiers(
+                root / "index/staged_fasta_dictionary.json", paf, partitions, output
+            )
+        for key in (
+            "paf_rows", "partition_rows", "partition_contigs",
+            "partition_rows_by_staged_role", "staged_h1_records",
+            "staged_h2_records", "digest_validated_aliases_used",
+        ):
+            if rebuilt[key] != production[key]:
+                raise PilotError(
+                    f"{selection_id}: independent graph identifier audit differs for {key}"
+                )
+        return {**rebuilt, "independently_recomputed": True}
+
+    h1, h2 = _graph_lengths(selection_id, root)
+    used: set[str] = set()
+    paf_rows = 0
+    with paf.open() as handle:
+        for number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            fields = line.rstrip("\n").split("\t")
+            if (
+                len(fields) < 12
+                or fields[0] not in h2
+                or fields[5] not in h1
+                or int(fields[1]) != h2.get(fields[0])
+                or int(fields[6]) != h1.get(fields[5])
+            ):
+                raise PilotError(f"P07: graph PAF identifier failure at row {number}")
+            used.update((fields[0], fields[5]))
+            paf_rows += 1
+    partition_rows = 0
+    for number, line in enumerate(partitions.open(), 1):
+        if not line.strip():
+            continue
+        fields = line.rstrip("\n").split("\t")
+        names = [values for values in (h1, h2) if fields[0] in values]
+        if len(fields) < 4 or not names:
+            raise PilotError(f"P07: unresolved partition identifier at row {number}")
+        length = names[0][fields[0]]
+        if int(fields[1]) < 0 or int(fields[2]) > length or int(fields[1]) >= int(fields[2]):
+            raise PilotError(f"P07: invalid partition coordinate at row {number}")
+        used.add(fields[0])
+        partition_rows += 1
+    if (
+        paf_rows <= 0
+        or len(used) != int(production["resolved_ids"])
+        or sha256_file(P07_GRAPH_LEDGER) != production["source_ledger_sha256"]
+    ):
+        raise PilotError("P07 independent graph identifier census differs")
+    return {
+        **production,
+        "paf_rows": paf_rows,
+        "partition_rows": partition_rows,
+        "ledger_sequence_records": len(h1) + len(h2),
+        "resolved_ids": len(used),
+        "independently_recomputed": True,
+    }
+
+
+def audit_mapping(selection_id: str, root: Path) -> dict[str, object]:
     path = MAPPING_ROOTS[selection_id] / "h2_to_h1.1to1.paf"
+    h1, h2 = _graph_lengths(selection_id, root)
     strands = Counter()
     rows = 0
+    query_intervals: list[tuple[str, int, int]] = []
+    target_intervals: list[tuple[str, int, int]] = []
+    reverse_transforms = 0
     for number, line in enumerate(path.open(), 1):
         if not line.strip():
             continue
@@ -199,16 +551,63 @@ def audit_mapping(selection_id: str) -> dict[str, object]:
         qlen, qs, qe, tlen, ts, te = map(
             int, (fields[1], fields[2], fields[3], fields[6], fields[7], fields[8])
         )
-        if not (0 <= qs < qe <= qlen and 0 <= ts < te <= tlen):
+        if (
+            fields[0] not in h2 or fields[5] not in h1
+            or qlen != h2.get(fields[0]) or tlen != h1.get(fields[5])
+            or not (0 <= qs < qe <= qlen and 0 <= ts < te <= tlen)
+        ):
             raise PilotError(f"{selection_id}: invalid PAF coordinate at row {number}")
+        if fields[4] == "-":
+            oriented_start, oriented_end = qlen - qe, qlen - qs
+            if not 0 <= oriented_start < oriented_end <= qlen:
+                raise PilotError(f"{selection_id}: reverse-strand transform failed at row {number}")
+            reverse_transforms += 1
+        query_intervals.append((fields[0], qs, qe))
+        target_intervals.append((fields[5], ts, te))
         strands[fields[4]] += 1
         rows += 1
     if not rows:
         raise PilotError(f"{selection_id}: exact mapping is empty")
+    query_depth = _axis_overlap_depth(query_intervals)
+    target_depth = _axis_overlap_depth(target_intervals)
+    if query_depth > 1 or target_depth > 1:
+        raise PilotError(f"{selection_id}: mapping is not deterministic bidirectional 1:1")
     return {
         "paf_rows": rows, "invalid_coordinates": 0,
         "strand_counts": dict(strands), "orientation": "H2_query_to_H1_reference",
+        "reverse_strand_transforms_checked": reverse_transforms,
+        "maximum_query_overlap_depth": query_depth,
+        "maximum_target_overlap_depth": target_depth,
+        "bidirectional_one_to_one_verified": True,
         "paf_sha256": sha256_file(path),
+    }
+
+
+def audit_psmc_population(root: Path) -> dict[str, object]:
+    counts = Counter()
+    records = 0
+    for line in (root / "consensus/consensus/input.psmcfa").open():
+        if line.startswith(">"):
+            records += 1
+            continue
+        counts.update(line.strip())
+    invalid = set(counts) - set("NKT")
+    if invalid or not counts or records <= 0:
+        raise PilotError(f"invalid complete primary PSMCFA population: {sorted(invalid)}")
+    replicate_files = 0
+    for replicate in range(1, 201):
+        path = root / f"psmc/replicate-{replicate:03d}/bootstrap.unscaled.psmc"
+        if not path.is_file() or path.stat().st_size <= 0:
+            raise PilotError(f"missing finite PSMC bootstrap output: {replicate}")
+        replicate_files += 1
+    return {
+        "primary_psmcfa_records": records,
+        "complete_primary_bin_population": {
+            symbol: counts[symbol] for symbol in "NKT"
+        },
+        "invalid_population_symbols": [],
+        "nonempty_bootstrap_outputs": replicate_files,
+        "population_independently_recomputed": True,
     }
 
 
@@ -230,11 +629,14 @@ def audit_pair(
     )
     if not required:
         raise PilotError(f"{selection_id}: bounded plan gate failed")
+    independent_plan = audit_range_plan(root, plan)
     graph = json.loads((root / "index/graph_identifier_audit.json").read_text())
     if graph.get("unresolved_ids") != 0 or graph.get("silently_omitted_regions") != 0:
         raise PilotError(f"{selection_id}: graph identifier audit failed")
+    independent_graph = audit_graph_ids_independent(selection_id, root, graph)
     range_audit = audit_range_variants(root, plan)
     callable_audit = audit_callable_ownership(root, plan)
+    mask_audit = audit_mask_accounting(root, independent_plan["h1_lengths"])
     block_audit = json.loads(
         (root / "consensus/bounded_consensus_block_audit.json").read_text()
     )
@@ -257,6 +659,7 @@ def audit_pair(
         scenarios = {row["scenario_id"] for row in csv.DictReader(handle, delimiter="\t")}
     if len(scenarios) != 9:
         raise PilotError(f"{selection_id}: expected nine PSMC scenarios")
+    psmc_population = audit_psmc_population(root)
     annotation: Mapping[str, object]
     if selection_id == "P07":
         annotation = json.loads((root / "annotation/exact_partitions.json").read_text())
@@ -268,6 +671,18 @@ def audit_pair(
     bcf = root / "variants/normalized.bcf"
     if not Path(str(normalized) + ".tbi").is_file() or not Path(str(bcf) + ".csi").is_file():
         raise PilotError(f"{selection_id}: normalized index absent")
+    mapping = audit_mapping(selection_id, root)
+    reconstruction = json.loads(
+        (root / "variants/ref_alt_coordinate_audit.json").read_text()
+    )
+    if (
+        reconstruction.get("invalid_coordinates") != 0
+        or reconstruction.get("normalized_ref_mismatches") != 0
+        or reconstruction.get("ref_alt_reconstruction_failures") != 0
+        or int(reconstruction.get("paf_rows", -1)) != mapping["paf_rows"]
+        or reconstruction.get("strand_counts") != mapping["strand_counts"]
+    ):
+        raise PilotError(f"{selection_id}: coordinate/REF-ALT production audit failed")
     return {
         "selection_id": selection_id, "species": selection["species"],
         "individual_or_isolate": selection["individual_or_isolate"],
@@ -283,21 +698,30 @@ def audit_pair(
                 "global_impg_lace_created",
             )
         },
+        "independent_range_plan_audit": {
+            key: independent_plan[key] for key in (
+                "range_count", "h1_contig_count", "h1_total_bp",
+                "native_h1_partition_rows", "partitioned_h1_bp",
+                "range_plan_disjoint", "range_plan_exhaustive",
+                "native_partition_one_owner",
+            )
+        },
         "range_variant_audit": range_audit,
         "callable_ownership_audit": callable_audit,
+        "independent_mask_accounting": mask_audit,
         "consensus_block_audit": block_audit,
-        "graph_identifier_audit": graph,
-        "coordinate_and_strand_audit": audit_mapping(selection_id),
-        "ref_alt_reconstruction": json.loads(
-            (root / "variants/ref_alt_coordinate_audit.json").read_text()
-        ),
+        "graph_identifier_audit": independent_graph,
+        "coordinate_and_strand_audit": mapping,
+        "ref_alt_reconstruction": reconstruction,
         "normalized_variants": {
             "vcf_gz_sha256": sha256_file(normalized), "bcf_sha256": sha256_file(bcf),
             "vcf_index_present": True, "bcf_index_present": True,
             "construction": "bcftools concat of normalized nonoverlapping range outputs",
         },
         "consensus_sha256": sha256_file(root / "consensus/consensus/consensus.fa"),
-        "mask": execution["mask"], "psmc": psmc, "scenario_count": len(scenarios),
+        "mask": execution["mask"], "psmc": psmc,
+        "independent_psmc_population_audit": psmc_population,
+        "scenario_count": len(scenarios),
         "independent_stratified_reaudit": stratified_reaudit(
             selection_id, root, plan, bcftools
         ),
