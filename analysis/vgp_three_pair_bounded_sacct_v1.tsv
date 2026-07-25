@@ -1,0 +1,31 @@
+JobIDRaw	JobName	State	Elapsed	AllocCPUS	MaxRSS	NodeList
+1797004	vgp10-P02-impg	CANCELLED by 1001	02:39:32	32		octopus02
+1797005	vgp10-P02-variants	CANCELLED by 1001	00:00:00	0		None assigned
+1797006	vgp10-P02-consensus	CANCELLED by 1001	00:00:00	0		None assigned
+1797007	vgp10-P02-psmc	CANCELLED by 1001	00:00:00	0		None assigned
+1797008	vgp10-P02-finalize	CANCELLED by 1001	00:00:00	0		None assigned
+1797029	vgp10-P03-impg	CANCELLED by 1001	02:36:49	16		octopus02
+1797030	vgp10-P03-variants	CANCELLED by 1001	00:00:00	0		None assigned
+1797031	vgp10-P03-consensus	CANCELLED by 1001	00:00:00	0		None assigned
+1797032	vgp10-P03-psmc	CANCELLED by 1001	00:00:00	0		None assigned
+1797033	vgp10-P03-finalize	CANCELLED by 1001	00:00:00	0		None assigned
+1797698	vgp-P07-range-canary	FAILED	00:00:09	8		octopus02
+1797712	vgp-P07-range-canary	FAILED	00:00:08	8		octopus02
+1797720	vgp-P07-range-canary	FAILED	00:03:55	8		octopus02
+1797758	vgp-P07-range-canary	FAILED	00:03:49	8		octopus02
+1797776	vgp-P07-range-canary	CANCELLED by 1001	00:00:37	8		octopus02
+1797782	vgp-P07-range-canary	COMPLETED	00:03:13	8		octopus02
+1797792	vgp-bounded-P07	CANCELLED by 1001	00:09:09	16		octopus02
+1797793	vgp-bounded-P03	CANCELLED by 1001	00:00:00	0		None assigned
+1797794	vgp-bounded-P02	CANCELLED by 1001	00:00:00	0		None assigned
+1797847	vgp-bounded-P07	CANCELLED by 1001	00:02:40	16		octopus02
+1797848	vgp-bounded-P03	CANCELLED by 1001	00:00:00	0		None assigned
+1797849	vgp-bounded-P02	CANCELLED by 1001	00:00:00	0		None assigned
+1797867	vgp-bounded-P07	FAILED	04:29:38	16		octopus02
+1797868	vgp-bounded-P03	CANCELLED by 1001	00:00:00	0		None assigned
+1797869	vgp-bounded-P02	CANCELLED by 1001	00:00:00	0		None assigned
+1799306	vgp-bounded-P07	COMPLETED	04:31:36	16		octopus02
+1799307	vgp-bounded-P03	COMPLETED	14:20:08	16		octopus02
+1799308	vgp-bounded-P02	FAILED	00:18:41	32		octopus02
+1804024	vgp-bounded-P02	FAILED	05:25:55	32		octopus02
+1804979	vgp-bounded-P02-resume	COMPLETED	17:34:02	32		octopus02

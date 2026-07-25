@@ -28,7 +28,12 @@ class Tier3ValidationError(ValueError):
 
 def _open_text(path: Union[str, Path]):
     path = Path(path)
-    if path.suffix in {".gz", ".bgz"}:
+    # Content-addressed object stores intentionally omit filename suffixes.
+    # Detect gzip/BGZF by the stream magic as well as by a convenience suffix
+    # so an immutable digest path is decoded identically to its named source.
+    with path.open("rb") as probe:
+        gzip_magic = probe.read(2) == b"\x1f\x8b"
+    if path.suffix in {".gz", ".bgz"} or gzip_magic:
         return gzip.open(str(path), "rt", encoding="utf-8")
     return path.open("r", encoding="utf-8")
 

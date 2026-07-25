@@ -51,6 +51,7 @@ for query_bed in "$query_root/beds"/[0-9][0-9][0-9].bed; do
     mkdir -p "$query_root/temp/$query_id" "$VGP_STAGE_PARTIAL/calls/$query_id"
     "$impg" query -a "$paf" -i "$VGP_STAGE_PARTIAL/h1_h2.impg" \
         -b "$query_bed" -d 0 --min-transitive-len 1 \
+        --force-large-region \
         --temp-dir "$query_root/temp/$query_id" -o vcf:poa \
         --sequence-files "$h1" "$h2" -O "$VGP_STAGE_PARTIAL/calls/$query_id" \
         -t "$query_threads" >"$query_root/logs/$query_id.log" 2>&1 &

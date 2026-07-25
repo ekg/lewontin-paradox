@@ -1,0 +1,114 @@
+{
+  "bounded_canary": {
+    "callable_bp": 3116900,
+    "contig": "CM106587.1",
+    "end": 5000000,
+    "exact_variant_key_sha256": "b7f64cd018a693ade59de7daec49b66d9f57e6ea7baa888c6e9e1c7099da1405",
+    "global_impg_lace_created": false,
+    "job_id": "1797782",
+    "native_partition_count": 2500,
+    "normalized_variant_keys": 3871,
+    "peak_local_graph_state_bytes": 4187923,
+    "query_elapsed_seconds": 183,
+    "range_bp": 5000000,
+    "range_id": "r000000",
+    "selection_id": "P07",
+    "start": 0,
+    "status": "COMPLETED",
+    "variant_keys_identical_to_clean_p07_impg_subset": true
+  },
+  "canceled_global_jobs": [
+    {
+      "alloc_cpus": 32,
+      "elapsed": "02:39:32",
+      "job_id": "1797004",
+      "job_name": "vgp10-P02-impg",
+      "node": "octopus02",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "job_id": "1797005",
+      "job_name": "vgp10-P02-variants",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "job_id": "1797006",
+      "job_name": "vgp10-P02-consensus",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "job_id": "1797007",
+      "job_name": "vgp10-P02-psmc",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "job_id": "1797008",
+      "job_name": "vgp10-P02-finalize",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "alloc_cpus": 16,
+      "elapsed": "02:36:49",
+      "job_id": "1797029",
+      "job_name": "vgp10-P03-impg",
+      "node": "octopus02",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "job_id": "1797030",
+      "job_name": "vgp10-P03-variants",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "job_id": "1797031",
+      "job_name": "vgp10-P03-consensus",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "job_id": "1797032",
+      "job_name": "vgp10-P03-psmc",
+      "state": "CANCELLED by 1001"
+    },
+    {
+      "job_id": "1797033",
+      "job_name": "vgp10-P03-finalize",
+      "state": "CANCELLED by 1001"
+    }
+  ],
+  "cancellation_is_biological_exclusion": false,
+  "preserved_inputs": [
+    {
+      "path": "/moosefs/erikg/vgp/pilot/runs/vgp-three-pair-20260722-v1/P02/mapping/h2_to_h1.1to1.paf",
+      "role": "P02 corrected exact H2-query/H1-reference mapping",
+      "sha256": "17c6cefbf39f35fac330f5917e9f077469f0f927fd715335d4ab31c0785ab61c"
+    },
+    {
+      "path": "/moosefs/erikg/vgp/pilot/runs/vgp-three-pair-20260722-v1/P03/mapping/h2_to_h1.1to1.paf",
+      "role": "P03 pinned WFMASH fallback exact H2-query/H1-reference mapping",
+      "sha256": "1c062bc4fa566c18db904984920c14efc8169649aa88754ab2c4b273df18860a"
+    },
+    {
+      "path": "/moosefs/erikg/vgp/pilot/clean-canary/vgp-clean-canary-20260722-v1/P07/impg/h1_h2.impg",
+      "role": "P07 retained IMPG alignment index",
+      "sha256": "801ed48ccffc486671d8194270b9ee099374e1d401a312abcb4fe4a60cb55990"
+    },
+    {
+      "path": "/moosefs/erikg/vgp/pilot/clean-canary/vgp-clean-canary-20260722-v1/P07/impg/partitions/partitions.bed",
+      "role": "P07 retained native partition index",
+      "sha256": "0c0e3e4f9cd88b0a734501ad71efed9e421b9f246bb39ee7c9f57c33f6714027"
+    }
+  ],
+  "production_architecture": {
+    "all_genome_graph_materialized": false,
+    "callable_accounting": "sum exact per-range intersections; every H1 base has one half-open range owner",
+    "global_impg_lace_created": false,
+    "global_partition_assignment_ledger_materialized": false,
+    "local_dataflow": "requested H1 range -> intersecting native partition rows -> local implicit graph -> local lace -> H2 projection -> bcftools normalize/1:1 trim/deduplicate -> indexed VCF+BCF -> audit/reduce -> delete graph temporaries",
+    "range_boundary_policy": "complete native H1 partition boundaries",
+    "range_hard_max_bp": 20000000,
+    "range_target_bp": 5000000,
+    "whole_genome_vcf_policy": "optional bcftools concat of already normalized nonoverlapping range VCFs only"
+  },
+  "schema_version": "vgp-three-pair-bounded-transition-v1",
+  "task_id": "run-vgp-three-pair"
+}

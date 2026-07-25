@@ -1,0 +1,37 @@
+{
+  "boundary_invariant": true,
+  "comparison": {
+    "four_part_lace_seconds": 14,
+    "part_input_counts": [
+      1024,
+      1024,
+      1024,
+      1024
+    ],
+    "part_output_sha256": [
+      "7e43f1ecb1c2e115bc8daa7fc9c537c7740571651a2dcd01bf6e527cc0603197",
+      "c90c6dc424c887320e2ba9c61b427ec0b7f6e07ff86fe814b253a1067c451256",
+      "8247cb559583ee7221ae31a979828d85830bfd25fc5601701c340fd1a89097bd",
+      "77d43cd10b5ae9dbe2eca7e19941a083a01de97262b213503041b4bb9e9abb1e"
+    ],
+    "parts_only_variants": 0,
+    "parts_union_variant_count": 8658,
+    "parts_variant_set_sha256": "0308f91a755d5454c7246d9b7907598b2389801e1581c1ce199930b21c2c08b9",
+    "whole_input_count": 4096,
+    "whole_lace_seconds": 59,
+    "whole_only_variants": 0,
+    "whole_output_sha256": "642665960ae2a21b42db2dcb4df82011cb5606a69d5cb2eaaf7e566b8b1a0d90",
+    "whole_variant_count": 8658,
+    "whole_variant_set_sha256": "0308f91a755d5454c7246d9b7907598b2389801e1581c1ce199930b21c2c08b9"
+  },
+  "input_name_and_content_digest_sha256": "05501b0e080386301e18d0d38214697511ee47d33fd12fdab5bf551b0829aef3",
+  "method": "Copy 4,096 completed real P03 regional VCFs to isolated node-local scratch; run pinned IMPG lace once on all inputs and independently on four consecutive 1,024-input partitions; identify H2 samples from the exact staged H1 dictionary; compare sorted (CHROM, POS, REF, ALT) sets for every H2 non-reference genotype.",
+  "pinned_impg_sha256": "c587dc2326cd24f887b1fcb3938404229ad0f0a27ef0773e90c287b1ade160d4",
+  "run_id": "vgp-three-pair-20260722-v1",
+  "schema_version": "vgp-three-pair-lace-boundary-validation-v1",
+  "selection_id": "P03",
+  "source_impg_job_id": "1794454",
+  "staged_h1_sha256": "522dd53c2613abb9dbd9550c479aa8f649910adca43bd66b053fe9ed39e373ce",
+  "task_id": "run-vgp-three-pair",
+  "validated_at_utc": "2026-07-23T09:30:00Z"
+}

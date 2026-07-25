@@ -685,7 +685,8 @@ def test_slurm_entrypoints_are_resumable_atomic_ordered_and_have_no_global_memor
     assert pair.index("impg.normalized.vcf.gz") < pair.index("paf-vcf")
     assert pair.index('"$bcftools" norm -f "$h1" -m -any') < pair.index(split_index)
     assert pair.find('"$bcftools" view -R', pair.index(split_index)) > pair.index(split_index)
-    assert '"$input_dir/h1_universe.bed" "$VGP_STAGE_PARTIAL/focus.native.bed"' in pair
+    assert '"$h1_universe" "$VGP_STAGE_PARTIAL/focus.native.bed"' in pair
+    assert 'h1_universe="$SLURM_TMPDIR/inputs/h1_universe.bed"' in pair
     assert '"$input_dir/eligible_query_regions.bed" "$VGP_STAGE_PARTIAL/focus.native.bed"' not in pair
     assert "regional_vcf_audit.json" in pair
     assert pair.index('regional_vcf_audit.json') < pair.index('impg_hierarchical_lace.sh')
@@ -727,7 +728,10 @@ def test_generic_scaleout_uses_node_local_scratch_and_cross_filesystem_promotion
     assert "hierarchical" in lace
     assert "lace_threads=${VGP_IMPG_LACE_THREADS:-2}" in lace
     assert "lace_threads >= 2" in lace
-    assert "chunk_count=$((available_cpus / lace_threads))" in lace
+    assert "worker_count=$((available_cpus / lace_threads))" in lace
+    assert "max_inputs_per_chunk=${VGP_IMPG_LACE_MAX_INPUTS:-4096}" in lace
+    assert 'count=max(workers,math.ceil(len(rows)/maximum))' in lace
+    assert 'for ((batch_start=0; batch_start<${#chunk_lists[@]}; batch_start+=worker_count))' in lace
     assert "chunk_count > 16" not in lace
     assert "--compress bgzip" in lace
     assert 'bz2.open(chunk,"rt")' in lace
@@ -897,6 +901,17 @@ def test_p07_impg_rescue_uses_boundary_safe_hierarchical_lacing():
     assert rescue.index("chunk-lists") < rescue.index("lace-chunks")
     assert rescue.index("lace-chunks") < rescue.index('"$bcftools" concat')
     assert rescue.index('[[ -s $partial/laced.vcf ]]') < rescue.index('rm -rf -- "$partial/calls"')
+
+
+def test_hierarchical_lace_preserves_chunks_without_h2_samples():
+    helper = (SLURM / "impg_hierarchical_lace.sh").read_text()
+    assert "IMPG chunk has no H2 region sample" not in helper
+    assert '"chunks_without_h2_samples"' in helper
+    assert '"header_only_no_h2_samples"' in helper
+    assert '"empty_chunk_rule"' in helper
+    assert '[[ -s $work/h2-samples/$chunk_stem.txt ]]' in helper
+    assert '"$bcftools" view --header-only --drop-genotypes' in helper
+    assert '"$bcftools" index -f -t' in helper
 
 
 def test_authorized_canary_runs_psmc_in_checkpointed_inallocation_batches():
