@@ -1,0 +1,145 @@
+{
+  "architecture": {
+    "aggregate_variant_policy": "bcftools concat of normalized, nonoverlapping range VCFs",
+    "graph_memory_model": "range-local only; do not scale peak local graph bytes by partition or range count",
+    "impg_role": "whole-assembly alignment/partition index used only to construct bounded H1-range implicit graphs",
+    "range_hard_max_bp": 20000000,
+    "range_target_bp": 5000000,
+    "range_workers_cap": 8,
+    "threads_per_range": 2
+  },
+  "corrected_interpretation": {
+    "allocated_cpu_hours_are_upper_bounds": true,
+    "memory_is_request_not_usage": true,
+    "missing_measurements": [
+      "MaxRSS for every accepted bounded Slurm allocation",
+      "bounded-production scratch high-water bytes",
+      "bounded-production child CPU time split by query, reduction, consensus, and PSMC"
+    ],
+    "scale_out_rule": "Do not infer RAM or scratch demand from the small local graph state. Retain the observed successful requests as admission ceilings until per-stage cgroup RSS and scratch high-water telemetry exist. Use successful wall time per H1 Gbp only as a planning observation, not a performance guarantee.",
+    "steady_state_elapsed_hours_per_h1_gbp": {
+      "P02_completed_resume_only": 6.568142,
+      "P03": 11.823483,
+      "P07": 11.106725
+    },
+    "steady_state_upper_bound_elapsed_hours_per_h1_gbp": 11.823483
+  },
+  "environment": {
+    "bcftools_sha256": "79637872d29b03be83293a56d297519ceb74d861ff61888966d5e17157f57dd4",
+    "channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "closure_sha256": "8fcdb32021f1cd8eac839509cff47ab6bdd63b656b30e243fdf78d3c4ba24f9d",
+    "impg_commit": "101df81eb28a809c8fac97d297acd9fcfbbfa048",
+    "impg_executable_sha256": "c587dc2326cd24f887b1fcb3938404229ad0f0a27ef0773e90c287b1ade160d4",
+    "impg_store_status": "digest-pinned external executable; not built into the Guix profile",
+    "manifest_sha256": "afd14da446d29d4e66b64837194dfae524342dc5b8de3c2778ec85c1cca09a3d",
+    "profile": "/gnu/store/3c2mxm30rbzvnw7qsi235mrkk3m38fym-profile",
+    "psmc_sha256": "2c64b0ce7f68a6251e4795f3b88caa7b53769e12a867b6f59918312f66735f57",
+    "wfmash_sha256": "0d8a3a72cfda75a30c38e81b90320c5d212d24b8c312ad22fe97d67e553fc0f6"
+  },
+  "measured_jobs": [
+    {
+      "allocated_cpu_hours": 0.428889,
+      "allocated_cpus": 8,
+      "elapsed": "00:03:13",
+      "job_id": "1797782",
+      "max_rss": null,
+      "role": "bounded P07 architecture canary",
+      "state": "COMPLETED"
+    },
+    {
+      "allocated_cpu_hours": 72.426667,
+      "allocated_cpus": 16,
+      "elapsed": "04:31:36",
+      "job_id": "1799306",
+      "max_rss": null,
+      "requested_memory": "96G",
+      "role": "accepted P07 production",
+      "state": "COMPLETED"
+    },
+    {
+      "allocated_cpu_hours": 229.368889,
+      "allocated_cpus": 16,
+      "elapsed": "14:20:08",
+      "job_id": "1799307",
+      "max_rss": null,
+      "requested_memory": "128G",
+      "role": "accepted P03 production",
+      "state": "COMPLETED"
+    },
+    {
+      "allocated_cpu_hours": 9.964444,
+      "allocated_cpus": 32,
+      "elapsed": "00:18:41",
+      "job_id": "1799308",
+      "max_rss": null,
+      "requested_memory": "256G",
+      "role": "P02 bounded REF/ALT defect discovery",
+      "state": "FAILED"
+    },
+    {
+      "allocated_cpu_hours": 173.822222,
+      "allocated_cpus": 32,
+      "elapsed": "05:25:55",
+      "job_id": "1804024",
+      "max_rss": null,
+      "requested_memory": "256G",
+      "role": "P02 bounded query lineage retained by accepted resume",
+      "state": "FAILED after all 925 query ranges completed"
+    },
+    {
+      "allocated_cpu_hours": 562.151111,
+      "allocated_cpus": 32,
+      "elapsed": "17:34:02",
+      "job_id": "1804979",
+      "max_rss": null,
+      "requested_memory": "256G",
+      "role": "accepted P02 strict-H1 reduction/consensus/PSMC resume; zero IMPG queries",
+      "state": "COMPLETED"
+    }
+  ],
+  "observed_pair_scale": [
+    {
+      "accepted_job_or_lineage": "1799306",
+      "h1_bp": 407561107,
+      "maximum_peak_local_graph_state_bytes": 7570025,
+      "pair": "P07",
+      "query_ranges": 106,
+      "range_count": 109,
+      "successful_allocated_cpu_hours": 72.426667,
+      "successful_elapsed_hours": 4.526667
+    },
+    {
+      "accepted_job_or_lineage": "1799307",
+      "h1_bp": 1212464869,
+      "maximum_peak_local_graph_state_bytes": 12836941,
+      "pair": "P03",
+      "query_ranges": 329,
+      "range_count": 407,
+      "successful_allocated_cpu_hours": 229.368889,
+      "successful_elapsed_hours": 14.335556
+    },
+    {
+      "accepted_job_or_lineage": "1804024+1804979",
+      "accepted_lineage_allocated_cpu_hours": 735.973333,
+      "accepted_lineage_elapsed_hours": 22.999167,
+      "directly_observed_consensus_rss_kib": 13777560,
+      "h1_bp": 2674608476,
+      "maximum_peak_local_graph_state_bytes": 14389589,
+      "pair": "P02",
+      "query_ranges": 925,
+      "range_count": 930,
+      "successful_resume_allocated_cpu_hours": 562.151111,
+      "successful_resume_elapsed_hours": 17.567222
+    }
+  ],
+  "required_scale_out_telemetry": {
+    "capture_cgroup_peak_rss_per_stage": true,
+    "capture_scratch_high_water_and_file_count_per_stage": true,
+    "capture_user_system_and_allocated_cpu_seconds_per_stage": true,
+    "record_filesystem_type_and_resolved_scratch_path": true,
+    "retain_failed_lineage_cost_separately_from_steady_state_cost": true
+  },
+  "schema_version": "vgp-three-pair-review-resource-model-v1",
+  "source_telemetry": "analysis/vgp_three_pair_bounded_sacct_v1.tsv",
+  "task_id": "review-vgp-three-pair"
+}
