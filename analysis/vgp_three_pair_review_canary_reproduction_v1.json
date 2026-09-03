@@ -1,0 +1,27 @@
+{
+  "callable_bp": 3116900,
+  "environment": {
+    "bcftools_sha256": "79637872d29b03be83293a56d297519ceb74d861ff61888966d5e17157f57dd4",
+    "channel_commit": "44bbfc24e4bcc48d0e3343cd3d83452721af8c36",
+    "closure_sha256": "8fcdb32021f1cd8eac839509cff47ab6bdd63b656b30e243fdf78d3c4ba24f9d",
+    "impg_sha256": "c587dc2326cd24f887b1fcb3938404229ad0f0a27ef0773e90c287b1ade160d4",
+    "profile": "/gnu/store/3c2mxm30rbzvnw7qsi235mrkk3m38fym-profile"
+  },
+  "global_graph_materialized": false,
+  "global_impg_lace_used": false,
+  "lace_elapsed_seconds": 1,
+  "local_graph_temporaries_disposed": true,
+  "matches_clean_impg_subset": true,
+  "normalized_variant_key_sha256": "b7f64cd018a693ade59de7daec49b66d9f57e6ea7baa888c6e9e1c7099da1405",
+  "normalized_variant_keys": 3871,
+  "peak_local_graph_state_bytes": 4216589,
+  "query_elapsed_seconds": 191,
+  "range": {
+    "contig": "CM106587.1",
+    "end": 5000000,
+    "native_partitions": 2500,
+    "start": 0
+  },
+  "regional_vcf_count": 2500,
+  "schema_version": "review-vgp-p07-bounded-canary-reproduction-v1"
+}
