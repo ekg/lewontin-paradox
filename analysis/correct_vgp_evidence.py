@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import io
 import json
 import re
 from pathlib import Path
@@ -94,11 +95,16 @@ def read_tsv(path: Path) -> list[dict[str, str]]:
 
 
 def write_tsv(path: Path, fields: Sequence[str], rows: Sequence[Mapping[str, object]]) -> None:
-    with path.open("w", encoding="utf-8", newline="") as handle:
+    with io.StringIO() as handle:
         writer = csv.DictWriter(handle, fieldnames=list(fields), delimiter="\t", lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({field: row.get(field, "") for field in fields})
+        text = handle.getvalue()
+    # Cells never contain raw tabs, so trailing tabs encode only empty trailing
+    # cells; trim them to keep `git diff --check` clean.
+    text = re.sub(r"\t+\n", "\n", text)
+    path.write_text(text, encoding="utf-8")
 
 
 def load_inputs(repo_root: Path) -> dict[str, Any]:
