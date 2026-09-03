@@ -16,6 +16,7 @@
 # typst build output (optional; uncomment to ignore)
 # manuscript.pdf
 .wg
+.wg-worktrees/
 analysis/data/
 
 # Tier 3 payloads, transient products, credentials, and local Guix profiles.
