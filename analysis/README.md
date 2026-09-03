@@ -180,3 +180,18 @@ guix time-machine -C analysis/guix/channels.scm -- \
   python3 analysis/tier3_fit.py \
     --figure-from-results analysis/tier3_results.tsv
 ```
+
+## VGP evidence correction (current)
+
+The authoritative statement of the VGP pilot evidence is
+`analysis/vgp_evidence_correction_v1/report.md` (task `correct-vgp-evidence`):
+the independently reviewed bounded three-pair results (P07/P03/P02) plus the
+clean-canary reproduction control supersede the earlier two-result synthesis
+(`analysis/vgp_real_synthesis_v1/`, preserved byte-identically for provenance).
+P07 is classified as unresolved read/assembly discordance (not assembly-invalid),
+historical FastGA/IMPG/compression/dictionary/annotation-discovery/scratch
+failures are pipeline defects rather than biological exclusions, and the
+exact-accession annotation catalog reconciliation is explicitly **not** a
+biological scale-out. Corrected tables: `result_pairs.tsv`,
+`annotation_paths.tsv`, `pipeline_reliability.tsv`, `claims_ledger.tsv`, and
+`supersession_ledger.tsv` in the same directory.
