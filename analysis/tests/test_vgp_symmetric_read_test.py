@@ -1,5 +1,6 @@
 """Unit tests for analysis/vgp_symmetric_read_test.py (synthetic fixtures only)."""
 
+import csv
 import json
 import subprocess
 import sys
@@ -389,3 +390,262 @@ class TestReportCommand:
         assert "| h2 | illumina |" in text
         assert "chrX" in text
         assert "Symmetric read-vs-assembly validation" in text
+
+
+class TestAlleleAwareEvidence:
+    """Regression tests for the deep-dive finding A parser defect: '.'/','
+    pileup symbols must resolve against the pileup REF column (the frame
+    fasta base), never unconditionally to the site's H1 allele."""
+
+    def test_lifted_frame_ref_symbol_resolves_to_h2(self):
+        # Site H1 allele A, H2 allele G. Lifted h2 frame: pileup REF (the
+        # H2 fasta base) equals G — the ALT of the other frame. Three
+        # ref-symbol reads '.'/',' are H2-matching reads.
+        counts = vsrt.parse_pileup_bases_allele_aware(".,.", "G", "A", "G")
+        assert counts["h1"] == 0
+        assert counts["h2"] == 3
+        assert counts["frame_ref_symbol"] == 3
+        assert vsrt.classify_allele_evidence(3, counts,
+                                             minimum_depth=1, maximum_depth=120) == "h2_only"
+        # The legacy parser would have called all three reads H1 support.
+        from analysis import vgp_read_validation as legacy
+        legacy_counts = legacy.parse_pileup_bases(".,.", "A", "G")
+        assert legacy_counts["ref"] == 3  # the defect, documented
+
+    def test_h1_frame_balanced(self):
+        counts = vsrt.parse_pileup_bases_allele_aware(".G.GG.", "A", "A", "G")
+        assert counts["h1"] == 3
+        assert counts["h2"] == 3
+        assert (vsrt.classify_allele_evidence(6, counts,
+                                              minimum_depth=1, maximum_depth=80)
+                == "balanced_heterozygous")
+
+    def test_minus_strand_complemented_alleles(self):
+        # minus-strand lift: sites TSV already carries complemented alleles
+        # (ref=T, alt=C); pileup REF is the h2-frame fasta base T.
+        counts = vsrt.parse_pileup_bases_allele_aware(",,CCC,", "T", "T", "C")
+        assert counts["h1"] == 3
+        assert counts["h2"] == 3
+        assert (vsrt.classify_allele_evidence(5, counts,
+                                              minimum_depth=1, maximum_depth=80)
+                == "balanced_heterozygous")
+
+    def test_frame_ref_carries_neither_allele(self):
+        # allele-origin disagreement: frame fasta base T matches neither the
+        # H1 allele (A) nor the H2 allele (G).
+        counts = vsrt.parse_pileup_bases_allele_aware(".T.", "T", "A", "G")
+        assert counts["h1"] == 0
+        assert counts["h2"] == 0
+        assert counts["frame_ref_mismatch"] == 2
+        assert counts["other"] == 1
+        assert (vsrt.classify_allele_evidence(3, counts,
+                                              minimum_depth=1, maximum_depth=80)
+                == "not_observed")
+
+    def test_legacy_classification_mapping(self):
+        assert vsrt.legacy_classification_of("balanced_heterozygous") == "supported_heterozygous"
+        assert (vsrt.legacy_classification_of("h1_only")
+                == "contradicted_homozygous_reference")
+        assert vsrt.legacy_classification_of("h2_only") == "ambiguous"
+        assert vsrt.legacy_classification_of("skewed") == "ambiguous"
+        assert vsrt.legacy_classification_of("outside_depth_mask") == "outside_depth_mask"
+
+    def test_evidence_command_records_allele_origin_metadata(self, tmp_path):
+        sites = tmp_path / "sites.tsv"
+        sites.write_text("chrom\tposition_1based\tref\talt\n"
+                         "chr1\t100\tA\tG\n"
+                         "chr1\t101\tA\tG\n"
+                         "chr1\t102\tA\tG\n")
+        pileup = tmp_path / "pileup.txt"
+        pileup.write_text("chr1\t100\tG\t3\t.,.\tIII\n"
+                          "chr1\t101\tA\t6\t.G.GG.\tIIIIII\n"
+                          "chr1\t102\tT\t3\t.T.\tIII\n")
+        out = tmp_path / "evidence.tsv"
+        summary = tmp_path / "evidence.json"
+        subprocess.run(
+            [sys.executable, "-m", "analysis.vgp_symmetric_read_test", "evidence",
+             "--sites", str(sites), "--pileup", str(pileup),
+             "--frame", "h2", "--platform", "hifi",
+             "--minimum-depth", "1", "--maximum-depth", "80",
+             "--output", str(out), "--summary", str(summary)],
+            check=True, capture_output=True, text=True)
+        rows = list(csv.DictReader(out.open(), delimiter="\t"))
+        by_pos = {int(row["position_1based"]): row for row in rows}
+        # lifted-frame hom-H2 site: '.' reads are H2 support, never H1
+        assert by_pos[100]["classification"] == "h2_only"
+        assert by_pos[100]["h1_reads"] == "0"
+        assert by_pos[100]["h2_reads"] == "3"
+        assert by_pos[100]["frame_ref_base"] == "G"
+        assert by_pos[100]["site_h1_allele"] == "A"
+        assert by_pos[100]["site_h2_allele"] == "G"
+        assert by_pos[100]["allele_origin"] == "h2_allele"
+        assert by_pos[100]["legacy_classification"] == "ambiguous"
+        assert by_pos[101]["classification"] == "balanced_heterozygous"
+        assert by_pos[101]["legacy_classification"] == "supported_heterozygous"
+        assert by_pos[102]["allele_origin"] == "neither"
+        payload = json.loads(summary.read_text())
+        assert payload["classifications"]["h2_only"] == 1
+        assert payload["classifications"]["balanced_heterozygous"] == 1
+        assert payload["allele_origin"]["h2_allele"] == 1
+        assert payload["allele_origin"]["neither"] == 1
+
+    def test_metrics_accepts_v2_labels_and_v1_labels(self, tmp_path):
+        # the same underlying evidence expressed with v2 vs v1 labels must
+        # map to identical metrics numbers (old promoted files keep parsing)
+        def run(name, labels):
+            sites = [f"chr1\t{p}\tA\tG\n" for p in (101, 102, 103, 104)]
+            reads = [f"chr1\t{p}\tA\tG\t50\t0/1\n" for p in (101, 102, 103, 104)]
+            evidence = [f"chr1\t{p}\t{label}\n"
+                        for p, label in zip((101, 102, 103, 104), labels)]
+            (tmp_path / f"{name}.sites.tsv").write_text(
+                "chrom\tposition_1based\tref\talt\n" + "".join(sites))
+            (tmp_path / f"{name}.reads.tsv").write_text(
+                "chrom\tposition_1based\tref\talt\tquality\tgenotype\n" + "".join(reads))
+            (tmp_path / f"{name}.evidence.tsv").write_text(
+                "chrom\tposition_1based\tclassification\n" + "".join(evidence))
+            (tmp_path / f"{name}.bed").write_text("chr1\t0\t3000000\n")
+            out = tmp_path / f"{name}.metrics.json"
+            subprocess.run(
+                [sys.executable, "-m", "analysis.vgp_symmetric_read_test", "metrics",
+                 "--frame", "h1", "--platform", "hifi",
+                 "--assembly-sites", str(tmp_path / f"{name}.sites.tsv"),
+                 "--read-variants", str(tmp_path / f"{name}.reads.tsv"),
+                 "--assembly-evidence", str(tmp_path / f"{name}.evidence.tsv"),
+                 "--frame-callable-bed", str(tmp_path / f"{name}.bed"),
+                 "--callable-bp", "100", "--output", str(out)],
+                check=True, capture_output=True, text=True)
+            return json.loads(out.read_text())
+
+        v2 = run("v2", ["balanced_heterozygous", "h1_only", "h2_only", "skewed"])
+        v1 = run("v1", ["supported_heterozygous",
+                        "contradicted_homozygous_reference",
+                        "ambiguous", "ambiguous"])
+        for payload in (v2, v1):
+            assert payload["concordance"]["supported_heterozygous"] == 1
+            assert payload["concordance"]["contradicted_homozygous_reference"] == 1
+        assert v2["h2_only_reads_carry_h2_allele_exclusively"] == 1
+        assert v1["h2_only_reads_carry_h2_allele_exclusively"] == 0  # invisible to v1
+
+
+class TestTriage:
+    """Assembly-only paralog triage on a synthetic three-bin genome."""
+
+    BIN = 1000
+
+    def build(self, tmp_path, bin_sites=(2, 30, 3), gc_fractions=(0.6, 0.3, 0.6),
+             disagree_in_hotspot=True):
+        """Contig h1c: three 1kb bins; site positions chosen inside callable
+        windows [0,950), [1000,1950), [2000,2950). H2 agrees with ALT except
+        in the hotspot bin, where it carries the H1 allele (disagreement)."""
+        import random
+        rng = random.Random(7)
+        sequences = []
+        for gc in gc_fractions:
+            gc_count = int(gc * self.BIN)
+            at_count = self.BIN - gc_count
+            bases = ["G"] * gc_count + ["A"] * at_count
+            rng.shuffle(bases)
+            sequences.append(bases)
+        h1 = [base for sequence in sequences for base in sequence]
+
+        sites = []
+        h2 = list(h1)
+        hotspot_bins = {i for i, (n, gc) in enumerate(zip(bin_sites, gc_fractions))
+                        if n >= 10}
+        for bin_index, count in enumerate(bin_sites):
+            for k in range(count):
+                pos = bin_index * self.BIN + 100 + k * 8
+                ref, alt = "A", "G"
+                if h1[pos] != ref:
+                    # pick the actual base pair deterministically
+                    ref = h1[pos]
+                    alt = {"A": "G", "G": "A", "C": "T", "T": "C"}[ref]
+                sites.append((pos, ref, alt))
+                h2[pos] = ref if (disagree_in_hotspot and bin_index in hotspot_bins) else alt
+        h1_fa = tmp_path / "h1.fa"
+        h2_fa = tmp_path / "h2.fa"
+        for path, seq in ((h1_fa, h1), (h2_fa, h2)):
+            with path.open("w") as handle:
+                handle.write(">h1c\n" if path is h1_fa else ">h2c\n")
+                for i in range(0, len(seq), 60):
+                    handle.write("".join(seq[i:i + 60]) + "\n")
+        paf = write_paf(tmp_path, [
+            ("h1c", 3000, 0, 3000, "+", "h2c", 3000, 0, 3000, "3000M"),
+        ])
+        sites_tsv = tmp_path / "sites.tsv"
+        sites_tsv.write_text(
+            "chrom\tposition_1based\tref\talt\n"
+            + "".join(f"h1c\t{pos + 1}\t{ref}\t{alt}\n" for pos, ref, alt in sites))
+        callable_bed = tmp_path / "callable.bed"
+        callable_bed.write_text("h1c\t0\t950\nh1c\t1000\t1950\nh1c\t2000\t2950\n")
+        return h1_fa, h2_fa, paf, sites_tsv, callable_bed, sites
+
+    def run_triage(self, tmp_path, fixture, name="t", **overrides):
+        h1_fa, h2_fa, paf, sites_tsv, callable_bed, sites = fixture
+        out_dir = tmp_path / f"triage-{name}"
+        argv = [sys.executable, "-m", "analysis.vgp_symmetric_read_test", "triage",
+                "--pair", "TEST", "--paf", str(paf),
+                "--h1-fasta", str(h1_fa), "--h2-fasta", str(h2_fa),
+                "--sites-tsv", str(sites_tsv), "--callable-bed", str(callable_bed),
+                "--bin-size", str(self.BIN), "--min-bin-bases", "900",
+                "--output-dir", str(out_dir)]
+        for key, value in overrides.items():
+            argv += [f"--{key.replace('_', '-')}", str(value)]
+        subprocess.run(argv, check=True, capture_output=True, text=True)
+        summary = json.loads((out_dir / "triage_summary.json").read_text())
+        return summary, (out_dir / "triage_bins.tsv"), (out_dir / "paralog_bins.bed")
+
+    def test_hotspot_flagged_and_corrected_pi(self, tmp_path):
+        fixture = self.build(tmp_path)
+        summary, bins_tsv, paralog_bed = self.run_triage(tmp_path, fixture)
+        # bin divergence: 2.0, 30.0, 3.0 sites/kb -> median 3.0, threshold 6.0
+        # GC: 0.6, 0.3, 0.6 -> median 0.6, threshold 0.58 -> only bin 1 flags
+        assert summary["thresholds"]["divergence_threshold_sites_per_kb"] == pytest.approx(6.0)
+        assert summary["bins"]["flagged_paralog"] == 1
+        flagged = summary["flagged_bins"][0]
+        assert (flagged["chrom"], flagged["start"], flagged["end"]) == ("h1c", 1000, 2000)
+        assert paralog_bed.read_text() == "h1c\t1000\t2000\n"
+        # 35 callable sites, 30 in the paralog bin; 2850 callable bp, 950 excluded
+        assert summary["sites"]["callable_sites"] == 35
+        assert summary["sites"]["callable_sites_in_paralog_bins"] == 30
+        assert summary["pi"]["callable_bp"] == 2850
+        assert summary["pi"]["callable_bp_in_paralog_bins"] == 950
+        assert summary["pi"]["raw_pi"] == pytest.approx(35 / 2850)
+        assert summary["pi"]["corrected_pi"] == pytest.approx(5 / 1900)
+        assert summary["sites"]["artifact_site_fraction"] == pytest.approx(30 / 35)
+        assert summary["pi"]["artifact_bp_fraction"] == pytest.approx(950 / 2850)
+
+    def test_allele_origin_localizes_disagreement(self, tmp_path):
+        fixture = self.build(tmp_path)
+        summary, bins_tsv, _ = self.run_triage(tmp_path, fixture)
+        origin = summary["allele_origin"]
+        assert origin["paf_orientation"] == "h1_query"
+        assert origin["h2_base_matches_alt"] == 5
+        assert origin["h2_base_disagrees"] == 30
+        assert origin["disagreement_fraction"] == pytest.approx(30 / 35)
+        rows = list(csv.DictReader(bins_tsv.open(), delimiter="\t"))
+        by_bin = {int(row["bin_start_0based"]): row for row in rows}
+        assert float(by_bin[1000]["allele_origin_disagreement_fraction"]) == pytest.approx(1.0)
+        assert float(by_bin[0]["allele_origin_disagreement_fraction"]) == pytest.approx(0.0)
+
+    def test_strict_threshold_not_flagged_at_equality(self, tmp_path):
+        # divergences 1, 2, 2, 4, 8 sites/kb -> median 2.0, threshold 4.0;
+        # the bin at exactly 4.0 must NOT flag (strict >); 8.0 does.
+        fixture = self.build(tmp_path, bin_sites=(1, 2, 2, 4, 8),
+                             gc_fractions=(0.6, 0.6, 0.6, 0.3, 0.3))
+        summary, _, paralog_bed = self.run_triage(tmp_path, fixture, name="edge")
+        assert summary["bins"]["flagged_paralog"] == 1
+        assert summary["flagged_bins"][0]["start"] == 4000
+        assert paralog_bed.read_text() == "h1c\t4000\t5000\n"
+
+    def test_fasta_scan_gc_and_random_access(self, tmp_path):
+        h1_fa, h2_fa, _, _, _, sites = self.build(tmp_path)
+        scan = vsrt.FastaScan(h1_fa, 1000)
+        bins = scan.bins
+        assert set(key[0] for key in bins) == {"h1c"}
+        gc_fractions = [scan.bins[("h1c", i)][1] / scan.bins[("h1c", i)][0] for i in range(3)]
+        assert gc_fractions[0] == pytest.approx(0.6, abs=0.01)
+        assert gc_fractions[1] == pytest.approx(0.3, abs=0.01)
+        for pos, ref, alt in sites[:20]:
+            assert scan.base_at("h1c", pos) == ref
+        scan.close()

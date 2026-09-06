@@ -14,10 +14,22 @@ transfer
     Lift a pi-callable BED and assembly SNP sites H1<->H2 through the PAF
     CIGARs with strand-aware allele complementation, reciprocal round-trip
     verification, and transfer statistics.
+evidence
+    Allele-aware pileup evidence at assembly SNVs for one frame.  Unlike the
+    legacy assembly-evidence pass, '.'/',' pileup symbols are resolved
+    against the pileup's own REF column (the frame fasta base), so reads in
+    a lifted (h2) frame that match H2's base count as H2-allele support,
+    never as H1-allele support (deep-dive finding A).  Per-site allele
+    origin metadata (frame ref base, site H1/H2 alleles) is recorded.
 metrics
     Per-frame symmetric statistics: pi per platform, genotype concordance at
     assembly SNVs with both-direction contradiction rates, and per-contig /
-    per-bin discordance localization.
+    per-bin discordance localization.  Accepts legacy (v1) and allele-aware
+    (v2) evidence classifications.
+triage
+    Assembly-only collapsed-paralogy screen (no reads): per-bin divergence
+    and GC scan of the bounded callset, flagged paralog bins, and a
+    corrected pi excluding flagged bins.
 report
     Render the multi-frame metrics into a markdown report skeleton.
 
@@ -31,6 +43,7 @@ import argparse
 import csv
 import json
 import math
+import subprocess
 import sys
 from array import array
 from bisect import bisect_right
@@ -42,6 +55,8 @@ from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 SCHEMA_TRANSFER = "vgp-symmetric-read-test-transfer-v1"
 SCHEMA_METRICS = "vgp-symmetric-read-test-metrics-v1"
 SCHEMA_REPORT = "vgp-symmetric-read-test-report-v1"
+SCHEMA_EVIDENCE = "vgp-symmetric-read-test-evidence-v2"
+SCHEMA_TRIAGE = "vgp-paralog-triage-v1"
 
 COMPLEMENT = {
     "A": "T", "C": "G", "G": "C", "T": "A", "N": "N",
@@ -609,11 +624,230 @@ def cmd_transfer(args: argparse.Namespace) -> int:
 
 
 # --------------------------------------------------------------------------
+# allele-aware pileup evidence (deep-dive finding A fix)
+# --------------------------------------------------------------------------
+
+
+def parse_pileup_bases_allele_aware(bases: str, frame_ref: str, h1_allele: str,
+                                    h2_allele: str) -> Dict[str, int]:
+    """Count reads by which *expected allele* they carry, not by symbol.
+
+    '.'/',' mean "matches the pileup reference" — the frame fasta base at
+    that position, given as ``frame_ref`` (pileup column 3).  They are
+    resolved to the allele that base equals: H1 allele, H2 allele, or, when
+    the frame reference carries neither expected allele (the lift/allele-
+    origin disagreement class), ``frame_ref_mismatch``.  Explicit base
+    letters are classified the same way.  The legacy parser counted '.'/','
+    as site-ref (H1-allele) support unconditionally, which mislabeled every
+    H2-matching read in a lifted h2 frame as H1 support.
+    """
+    h1_allele = h1_allele.upper()
+    h2_allele = h2_allele.upper()
+    frame_ref = frame_ref.upper()
+    counts = {"h1": 0, "h2": 0, "frame_ref_mismatch": 0, "other": 0, "deletion": 0,
+              "frame_ref_symbol": 0}
+    index = 0
+    while index < len(bases):
+        char = bases[index]
+        if char == "^":
+            index += 2
+            continue
+        if char == "$":
+            index += 1
+            continue
+        if char in "+-":
+            index += 1
+            digit_start = index
+            while index < len(bases) and bases[index].isdigit():
+                index += 1
+            if digit_start == index:
+                raise ValueError("malformed pileup indel without a length")
+            index += int(bases[digit_start:index])
+            continue
+        if char in "*#":
+            counts["deletion"] += 1
+        elif char in "<>":
+            pass
+        elif char in ".,":
+            counts["frame_ref_symbol"] += 1
+            if frame_ref == h1_allele:
+                counts["h1"] += 1
+            elif frame_ref == h2_allele:
+                counts["h2"] += 1
+            elif frame_ref in ("A", "C", "G", "T"):
+                counts["frame_ref_mismatch"] += 1
+            else:
+                counts["other"] += 1
+        elif char.isalpha():
+            base = char.upper()
+            if base == h1_allele:
+                counts["h1"] += 1
+            elif base == h2_allele:
+                counts["h2"] += 1
+            else:
+                counts["other"] += 1
+        index += 1
+    return counts
+
+
+def classify_allele_evidence(depth: int, counts: Dict[str, int], *,
+                             minimum_depth: int, maximum_depth: int) -> str:
+    """Site classification from allele-aware counts.
+
+    Labels: ``balanced_heterozygous`` (both alleles >=3 reads, balance
+    0.20-0.80), ``h1_only`` / ``h2_only`` (other allele <=1 read and the
+    carried allele >= max(3, ceil(0.90*depth))), ``skewed`` (both observed
+    but off balance), ``outside_depth_mask``, ``not_observed``.  Thresholds
+    mirror the legacy assembly-evidence rules so v1/v2 numbers stay
+    comparable.
+    """
+    if depth == 0 and counts["h1"] + counts["h2"] == 0:
+        return "not_observed"
+    if depth < minimum_depth or depth > maximum_depth:
+        return "outside_depth_mask"
+    informative = counts["h1"] + counts["h2"]
+    if informative == 0:
+        return "not_observed"
+    balance = counts["h2"] / informative
+    if (counts["h1"] >= 3 and counts["h2"] >= 3 and 0.20 <= balance <= 0.80):
+        return "balanced_heterozygous"
+    if counts["h2"] <= 1 and counts["h1"] >= max(3, math.ceil(0.90 * depth)):
+        return "h1_only"
+    if counts["h1"] <= 1 and counts["h2"] >= max(3, math.ceil(0.90 * depth)):
+        return "h2_only"
+    return "skewed"
+
+
+def legacy_classification_of(label: str) -> str:
+    """Map v2 labels onto the legacy label set for drop-in consumers."""
+    if label in ("balanced_heterozygous",):
+        return "supported_heterozygous"
+    if label == "h1_only":
+        return "contradicted_homozygous_reference"
+    if label in ("skewed", "h2_only"):
+        return "ambiguous"
+    return label  # outside_depth_mask / not_observed keep their names
+
+
+EVIDENCE_TSV_COLUMNS = (
+    "chrom", "position_1based", "ref", "alt",
+    "frame_ref_base", "site_h1_allele", "site_h2_allele", "allele_origin",
+    "reported_depth", "h1_reads", "h2_reads", "frame_ref_symbol_reads",
+    "frame_ref_mismatch_reads", "other_reads", "deletion_reads",
+    "allele_balance_h2", "classification", "legacy_classification",
+)
+
+
+def cmd_evidence(args: argparse.Namespace) -> int:
+    """Allele-aware evidence pass over one frame's raw pileup."""
+    frame_ref_by_site: Dict[Tuple[str, int], str] = {}
+    observations: Dict[Tuple[str, int], Tuple[int, str]] = {}
+    with open(args.pileup) as handle:
+        for line_number, raw in enumerate(handle, 1):
+            if not raw.strip():
+                continue
+            fields = raw.rstrip("\n").split("\t")
+            if len(fields) < 5:
+                raise SystemExit(
+                    f"{args.pileup}:{line_number}: pileup row has {len(fields)} fields")
+            key = (fields[0], int(fields[1]) - 1)  # pileup pos is 1-based
+            if key in observations:
+                raise SystemExit(f"{args.pileup}:{line_number}: duplicate pileup coordinate {key}")
+            observations[key] = (int(fields[3]), fields[4])
+            frame_ref_by_site[key] = fields[2].upper()
+
+    Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+    classifications: Counter = Counter()
+    origins: Counter = Counter()
+    balances: List[float] = []
+    with open(args.sites) as sites_handle, open(args.output, "w") as out_handle:
+        writer = csv.DictWriter(out_handle, fieldnames=list(EVIDENCE_TSV_COLUMNS),
+                                delimiter="\t", lineterminator="\n")
+        writer.writeheader()
+        for chrom, pos, ref, alt in read_sites(Path(args.sites)):
+            key = (chrom, pos)
+            frame_ref = frame_ref_by_site.get(key, "")
+            if key not in observations:
+                depth, counts = 0, {"h1": 0, "h2": 0, "frame_ref_mismatch": 0,
+                                    "other": 0, "deletion": 0, "frame_ref_symbol": 0}
+            else:
+                depth, pileup_bases = observations[key]
+                counts = parse_pileup_bases_allele_aware(
+                    pileup_bases, frame_ref, ref, alt)
+            label = classify_allele_evidence(
+                depth, counts, minimum_depth=int(args.minimum_depth),
+                maximum_depth=int(args.maximum_depth))
+            classifications[label] += 1
+            informative = counts["h1"] + counts["h2"]
+            balance = (counts["h2"] / informative) if informative else None
+            if label == "balanced_heterozygous" and balance is not None:
+                balances.append(balance)
+            if not frame_ref:
+                origin = "not_observed"
+            elif frame_ref == alt:
+                origin = "h2_allele"
+            elif frame_ref == ref:
+                origin = "h1_allele"
+            else:
+                origin = "neither"
+            origins[origin] += 1
+            writer.writerow({
+                "chrom": chrom, "position_1based": pos + 1, "ref": ref, "alt": alt,
+                "frame_ref_base": frame_ref,
+                "site_h1_allele": ref, "site_h2_allele": alt,
+                "allele_origin": origin,
+                "reported_depth": depth,
+                "h1_reads": counts["h1"], "h2_reads": counts["h2"],
+                "frame_ref_symbol_reads": counts["frame_ref_symbol"],
+                "frame_ref_mismatch_reads": counts["frame_ref_mismatch"],
+                "other_reads": counts["other"], "deletion_reads": counts["deletion"],
+                "allele_balance_h2": f"{balance:.6f}" if balance is not None else "",
+                "classification": label,
+                "legacy_classification": legacy_classification_of(label),
+            })
+
+    summary = {
+        "schema_version": SCHEMA_EVIDENCE,
+        "frame": args.frame,
+        "platform": args.platform,
+        "minimum_depth": int(args.minimum_depth),
+        "maximum_depth": int(args.maximum_depth),
+        "classifications": dict(classifications),
+        "allele_origin": dict(origins),
+        "balanced_allele_balance_h2_mean": (sum(balances) / len(balances)) if balances else None,
+        "balanced_sites": len(balances),
+    }
+    Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.summary).write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+    print(json.dumps({"frame": args.frame, "platform": args.platform,
+                      "classifications": dict(classifications)}, indent=2))
+    return 0
+
+
+# --------------------------------------------------------------------------
 # metrics subcommand
 # --------------------------------------------------------------------------
 
 
-@dataclass
+def map_evidence_classification(label: str) -> str:
+    """Normalize v1 (legacy) and v2 (allele-aware) labels for metrics.
+
+    v2 balanced_heterozygous corresponds to the legacy
+    supported_heterozygous rule; v2 h1_only (reads homozygous for the site
+    ref = the H1 allele) corresponds to the legacy
+    contradicted_homozygous_reference.  v2 h2_only has no legacy
+    equivalent — the legacy parser silently miscounted those reads as
+    H1 support — so it is reported separately.
+    """
+    if label in ("supported_heterozygous", "balanced_heterozygous"):
+        return "supported_heterozygous"
+    if label in ("contradicted_homozygous_reference", "h1_only"):
+        return "contradicted_homozygous_reference"
+    if label == "h2_only":
+        return "h2_only"
+    return "other"
+
+
 class FrameMetrics:
     frame: str
     platform: str
@@ -705,8 +939,11 @@ def cmd_metrics(args: argparse.Namespace) -> int:
         key: row for key, row in evidence.items() if key in assembly_sites
     }
     classifications = Counter(row["classification"] for row in in_universe_evidence.values())
-    contradicted = classifications["contradicted_homozygous_reference"]
-    supported = classifications["supported_heterozygous"]
+    mapped = Counter(map_evidence_classification(row["classification"])
+                     for row in in_universe_evidence.values())
+    contradicted = mapped["contradicted_homozygous_reference"]
+    supported = mapped["supported_heterozygous"]
+    h2_only = mapped["h2_only"]
     resolved = sum(classifications.values()) - classifications.get("not_observed", 0)
 
     # Both-direction contradictions:
@@ -729,7 +966,7 @@ def cmd_metrics(args: argparse.Namespace) -> int:
             "read_het_not_in_assembly": 0,
         })
         entry["assembly_sites"] += 1
-        if evidence[key]["classification"] == "contradicted_homozygous_reference":
+        if map_evidence_classification(evidence[key]["classification"]) == "contradicted_homozygous_reference":
             entry["contradicted"] += 1
     for key in direction_b_sites:
         chrom, pos = key
@@ -783,6 +1020,7 @@ def cmd_metrics(args: argparse.Namespace) -> int:
         "assembly_sites_observed": len(in_universe_evidence),
         "assembly_site_strata": site_strata,
         "evidence_classifications": dict(classifications),
+        "evidence_classifications_mapped": dict(mapped),
         "concordance": {
             "supported_heterozygous": supported,
             "contradicted_homozygous_reference": contradicted,
@@ -793,6 +1031,7 @@ def cmd_metrics(args: argparse.Namespace) -> int:
             "B_readHet_assemblyHomRef": len(direction_b_sites),
             "B_density_per_callable_bp": (len(direction_b_sites) / callable_bp) if callable_bp else None,
         },
+        "h2_only_reads_carry_h2_allele_exclusively": h2_only,
         "flagged_bins": flagged,
         "flag_policy": {
             "bin_size": bin_size,
@@ -827,6 +1066,390 @@ def cmd_metrics(args: argparse.Namespace) -> int:
                              (c["contradicted"] / c["assembly_sites"]) if c["assembly_sites"] else ""])
     print(json.dumps({"frame": args.frame, "platform": args.platform,
                       "pi_read": result["pi_read"]}, indent=2))
+    return 0
+
+
+# --------------------------------------------------------------------------
+# triage subcommand (assembly-only collapsed-paralogy screen)
+# --------------------------------------------------------------------------
+
+
+def sha256_of(path: Path, chunk: int = 1 << 20) -> str:
+    import hashlib
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while True:
+            block = handle.read(chunk)
+            if not block:
+                break
+            digest.update(block)
+    return digest.hexdigest()
+
+
+class FastaScan:
+    """One streaming pass: per-bin ACGT/GC counts and an in-memory fai index."""
+
+    def __init__(self, path: Path, bin_size: int):
+        self.path = path
+        self.bin_size = bin_size
+        # (chrom, bin_index) -> [acgt, gc, non_acgt_letters]
+        self.bins: Dict[Tuple[str, int], List[int]] = {}
+        # chrom -> [length, byte_offset, line_bases, line_bytes]
+        self.index: Dict[str, List[int]] = {}
+        self._handle = None
+        contig: Optional[str] = None
+        length = offset = line_bases = line_bytes = 0
+        position = 0  # 0-based within contig
+        with path.open("rb") as handle:
+            while True:
+                raw = handle.readline()
+                if not raw:
+                    break
+                if raw.startswith(b">"):
+                    if contig is not None:
+                        self.index[contig] = [length, offset, line_bases, line_bytes]
+                    text = raw[1:].split()
+                    contig = text[0].decode() if text else ""
+                    if contig in self.index:
+                        raise SystemExit(f"{path}: duplicate contig {contig}")
+                    length = position = 0
+                    offset = 0
+                    line_bases = line_bytes = 0
+                    first_sequence_line = True
+                    continue
+                if contig is None:
+                    continue
+                stripped = raw.strip()
+                if not stripped:
+                    continue
+                if first_sequence_line:
+                    line_bases = len(stripped)
+                    line_bytes = len(raw)
+                    offset = handle.tell() - len(raw)
+                    first_sequence_line = False
+                length += len(stripped)
+                cursor = 0
+                line_start = position
+                while cursor < len(stripped):
+                    bin_index = (line_start + cursor) // bin_size
+                    bin_end = (bin_index + 1) * bin_size
+                    take = min(len(stripped) - cursor, bin_end - (line_start + cursor))
+                    segment = stripped[cursor:cursor + take].upper()
+                    entry = self.bins.setdefault((contig, bin_index), [0, 0, 0])
+                    entry[0] += (segment.count(b"A") + segment.count(b"C")
+                                 + segment.count(b"G") + segment.count(b"T"))
+                    entry[1] += segment.count(b"G") + segment.count(b"C")
+                    entry[2] += take - (segment.count(b"A") + segment.count(b"C")
+                                        + segment.count(b"G") + segment.count(b"T"))
+                    cursor += take
+                position += len(stripped)
+            if contig is not None:
+                self.index[contig] = [length, offset, line_bases, line_bytes]
+
+    def base_at(self, chrom: str, position: int) -> str:
+        """Uppercase base at 0-based position (needs the fai index from scan)."""
+        record = self.index.get(chrom)
+        if record is None or not (0 <= position < record[0]):
+            return ""
+        length, offset, line_bases, line_bytes = record
+        if line_bases == 0:
+            return ""
+        line, column = divmod(position, line_bases)
+        if self._handle is None:
+            self._handle = self.path.open("rb")
+        self._handle.seek(offset + line * line_bytes + column)
+        byte = self._handle.read(1)
+        return byte.decode().upper()
+
+    def close(self) -> None:
+        if self._handle is not None:
+            self._handle.close()
+            self._handle = None
+
+
+def stream_bcf_sites(bcf: Path, bcftools: str) -> Iterator[Tuple[str, int, str, str]]:
+    """Yield (chrom, 0-based pos, ref, alt) for biallelic SNP records."""
+    process = subprocess.Popen(
+        [bcftools, "query", "-f", "%CHROM\\t%POS\\t%REF\\t%ALT\\n", "-i",
+         'TYPE="snp" && ALT!="*" && ALT!="."', str(bcf)],
+        stdout=subprocess.PIPE, text=True)
+    assert process.stdout is not None
+    for line in process.stdout:
+        fields = line.rstrip("\n").split("\t")
+        if len(fields) != 4:
+            continue
+        chrom, pos, ref, alt = fields
+        if "," in alt or len(ref) != 1 or len(alt) != 1:
+            continue
+        yield chrom, int(pos) - 1, ref.upper(), alt.upper()
+    code = process.wait()
+    if code != 0:
+        raise SystemExit(f"{bcftools} query exited {code} for {bcf}")
+
+
+def stream_sites_tsv(path: Path) -> Iterator[Tuple[str, int, str, str]]:
+    with path.open() as handle:
+        for chrom, pos, ref, alt in read_sites(path):
+            yield chrom, pos, ref, alt
+
+
+def detect_paf_orientation(index: PafChainIndex, site_chroms: set) -> str:
+    """'h1_query' when BCF contigs sit on the query side, else 'h1_target'."""
+    query_side = set(index._by_query)
+    target_side = set(index._by_target)
+    q_overlap = len(site_chroms & query_side)
+    t_overlap = len(site_chroms & target_side)
+    if site_chroms - (query_side | target_side):
+        missing = sorted(site_chroms - (query_side | target_side))[:3]
+        raise SystemExit(f"BCF contigs absent from both PAF sides, e.g. {missing}")
+    if q_overlap > t_overlap:
+        return "h1_query"
+    if t_overlap > q_overlap:
+        return "h1_target"
+    raise SystemExit("PAF orientation ambiguous: BCF contigs match both sides equally")
+
+
+def median(values: Sequence[float]) -> float:
+    ordered = sorted(values)
+    n = len(ordered)
+    if not n:
+        raise SystemExit("median of empty sequence")
+    mid = n // 2
+    return ordered[mid] if n % 2 else (ordered[mid - 1] + ordered[mid]) / 2.0
+
+
+def bed_bp_outside(intervals: Iterable[Tuple[str, int, int]],
+                    excluded: Iterable[Tuple[str, int, int]]) -> Tuple[int, int]:
+    """Return (bp outside exclusion, bp excluded) for BED-vs-BED subtraction."""
+    by_contig: Dict[str, List[List[int]]] = {}
+    for chrom, start, end in intervals:
+        if end > start:
+            by_contig.setdefault(chrom, []).append([start, end])
+    exclusions: Dict[str, List[List[int]]] = {}
+    for chrom, start, end in excluded:
+        if end > start:
+            exclusions.setdefault(chrom, []).append([start, end])
+    kept = excluded_bp = 0
+    for chrom, spans in by_contig.items():
+        spans.sort()
+        merged: List[List[int]] = []
+        for start, end in spans:
+            if merged and start <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], end)
+            else:
+                merged.append([start, end])
+        cuts = sorted(exclusions.get(chrom, []))
+        for start, end in merged:
+            cursor = start
+            for cut_start, cut_end in cuts:
+                if cut_end <= cursor:
+                    continue
+                if cut_start >= end:
+                    break
+                if cut_start > cursor:
+                    kept += min(cut_start, end) - cursor
+                overlap_lo = max(cursor, cut_start)
+                overlap_hi = min(end, cut_end)
+                if overlap_hi > overlap_lo:
+                    excluded_bp += overlap_hi - overlap_lo
+                cursor = max(cursor, cut_end)
+                if cursor >= end:
+                    break
+            if cursor < end:
+                kept += end - cursor
+    return kept, excluded_bp
+
+
+def cmd_triage(args: argparse.Namespace) -> int:
+    bin_size = int(args.bin_size)
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    h1_scan = FastaScan(Path(args.h1_fasta), bin_size)
+    h1_chroms = set(h1_scan.index)
+
+    index, paf_stats = load_paf(Path(args.paf))
+
+    if args.sites_tsv:
+        site_list = list(stream_sites_tsv(Path(args.sites_tsv)))
+    else:
+        site_list = list(stream_bcf_sites(Path(args.bcf), args.bcftools))
+    if not site_list:
+        raise SystemExit("no SNP sites loaded")
+    site_chroms = {site[0] for site in site_list}
+    unknown = site_chroms - h1_chroms
+    if unknown:
+        raise SystemExit(f"site contigs absent from H1 fasta: {sorted(unknown)[:3]}")
+
+    orientation = detect_paf_orientation(index, site_chroms)
+
+    # -- pass 1: per-bin site counts ---------------------------------------
+    bin_sites: Counter = Counter()
+    for chrom, pos, _ref, _alt in site_list:
+        bin_sites[(chrom, pos // bin_size)] += 1
+
+    bin_rows: List[dict] = []
+    for (chrom, bin_index), (acgt, gc, other) in sorted(h1_scan.bins.items()):
+        sites = bin_sites.get((chrom, bin_index), 0)
+        bin_rows.append({
+            "chrom": chrom,
+            "bin_start_0based": bin_index * bin_size,
+            "bin_end_0based": (bin_index + 1) * bin_size,
+            "acgt_bases": acgt,
+            "non_acgt_letters": other,
+            "gc_fraction": (gc / acgt) if acgt else None,
+            "snp_sites": sites,
+            "divergence_sites_per_kb": (sites * 1000.0 / acgt) if acgt else None,
+        })
+    eligible = [row for row in bin_rows
+                if row["acgt_bases"] >= int(args.min_bin_bases)]
+    median_divergence = median([row["divergence_sites_per_kb"] for row in eligible])
+    median_gc = median([row["gc_fraction"] for row in eligible])
+    divergence_threshold = float(args.divergence_factor) * median_divergence
+    gc_threshold = median_gc - float(args.gc_delta)
+
+    for row in bin_rows:
+        row["flagged_paralog_bin"] = bool(
+            row["acgt_bases"] >= int(args.min_bin_bases)
+            and row["divergence_sites_per_kb"] is not None
+            and row["divergence_sites_per_kb"] > divergence_threshold
+            and row["gc_fraction"] is not None
+            and row["gc_fraction"] < gc_threshold)
+
+    flagged_bins = [row for row in bin_rows if row["flagged_paralog_bin"]]
+    flagged_lookup = {(row["chrom"], row["bin_start_0based"] // bin_size)
+                      for row in flagged_bins}
+
+    # -- pass 2: corrected pi + allele-origin -------------------------------
+    callable_bed = BedLookup(read_bed(Path(args.callable_bed)))
+    total_callable_sites = kept_sites = flagged_sites = 0
+    for chrom, pos, _ref, _alt in site_list:
+        if not callable_bed.contains(chrom, pos):
+            continue
+        total_callable_sites += 1
+        if (chrom, pos // bin_size) in flagged_lookup:
+            flagged_sites += 1
+        else:
+            kept_sites += 1
+
+    flagged_intervals = [(row["chrom"], row["bin_start_0based"], row["bin_end_0based"])
+                         for row in flagged_bins]
+    kept_bp, excluded_bp = bed_bp_outside(read_bed(Path(args.callable_bed)),
+                                          flagged_intervals)
+    total_bp = kept_bp + excluded_bp
+
+    allele_origin: Optional[dict] = None
+    h2_scan: Optional[FastaScan] = None
+    if not args.skip_allele_origin:
+        h2_scan = FastaScan(Path(args.h2_fasta), bin_size)
+        forward = orientation == "h1_query"
+        agree = disagree = unliftable = 0
+        per_bin_origin: Dict[Tuple[str, int], List[int]] = {}
+        for chrom, pos, _ref, alt in site_list:
+            reason, lifted = index.classify_site(chrom, pos, forward=forward)
+            if reason != "lifted" or lifted is None:
+                unliftable += 1
+                continue
+            l_chrom, l_pos = lifted
+            row_candidates = index._rows_containing(
+                index._by_query if forward else index._by_target, chrom, pos, pos + 1,
+                (lambda r: (r.q_start, r.q_end)) if forward else (lambda r: (r.t_start, r.t_end)))
+            strand = row_candidates[0].strand if row_candidates else "+"
+            base = h2_scan.base_at(l_chrom, l_pos)
+            if strand == "-":
+                base = COMPLEMENT.get(base, base)
+            entry = per_bin_origin.setdefault((chrom, pos // bin_size), [0, 0])
+            if base == alt:
+                agree += 1
+                entry[0] += 1
+            else:
+                disagree += 1
+                entry[1] += 1
+        observed = agree + disagree
+        allele_origin = {
+            "paf_orientation": orientation,
+            "observed_sites": observed,
+            "h2_base_matches_alt": agree,
+            "h2_base_disagrees": disagree,
+            "disagreement_fraction": (disagree / observed) if observed else None,
+            "unliftable_sites": unliftable,
+        }
+        for row in bin_rows:
+            entry = per_bin_origin.get((row["chrom"], row["bin_start_0based"] // bin_size))
+            if entry and (entry[0] + entry[1]):
+                row["allele_origin_disagreement_fraction"] = entry[1] / (entry[0] + entry[1])
+            else:
+                row["allele_origin_disagreement_fraction"] = None
+    else:
+        for row in bin_rows:
+            row["allele_origin_disagreement_fraction"] = None
+        h2_scan = None
+    if h2_scan is not None:
+        h2_scan.close()
+
+    h1_scan.close()
+
+    fieldnames = list(bin_rows[0].keys()) if bin_rows else ["chrom"]
+    with (out_dir / "triage_bins.tsv").open("w") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames,
+                                delimiter="\t", lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(bin_rows)
+    with (out_dir / "paralog_bins.bed").open("w") as handle:
+        for chrom, start, end in sorted(flagged_intervals):
+            handle.write(f"{chrom}\t{start}\t{end}\n")
+
+    summary = {
+        "schema_version": SCHEMA_TRIAGE,
+        "pair": args.pair,
+        "inputs": {
+            "paf": {"path": str(args.paf), "sha256": sha256_of(Path(args.paf))},
+            "h1_fasta": {"path": str(args.h1_fasta), "sha256": sha256_of(Path(args.h1_fasta))},
+            "h2_fasta": {"path": str(args.h2_fasta), "sha256": sha256_of(Path(args.h2_fasta))},
+            "bcf": {"path": str(args.bcf)} if args.bcf else {"sites_tsv": str(args.sites_tsv)},
+            "callable_bed": {"path": str(args.callable_bed), "sha256": sha256_of(Path(args.callable_bed))},
+        },
+        "paf_orientation": orientation,
+        "bin_size": bin_size,
+        "thresholds": {
+            "divergence_factor": float(args.divergence_factor),
+            "gc_delta": float(args.gc_delta),
+            "min_bin_bases": int(args.min_bin_bases),
+            "median_bin_divergence_sites_per_kb": median_divergence,
+            "median_bin_gc_fraction": median_gc,
+            "divergence_threshold_sites_per_kb": divergence_threshold,
+            "gc_threshold": gc_threshold,
+        },
+        "bins": {"total": len(bin_rows), "eligible": len(eligible),
+                 "flagged_paralog": len(flagged_bins)},
+        "flagged_bins": [
+            {"chrom": row["chrom"], "start": row["bin_start_0based"],
+             "end": row["bin_end_0based"], "sites": row["snp_sites"],
+             "divergence_sites_per_kb": row["divergence_sites_per_kb"],
+             "gc_fraction": row["gc_fraction"],
+             "allele_origin_disagreement_fraction": row["allele_origin_disagreement_fraction"]}
+            for row in flagged_bins],
+        "sites": {
+            "total_snp_sites": len(site_list),
+            "callable_sites": total_callable_sites,
+            "callable_sites_in_paralog_bins": flagged_sites,
+            "artifact_site_fraction": (flagged_sites / total_callable_sites) if total_callable_sites else None,
+        },
+        "pi": {
+            "callable_bp": total_bp,
+            "callable_bp_in_paralog_bins": excluded_bp,
+            "artifact_bp_fraction": (excluded_bp / total_bp) if total_bp else None,
+            "raw_pi": (total_callable_sites / total_bp) if total_bp else None,
+            "corrected_pi": (kept_sites / kept_bp) if kept_bp else None,
+        },
+        "allele_origin": allele_origin,
+    }
+    (out_dir / "triage_summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+    print(json.dumps({"pair": args.pair, "flagged_bins": len(flagged_bins),
+                      "raw_pi": summary["pi"]["raw_pi"],
+                      "corrected_pi": summary["pi"]["corrected_pi"],
+                      "artifact_site_fraction": summary["sites"]["artifact_site_fraction"]},
+                     indent=2))
     return 0
 
 
@@ -907,6 +1530,44 @@ def build_parser() -> argparse.ArgumentParser:
     transfer.add_argument("--target-label", default="h2")
     transfer.add_argument("--output-dir", required=True)
     transfer.set_defaults(func=cmd_transfer)
+
+    evidence = subparsers.add_parser(
+        "evidence",
+        help="allele-aware pileup evidence at assembly SNVs for one frame")
+    evidence.add_argument("--sites", required=True,
+                          help="frame sites TSV (chrom, position_1based, ref, alt); "
+                               "ref is the site H1 allele, alt the H2 allele")
+    evidence.add_argument("--pileup", required=True,
+                          help="samtools mpileup text (chrom, pos, REF, depth, bases, quals)")
+    evidence.add_argument("--frame", required=True, help="h1 or h2")
+    evidence.add_argument("--platform", required=True, help="illumina or hifi")
+    evidence.add_argument("--minimum-depth", type=int, default=10)
+    evidence.add_argument("--maximum-depth", type=int, default=80)
+    evidence.add_argument("--output", required=True)
+    evidence.add_argument("--summary", required=True)
+    evidence.set_defaults(func=cmd_evidence)
+
+    triage = subparsers.add_parser(
+        "triage", help="assembly-only collapsed-paralogy screen (no reads)")
+    triage.add_argument("--pair", required=True, help="selection id, e.g. P07")
+    triage.add_argument("--paf", required=True, help="1:1 H1<->H2 PAF (either orientation)")
+    triage.add_argument("--h1-fasta", required=True, help="H1 reference fasta (BCF coordinates)")
+    triage.add_argument("--h2-fasta", required=True, help="H2 fasta for allele-origin stats")
+    source = triage.add_mutually_exclusive_group(required=True)
+    source.add_argument("--bcf", help="bounded normalized BCF (H1 coordinates)")
+    source.add_argument("--sites-tsv", help="sites TSV (chrom, position_1based, ref, alt)")
+    triage.add_argument("--callable-bed", required=True, help="bounded pi-callable BED (H1 coordinates)")
+    triage.add_argument("--bcftools", default="bcftools")
+    triage.add_argument("--bin-size", type=int, default=1_000_000)
+    triage.add_argument("--divergence-factor", type=float, default=2.0,
+                        help="flag bins with divergence > factor * genome-wide median")
+    triage.add_argument("--gc-delta", type=float, default=0.02,
+                        help="AND GC < genome-wide median - delta")
+    triage.add_argument("--min-bin-bases", type=int, default=100_000,
+                        help="bins with fewer ACGT bases are excluded from medians/flagging")
+    triage.add_argument("--skip-allele-origin", action="store_true")
+    triage.add_argument("--output-dir", required=True)
+    triage.set_defaults(func=cmd_triage)
 
     metrics = subparsers.add_parser("metrics", help="symmetric metrics for one frame×platform")
     metrics.add_argument("--frame", required=True, help="e.g. h1 or h2")
