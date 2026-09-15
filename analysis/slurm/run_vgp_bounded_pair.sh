@@ -7,19 +7,37 @@
 # Resources are supplied at submission because P02/P03/P07 differ.
 set -euo pipefail
 
-: "${SLURM_JOB_ID:?submit this production run with Slurm}"
-selection=${1:?usage: run_vgp_bounded_pair.sh P02|P03|P07}
-[[ $selection =~ ^P0(2|3|7)$ ]] || { echo "unsupported selection: $selection" >&2; exit 2; }
+dry_run=${VGP_BOUNDED_DRY_RUN:-0}
+if [[ $dry_run == 1 ]]; then
+    SLURM_JOB_ID=${SLURM_JOB_ID:-dryrun}
+else
+    : "${SLURM_JOB_ID:?submit this production run with Slurm}"
+fi
+selection=${1:?usage: run_vgp_bounded_pair.sh P02|P03|P07|P09}
+read -r -a allowed_pairs <<< "${VGP_ALLOWED_PAIRS:-P02 P03 P07 P09}"
+allowed=0
+for pair in "${allowed_pairs[@]}"; do
+    [[ $pair == "$selection" ]] && allowed=1
+done
+(( allowed == 1 )) || {
+    echo "unsupported selection: $selection (allowed: ${allowed_pairs[*]})" >&2
+    exit 2
+}
 ROOT=${SLURM_SUBMIT_DIR:?submit from repository root}
 source "$ROOT/analysis/slurm/vgp_10_pilot/common.sh"
 export VGP_DATA_ROOT=/moosefs/erikg/vgp
-export VGP_RUN_ID=vgp-three-pair-20260722-v1
+export VGP_RUN_ID=${VGP_RUN_ID:-vgp-three-pair-20260722-v1}
 export VGP_SELECTION_ID=$selection
 export VGP_ENVIRONMENT_CAPTURE="$ROOT/analysis/guix/vgp_10_pilot/realization.json"
 require_runtime
 
 durable="$VGP_DATA_ROOT/pilot/three-pair/$VGP_RUN_ID/$selection/bounded-production"
-[[ ! -e $durable ]] || fail "bounded production target already exists: $durable"
+if [[ $dry_run == 1 ]]; then
+    durable_target_exists=0
+    [[ ! -e $durable ]] || durable_target_exists=1
+else
+    [[ ! -e $durable ]] || fail "bounded production target already exists: $durable"
+fi
 resume_root=${VGP_RESUME_FAILURE_ROOT:-}
 if [[ -n $resume_root ]]; then
     [[ $selection == P02 ]] || fail "bounded range resume is currently authorized only for P02"
@@ -28,7 +46,156 @@ if [[ -n $resume_root ]]; then
     [[ -f $resume_root/failure_preservation.json ]] || \
         fail "resume root lacks failure preservation manifest"
 fi
+
+if [[ $dry_run == 1 ]]; then
+    python3 - "$selection" "$VGP_RUN_ID" "$VGP_DATA_ROOT" "$ROOT" "$durable_target_exists" <<'PY'
+import json, sys
+from pathlib import Path
+selection, run_id, data_root, root = sys.argv[1:5]
+source_run = Path(data_root) / "pilot" / "runs" / run_id / selection
+plan = {
+    "schema_version": "vgp-bounded-dry-run-plan-v1",
+    "selection_id": selection, "run_id": run_id,
+    "durable_target": str(Path(data_root) / "pilot" / "three-pair" / run_id
+                          / selection / "bounded-production"),
+    "durable_target_exists": bool(int(sys.argv[5])) if len(sys.argv) > 5 else None,
+    "branch": ("p07-clean-canary" if selection == "P07" else "pilot-inputs"),
+    "stages": ["stage-fastas", "impg-index", "impg-partition", "freeze-plan",
+               "bounded-query-lace-norm-batches", "concat", "consensus-mask-psmc",
+               "psmc-primary", "psmc-bootstraps-200", "finalize", "promote"],
+    "telemetry": {
+        "per_stage_rss": "ps-sampler (and /usr/bin/time -v when present)",
+        "scratch_high_water_du": True,
+        "sacct_snapshots": True,
+        "scratch_guard": {"fstype_allowlist_env": "VGP_SCRATCH_FSTYPES",
+                          "min_free_bytes_env": "VGP_SCRATCH_MIN_BYTES",
+                          "default_min_free_bytes": 214748364800},
+    },
+    "wrapped_stages": ["impg-index", "impg-partition", "per-range-impg-query",
+                       "per-range-impg-lace", "per-range-norm-pipeline",
+                       "psmc-primary"],
+}
+if selection != "P07":
+    manifest = json.loads((Path(data_root) / "pilot" / "inputs" / selection
+                           / "input-manifest.json").read_text())
+    complete = source_run / "mapping" / ".complete.json"
+    mapping = {"path": str(source_run / "mapping" / "h2_to_h1.1to1.paf"),
+               "complete_sentinel_present": complete.is_file()}
+    if complete.is_file():
+        files = json.loads(complete.read_text()).get("files", {})
+        paf_key = next((k for k in files if k.endswith("h2_to_h1.1to1.paf")), None)
+        if paf_key:
+            mapping["paf_sha256"] = files[paf_key]
+    plan["inputs"] = {
+        "h1_fasta": {"path": manifest["assets"]["h1_fasta"]["path"],
+                     "sha256": manifest["assets"]["h1_fasta"]["sha256"],
+                     "size_bytes": manifest["assets"]["h1_fasta"]["size_bytes"]},
+        "h2_fasta": {"path": manifest["assets"]["h2_fasta"]["path"],
+                     "sha256": manifest["assets"]["h2_fasta"]["sha256"],
+                     "size_bytes": manifest["assets"]["h2_fasta"]["size_bytes"]},
+        "mapping": mapping,
+    }
+    if selection == "P09":
+        plan["annotation"] = {
+            "gff_cas_object": "/moosefs/erikg/vgp/objects/sha256/a0/3e/"
+                              "a03e4702308e69d1399fdf5dccda6964d61afc1f9fb5a4bc77587a7d25f65e14",
+            "annotation_accession": "GCF_036365525.1-RS_2024_08",
+            "dictionary_audit": "required before use; exact GFF-vs-H1.fai name equality",
+        }
+print(json.dumps(plan, indent=2, sort_keys=True))
+PY
+    exit 0
+fi
+
 scratch=$(mktemp -d -- "/scratch/vgp-$selection-bounded-${SLURM_JOB_ID}-XXXXXX")
+# Review defect I-3: the private scratch must be a verified local filesystem
+# with real capacity before any bounded work is planned against it.
+scratch_resolved=$(realpath -e -- "$scratch")
+scratch_fstype=$(df --output=fstype -- "$scratch_resolved" | tail -1 | tr -d ' ')
+scratch_avail=$(df --output=avail -B1 -- "$scratch_resolved" | tail -1 | tr -d ' ')
+scratch_floor=${VGP_SCRATCH_MIN_BYTES:-214748364800}
+read -r -a scratch_fstypes <<< "${VGP_SCRATCH_FSTYPES:-ext4 xfs btrfs zfs f2fs jfs}"
+scratch_fs_ok=0
+for fstype in "${scratch_fstypes[@]}"; do
+    [[ $fstype == "$scratch_fstype" ]] && scratch_fs_ok=1
+done
+printf '%s\t%s\t%s\t%s\t%s\n' \
+    "$scratch_resolved" "$scratch_fstype" "$scratch_avail" "$scratch_floor" "$scratch_fs_ok" \
+    > "$scratch/.scratch_guard.pending"
+(( scratch_fs_ok == 1 )) || fail "scratch filesystem type is not an allowed local fs: $scratch_fstype (allowlist: ${scratch_fstypes[*]})"
+(( scratch_avail >= scratch_floor )) || \
+    fail "scratch free capacity below floor: $scratch_avail < $scratch_floor"
+mkdir -p "$scratch/telemetry"
+python3 - "$scratch/.scratch_guard.pending" "$scratch/telemetry/scratch_guard.json" \
+    "$selection" "${SLURM_JOB_ID}" <<'PY'
+import json, sys
+from pathlib import Path
+resolved, fstype, avail, floor, ok = Path(sys.argv[1]).read_text().rstrip("\n").split("\t")
+Path(sys.argv[2]).write_text(json.dumps({
+    "schema_version": "vgp-bounded-scratch-guard-v1",
+    "selection_id": sys.argv[3], "slurm_job_id": sys.argv[4],
+    "scratch_realpath": resolved, "filesystem_type": fstype,
+    "free_bytes_at_guard": int(avail), "minimum_free_bytes": int(floor),
+    "guard_passed": ok == "1",
+    "managed_open_path_enforced": True,
+}, sort_keys=True) + "\n")
+PY
+rm -f "$scratch/.scratch_guard.pending"
+
+# Review defect I-2: per-stage peak-RSS/CPU sampling, scratch high-water du,
+# and live sacct snapshots.  Sampling is additive: stage stdout/stderr and
+# exit statuses are unchanged, and stages run unwrapped-with-note if the
+# sampler cannot observe the process.
+telemetry_dir="$scratch/telemetry"
+telemetry_tsv="$telemetry_dir/telemetry.tsv"
+[[ -f $telemetry_tsv ]] || printf 'stage\tstart_epoch\tend_epoch\telapsed_s\tmax_rss_kb\tcpu_s_max_sample\tscratch_bytes\texit_status\n' > "$telemetry_tsv"
+run_stage_telemetry() {
+    # usage: run_stage_telemetry <stage> <stdout-log> [--no-du] -- cmd [args...]
+    local stage=$1 log=$2; shift 2
+    local du_enabled=1
+    if [[ ${1:-} == --no-du ]]; then du_enabled=0; shift; fi
+    [[ ${1:-} == -- ]] && shift
+    local begin end status max_rss=0 cpu_max=0 scratch_bytes="" pid rss sample
+    begin=$(date +%s)
+    "$@" >"$log" 2>&1 &
+    pid=$!
+    while kill -0 "$pid" 2>/dev/null; do
+        sample=$(ps -o rss= --pid "$pid" 2>/dev/null | awk '{s+=$1} END {print s+0}')
+        for pid_child in $(ps -o pid= --ppid "$pid" 2>/dev/null); do
+            sample=$((sample + $(ps -o rss= --pid "$pid_child" 2>/dev/null | awk '{s+=$1} END {print s+0}')))
+        done
+        (( sample > max_rss )) && max_rss=$sample
+        cpu_sample=$(ps -o cputime= --pid "$pid" 2>/dev/null | tail -1)
+        for pid_child in $(ps -o pid= --ppid "$pid" 2>/dev/null); do
+            cpu_sample="$cpu_sample $(ps -o cputime= --pid "$pid_child" 2>/dev/null)"
+        done
+        sample=$(printf '%s\n' $cpu_sample | awk -F'[:.-]' '
+            { t = 0; for (i = 1; i <= NF; i++) t = t * 60 + $i }
+            END { if (NF > 0) print t; else print 0 }')
+        (( sample > cpu_max )) && cpu_max=$sample
+        sleep 2
+    done
+    if wait "$pid"; then status=0; else status=$?; fi
+    end=$(date +%s)
+    (( du_enabled == 1 )) && scratch_bytes=$(du -sb -- "$scratch" 2>/dev/null | awk '{print $1+0}')
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "$stage" "$begin" "$end" "$((end - begin))" "$max_rss" "$cpu_max" \
+        "${scratch_bytes:-}" "$status" >> "$telemetry_tsv"
+    if [[ -n ${VGP_SACCT:-} ]]; then
+        printf '%s\t' "$stage" >> "$telemetry_dir/sacct_snapshots.tsv"
+        sacct -j "${SLURM_JOB_ID}" --format=JobID,State,Elapsed,MaxRSS,MaxDiskRead,MaxDiskWrite \
+            --parsable2 2>/dev/null | tr '\n' '|' >> "$telemetry_dir/sacct_snapshots.tsv" || true
+        printf '\n' >> "$telemetry_dir/sacct_snapshots.tsv"
+    fi
+    return "$status"
+}
+telemetry_scratch_du() {
+    local stage=$1 scratch_bytes
+    scratch_bytes=$(du -sb -- "$scratch" 2>/dev/null | awk '{print $1+0}')
+    printf 'scratch_high_water\t%s\t\t\t\t\t%s\t0\n' \
+        "$(date +%s)" "$scratch_bytes" >> "$telemetry_tsv"
+}
+
 failure_root="$VGP_DATA_ROOT/pilot/three-pair/$VGP_RUN_ID/$selection/failures"
 cleanup() {
     status=$?
@@ -146,6 +313,56 @@ else
     cp "$input_dir/input-manifest.json" "$scratch/inputs/input-manifest.json"
     "$samtools" faidx "$scratch/inputs/h1.fa"
     "$samtools" faidx "$scratch/inputs/h2.fa"
+    gff_cas=""
+    if [[ $selection == P09 ]]; then
+        mkdir -p "$scratch/inputs/annotation"
+        gff_cas="/moosefs/erikg/vgp/objects/sha256/a0/3e/a03e4702308e69d1399fdf5dccda6964d61afc1f9fb5a4bc77587a7d25f65e14"
+        [[ -f $gff_cas ]] || fail "P09 annotation GFF CAS object is absent"
+        if [[ $(head -c 2 "$gff_cas" | od -An -tx1 | tr -d ' \n') == "1f8b" ]]; then
+            "$bgzip" -cd "$gff_cas" > "$scratch/inputs/annotation/gff.gff3"
+            gff_format=gzip
+        else
+            cp "$gff_cas" "$scratch/inputs/annotation/gff.gff3"
+            gff_format=plain
+        fi
+        # The catalog binds this GFF to its own RefSeq reference, not the run
+        # H1.  It is admissible here only after an exact sequence-dictionary
+        # audit against the staged H1: every .fai name present, nothing extra.
+        python3 - "$scratch/inputs/annotation/gff.gff3" "$scratch/inputs/h1.fa.fai" \
+            "$gff_cas" "$gff_format" \
+            "$scratch/inputs/annotation/gff_dictionary_audit.json" \
+            "$scratch/inputs/annotation/authorization_id.txt" \
+            "$scratch/inputs/input-manifest.json" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+gff, fai, cas, fmt, out, auth_out, manifest_path = sys.argv[1:8]
+h1 = {line.split("\t", 1)[0] for line in open(fai)}
+gff_names, seqregion, features = set(), set(), 0
+with open(gff, encoding="utf-8") as handle:
+    for line in handle:
+        if line.startswith("##sequence-region"):
+            seqregion.add(line.split()[1]); continue
+        if line.startswith("#") or not line.strip(): continue
+        gff_names.add(line.split("\t", 1)[0]); features += 1
+missing = h1 - gff_names - seqregion
+extra = gff_names - h1
+passed = not missing and not extra
+Path(out).write_text(json.dumps({
+    "schema_version": "vgp-wave-annotation-dictionary-audit-v1",
+    "selection_id": "P09",
+    "gff_staged_sha256": hashlib.sha256(Path(gff).read_bytes()).hexdigest(),
+    "gff_cas_object": cas, "gff_format": fmt, "gff_feature_lines": features,
+    "h1_fai_sequence_count": len(h1),
+    "gff_sequence_names": sorted(gff_names | seqregion),
+    "missing_from_gff": sorted(missing), "extra_in_gff": sorted(extra),
+    "exact_dictionary_match": passed,
+}, sort_keys=True) + "\n")
+Path(auth_out).write_text(
+    str(json.loads(Path(manifest_path).read_text()).get("authorization_id") or "") + "\n")
+if not passed:
+    raise SystemExit("P09 GFF sequence dictionary does not equal staged H1 .fai exactly")
+PY
+    fi
     if [[ -n $resume_root ]]; then
         python3 - "$resume_root" "$scratch/index/staged_fasta_dictionary.json" <<'PY'
 import json,sys
@@ -173,13 +390,16 @@ PY
         cp "$resume_root/index/impg.index.log" "$scratch/index/" 2>/dev/null || true
         cp "$resume_root/index/impg.partition.log" "$scratch/index/" 2>/dev/null || true
     else
-        "$impg" index -a "$source_run/mapping/h2_to_h1.1to1.paf" \
-            -i "$scratch/index/h1_h2.impg" -t "$cpus" \
-            >"$scratch/index/impg.index.log" 2>&1
-        "$impg" partition -a "$source_run/mapping/h2_to_h1.1to1.paf" \
+        run_stage_telemetry impg_index "$scratch/index/impg.index.log" -- \
+            "$impg" index -a "$source_run/mapping/h2_to_h1.1to1.paf" \
+            -i "$scratch/index/h1_h2.impg" -t "$cpus"
+        telemetry_scratch_du after_impg_index
+        run_stage_telemetry impg_partition "$scratch/index/impg.partition.log" -- \
+            "$impg" partition -a "$source_run/mapping/h2_to_h1.1to1.paf" \
             -i "$scratch/index/h1_h2.impg" -w 2000 -d 0 --min-missing-size 1 \
             --min-boundary-distance 0 -o bed --output-folder "$scratch/index/partitions" \
-            -t "$cpus" >"$scratch/index/impg.partition.log" 2>&1
+            -t "$cpus"
+        telemetry_scratch_du after_impg_partition
     fi
     python3 -m analysis.vgp_three_pair audit-graph-ids \
         "$scratch/index/staged_fasta_dictionary.json" \
@@ -221,10 +441,11 @@ process_range() {
         >"$work/focus.json"
     local begin query_end lace_end count graph_bytes
     begin=$(date +%s)
-    "$impg" query -a "$paf" -i "$index" -b "$work/focus.bed" -d 0 \
+    run_stage_telemetry "query_$range_id" "$work/query.log" --no-du -- \
+        "$impg" query -a "$paf" -i "$index" -b "$work/focus.bed" -d 0 \
         --min-transitive-len 1 --force-large-region --temp-dir "$work/temp" \
         -o vcf:poa --sequence-files "$h1" "$h2" -O "$work/calls" \
-        -t "$query_threads" >"$work/query.log" 2>&1
+        -t "$query_threads"
     query_end=$(date +%s)
     find "$work/calls" -type f -name '*.vcf' -print | LC_ALL=C sort >"$work/vcf.list"
     count=$(wc -l <"$work/vcf.list")
@@ -234,6 +455,21 @@ process_range() {
         --reference "$h1" --temp-dir "$work/temp" --compress none \
         -t "$query_threads" >"$work/lace.log" 2>&1
     lace_end=$(date +%s)
+    norm_pipeline() {
+        local samples=$1 laced=$2 ref=$3 swaplog=$4 owners=$5 outv=$6
+        "$bcftools" view --samples-file "$samples" --trim-alt-alleles \
+            --min-ac 1:nref -Ou "$laced" |
+            "$bcftools" view --drop-genotypes --no-update -Ou |
+            # IMPG may orient a graph allele as REF even when exact H1 carries
+            # another allele. Reconstruct REF from exact staged H1, recording
+            # every REF/ALT swap, then enforce a second strict reference check.
+            "$bcftools" norm -f "$ref" -c s -m -any -Ou \
+                2>"$swaplog" |
+            "$bcftools" view --min-alleles 2 -Ou |
+            "$bcftools" view -T "$owners" -Ou |
+            "$bcftools" norm -f "$ref" -c e -d exact -Oz \
+                -o "$outv"
+    }
     python3 - "$work/laced.vcf" "$h1.fai" "$work/h2.samples" <<'PY'
 import sys
 from pathlib import Path
@@ -257,18 +493,10 @@ for line in source.open():
 Path(sys.argv[5]).write_text("".join(f"{c}\t{s}\t{e}\n" for c,s,e in rows))
 PY
     if [[ -s $work/h2.samples && -s $work/ownership.bed ]]; then
-        "$bcftools" view --samples-file "$work/h2.samples" --trim-alt-alleles \
-            --min-ac 1:nref -Ou "$work/laced.vcf" |
-            "$bcftools" view --drop-genotypes --no-update -Ou |
-            # IMPG may orient a graph allele as REF even when exact H1 carries
-            # another allele. Reconstruct REF from exact staged H1, recording
-            # every REF/ALT swap, then enforce a second strict reference check.
-            "$bcftools" norm -f "$h1" -c s -m -any -Ou \
-                2>"$work/ref_alt_reconstruction.log" |
-            "$bcftools" view --min-alleles 2 -Ou |
-            "$bcftools" view -T "$work/ownership.bed" -Ou |
-            "$bcftools" norm -f "$h1" -c e -d exact -Oz \
-                -o "$out/normalized.vcf.gz"
+        run_stage_telemetry "norm_$range_id" "$work/norm.log" --no-du -- \
+            norm_pipeline "$work/h2.samples" "$work/laced.vcf" "$h1" \
+            "$work/ref_alt_reconstruction.log" "$work/ownership.bed" \
+            "$out/normalized.vcf.gz"
     else
         "$bcftools" view --header-only --drop-genotypes --no-update -Oz \
             -o "$out/normalized.vcf.gz" "$work/laced.vcf"
@@ -325,6 +553,7 @@ if [[ -z $resume_root ]]; then
             pids+=("$!")
         done
         for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
+        telemetry_scratch_du "query_batch_$((batch / range_workers))"
         (( failed == 0 )) || fail "one or more bounded H1 ranges failed"
     done
 else
@@ -459,9 +688,12 @@ python3 -m analysis.vgp_bounded_ranges finalize-callable \
     >"$scratch/results/consensus/final_callable.stdout.json"
 
 mkdir -p "$scratch/results/psmc/replicate-000"
-"$psmc" -N25 -t15 -r5 -p '4+25*2+4+6' \
+run_stage_telemetry psmc_primary \
+    "$scratch/results/psmc/replicate-000/psmc.log" -- \
+    "$psmc" -N25 -t15 -r5 -p '4+25*2+4+6' \
     -o "$scratch/results/psmc/replicate-000/unscaled.psmc" \
     "$scratch/results/consensus/consensus/input.psmcfa"
+telemetry_scratch_du after_psmc_primary
 psmc_workers=$cpus
 for ((batch=1; batch<=200; batch+=psmc_workers)); do
     pids=()
@@ -560,6 +792,34 @@ value["query_scope"]="exact native GFF features intersected with bounded-range-d
 value["additional_impg_graph_queries_for_annotation"]=False
 p.write_text(json.dumps(value,sort_keys=True)+"\n")
 PY
+elif [[ $selection == P09 ]]; then
+    mkdir "$scratch/results/annotation"
+    cp "$scratch/inputs/annotation/gff_dictionary_audit.json" \
+        "$scratch/results/annotation/"
+    gff_authorization=$(<"$scratch/inputs/annotation/authorization_id.txt")
+    "$bcftools" view -Ov -o "$scratch/results/annotation/normalized.vcf" \
+        "$scratch/results/variants/normalized.vcf.gz"
+    python3 "$ROOT/analysis/vgp_real_canary_annotation.py" \
+        --h1-fasta "$h1" \
+        --annotation-gff "$scratch/inputs/annotation/gff.gff3" \
+        --annotation-source-path "$gff_cas" \
+        --callable-bed "$scratch/results/consensus/masks/callable.bed" \
+        --normalized-vcf "$scratch/results/annotation/normalized.vcf" \
+        --canonical-root "$VGP_DATA_ROOT" --selection-id P09 \
+        --assembly-accession-version GCA_036365525.1 \
+        --annotation-accession-version GCF_036365525.1-RS_2024_08 \
+        --authorization-id "$gff_authorization" \
+        --task-id "$VGP_RUN_ID" \
+        --schema-version vgp-three-pair-bounded-annotation-v1 \
+        --output "$scratch/results/annotation/exact_partitions.json"
+    python3 - "$scratch/results/annotation/exact_partitions.json" <<'PY'
+import json,sys
+from pathlib import Path
+p=Path(sys.argv[1]); value=json.loads(p.read_text())
+value["query_scope"]="exact native GFF features intersected with bounded-range-derived variants and mask"
+value["additional_impg_graph_queries_for_annotation"]=False
+p.write_text(json.dumps(value,sort_keys=True)+"\n")
+PY
 fi
 
 python3 - "$scratch" "$selection" "$SLURM_JOB_ID" <<'PY'
@@ -591,6 +851,7 @@ mkdir "$partial/index"
 cp "$index" "$partitions" "$scratch/plan/range_plan.json" "$partial/index/"
 [[ -f $scratch/index/graph_identifier_audit.json ]] && \
     cp "$scratch/index/graph_identifier_audit.json" "$partial/index/"
+cp -a "$scratch/telemetry" "$partial/telemetry"
 python3 - "$partial" "$selection" <<'PY'
 import hashlib,json,sys
 from pathlib import Path
