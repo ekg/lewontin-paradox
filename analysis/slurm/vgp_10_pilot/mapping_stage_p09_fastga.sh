@@ -2,7 +2,9 @@
 #SBATCH --job-name=vgp-map-P09-fastga
 #SBATCH --partition=highmem
 #SBATCH --nodes=1
-#SBATCH --exclude=octopus11
+# backend-calibration companion: octopus11 un-excluded (idle, 494G avail, healthy
+# 2026-09-15 ssh check: load 0.06, 494G available); primary wave scripts keep the
+# legacy exclude until the node earns trust back
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=384G
 #SBATCH --time=72:00:00
