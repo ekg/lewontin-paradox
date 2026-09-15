@@ -1,0 +1,294 @@
+#!/usr/bin/env bash
+#SBATCH --job-name=vgp-map-P09-fastga
+#SBATCH --partition=highmem
+#SBATCH --nodes=1
+#SBATCH --exclude=octopus11
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=384G
+#SBATCH --time=72:00:00
+#SBATCH --export=NONE
+#SBATCH --output=/moosefs/erikg/vgp/logs/vgp-map-P09-%j.out
+#SBATCH --error=/moosefs/erikg/vgp/logs/vgp-map-P09-%j.err
+
+set -euo pipefail
+
+fail() {
+    echo "ERROR: $*" >&2
+    exit 2
+}
+
+# P09 (Heterodontus francisci, sHetFra1) whole-assembly mapping for the
+# bounded-production scale-out wave.  Produces exactly the stage contracts
+# that analysis/slurm/run_vgp_bounded_pair.sh consumes (h2_to_h1.1to1.paf,
+# h1.1to1.bed, exclusion beds, multiplicity audit, digest-complete
+# .complete.json) using the pinned origin/main SweepGA binary with the
+# Backend calibration companion (option C): fastga backend (sweepga default).
+# Flag set = the accepted fastga lineage provenance (P02 job 1782140:
+# --num-mappings 1:1 --scaffold-jump 0 --overlap 0 --scoring log-length-ani),
+# NOT the wfmash template extras (--map-pct-identity/--min-aln-length/overlap 0.95).
+# wfmash companion = job 2833615. Original header:
+# command + binary digest), sized for the 6.09/5.26 Gbp haplotypes.
+
+if [[ ${1:-} != --inside-guix ]]; then
+    ROOT=${SLURM_SUBMIT_DIR:-$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)}
+    export TIER3_ROOT="$ROOT"
+    exec "$ROOT/analysis/slurm/guix_job.sh" \
+        "$ROOT/analysis/pilot_results/guix_environment.json" \
+        bash "$0" --inside-guix
+fi
+
+ROOT=${SLURM_SUBMIT_DIR:-$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)}
+export PYTHONPATH="$ROOT"
+SUPPLEMENTAL_PROFILE=/gnu/store/8x4hx7d9hnv187yprjrzqyg0kxj2z32k-profile
+[[ -d $SUPPLEMENTAL_PROFILE ]] || fail "pinned supplemental Guix profile is unavailable"
+export PATH="$SUPPLEMENTAL_PROFILE/bin:$PATH"
+SELECTION=P09
+VGP_DATA_ROOT=${VGP_DATA_ROOT:-/moosefs/erikg/vgp}
+VGP_RUN_ID=${VGP_RUN_ID:-vgp-wave-20260907-v1}
+VGP_TASK_ID=${VGP_TASK_ID:-vgp-wave-20260907-v1}
+VGP_NODE_LOCAL_BASE=${VGP_NODE_LOCAL_BASE:-/scratch}
+BUILD_JSON="$ROOT/analysis/sweepga_origin_main_build.json"
+INPUT_DIR="$VGP_DATA_ROOT/pilot/inputs/$SELECTION"
+PAIR_RUN="$VGP_DATA_ROOT/pilot/runs/$VGP_RUN_ID/$SELECTION"
+FINAL="$PAIR_RUN/mapping-fastga"
+TELEMETRY="$PAIR_RUN/telemetry-fastga"
+
+[[ $SLURM_JOB_ID ]] || fail "submit this mapping with Slurm"
+[[ -d $VGP_NODE_LOCAL_BASE && -w $VGP_NODE_LOCAL_BASE ]] || fail "scratch unavailable"
+case $(stat -f -c %T -- "$VGP_NODE_LOCAL_BASE") in
+    nfs|nfs4|fuse*|lustre|gpfs|ceph|mfs|moosefs) fail "scratch is not node-local" ;;
+esac
+
+if [[ -f $FINAL/.complete.json ]]; then
+    echo "RESUME: $SELECTION mapping already complete: $FINAL"
+    exit 0
+fi
+[[ ! -e $FINAL ]] || fail "mapping final exists without completion sentinel: $FINAL"
+[[ -f $INPUT_DIR/input-manifest.json ]] || fail "P09 input manifest is absent"
+[[ -f $BUILD_JSON ]] || fail "sweepga origin/main build provenance is absent"
+mkdir -p "$TELEMETRY" "$PAIR_RUN"
+started=$(date +%s)
+
+readarray -t pinned < <(python3 - "$BUILD_JSON" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+binary = json.load(open(sys.argv[1]))["binary"]
+path = Path(binary["build_1_realpath"])
+expected = binary["sha256_build_1"]
+if not path.is_file():
+    raise SystemExit(f"pinned sweepga binary is absent: {path}")
+digest = hashlib.sha256(path.read_bytes()).hexdigest()
+if digest != expected:
+    raise SystemExit("pinned sweepga binary sha256 mismatch")
+print(path)
+print(digest)
+print(hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest())
+PY
+)
+sweepga=${pinned[0]}
+sweepga_sha=${pinned[1]}
+build_json_sha=${pinned[2]}
+[[ -x $sweepga ]] || fail "pinned sweepga is not executable: $sweepga"
+[[ -x $(dirname "$sweepga")/wfmash ]] || fail "pinned wfmash companion is absent"
+export WFMASH_BIN_DIR="$(dirname "$sweepga")"
+export PATH="$(dirname "$sweepga"):$PATH"
+export TMPDIR="$VGP_NODE_LOCAL_BASE" TMP="$VGP_NODE_LOCAL_BASE" TEMP="$VGP_NODE_LOCAL_BASE"
+
+h1_bytes=$(stat -c %s -- "$INPUT_DIR/h1.fa")
+h2_bytes=$(stat -c %s -- "$INPUT_DIR/h2.fa")
+readarray -t plan < <(python3 - "$h1_bytes" "$h2_bytes" <<'PY'
+import json, sys
+resource = json.load(open(
+    "/moosefs/erikg/vgp/pilot/inputs/P09/resources.json"))["stages"]["mapping"]
+staged = (int(sys.argv[1]) + int(sys.argv[2])) * 2
+print(max(int(resource["scratch_bytes_high"]), staged + 64 * 2**30))
+print(int(resource["cpus_per_task"]))
+PY
+)
+required_bytes=${plan[0]}
+
+available_bytes=$(df -PB1 -- "$VGP_NODE_LOCAL_BASE" | awk 'NR==2 {print $4}')
+(( available_bytes >= required_bytes )) || \
+    fail "insufficient measured scratch: $available_bytes < $required_bytes"
+scratch=$(mktemp -d -- "$VGP_NODE_LOCAL_BASE/vgp-map-$SELECTION-${SLURM_JOB_ID}-XXXXXX")
+partial="$scratch/mapping.partial"
+mkdir -p "$partial" "$scratch/inputs"
+export TMPDIR="$scratch" TMP="$scratch" TEMP="$scratch"
+
+finish() {
+    status=$?
+    if (( status != 0 )); then
+        python3 - "$TELEMETRY/mapping.${SLURM_JOB_ID}.json" "$partial" "$status" \
+            "$started" "$required_bytes" "$available_bytes" "$VGP_DATA_ROOT" \
+            "$SELECTION" <<'PY' || true
+import json, sys, time
+from pathlib import Path
+out, partial = Path(sys.argv[1]), Path(sys.argv[2])
+diagnostics = {}
+if partial.exists():
+    for path in partial.rglob("*"):
+        if path.is_file() and path.suffix in {".stderr", ".stdout", ".log", ".jsonl"}:
+            diagnostics[str(path.relative_to(partial))] = \
+                path.read_text(errors="replace")[-32768:]
+out.write_text(json.dumps({
+    "selection_id": sys.argv[8], "stage": "mapping",
+    "job_id": out.stem.split(".")[-1], "disposition": "failure",
+    "exit_status": int(sys.argv[3]), "started_epoch": int(sys.argv[4]),
+    "ended_epoch": int(time.time()),
+    "scratch_required_bytes": int(sys.argv[5]),
+    "scratch_available_bytes_at_start": int(sys.argv[6]),
+    "canonical_vgp_root": sys.argv[7], "diagnostic_tails": diagnostics,
+}, sort_keys=True) + "\n")
+PY
+    fi
+    [[ $scratch == "$VGP_NODE_LOCAL_BASE/vgp-map-$SELECTION-${SLURM_JOB_ID}-"* ]] && \
+        rm -rf -- "$scratch"
+    exit "$status"
+}
+trap finish EXIT
+
+cp -- "$INPUT_DIR/h1.fa" "$scratch/inputs/h1.fa"
+cp -- "$INPUT_DIR/h2.fa" "$scratch/inputs/h2.fa"
+python3 - "$INPUT_DIR/input-manifest.json" "$scratch/inputs/h1.fa" \
+    "$scratch/inputs/h2.fa" "$partial/input_digest_audit.json" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+manifest = json.load(open(sys.argv[1]))
+audit = {"schema_version": "vgp-wave-mapping-input-digest-audit-v1",
+         "selection_id": "P09", "roles": {}}
+for role, staged in (("h1_fasta", Path(sys.argv[2])), ("h2_fasta", Path(sys.argv[3]))):
+    asset = manifest["assets"][role]
+    digest = hashlib.sha256(staged.read_bytes()).hexdigest()
+    if digest != asset["sha256"]:
+        raise SystemExit(f"staged {role} sha256 mismatch against input manifest")
+    if staged.stat().st_size != asset["size_bytes"]:
+        raise SystemExit(f"staged {role} size mismatch against input manifest")
+    audit["roles"][role] = {"source_path": asset["path"],
+                            "source_sha256": asset["sha256"],
+                            "source_size_bytes": asset["size_bytes"],
+                            "staged_sha256": digest,
+                            "staged_size_bytes": staged.stat().st_size}
+Path(sys.argv[4]).write_text(json.dumps(audit, sort_keys=True) + "\n")
+PY
+
+cd -- "$scratch"
+scratch_resolved=$(readlink -f -- "$scratch")
+cwd_resolved=$(readlink -f -- /proc/$$/cwd)
+[[ $cwd_resolved == "$scratch_resolved" ]] || \
+    fail "batch cwd outside private node-local scratch: $cwd_resolved"
+
+threads=${SLURM_CPUS_PER_TASK:-32}
+native_paf="$partial/h2_to_h1.native.1to1.paf"
+printf '%q ' "$sweepga" "$scratch/inputs/h2.fa" "$scratch/inputs/h1.fa" \
+    --output-file "$native_paf" --num-mappings 1:1 --scaffold-jump 0 \
+    --overlap 0 --scoring log-length-ani --threads "$threads" \
+    --temp-dir "$scratch/sweepga-temp" > "$partial/command.txt"
+printf '\n' >> "$partial/command.txt"
+printf '%s  %s\n' "$sweepga_sha" "$sweepga" > "$partial/sweepga.sha256"
+grep -F -- '--num-mappings 1:1' "$partial/command.txt" >/dev/null
+grep -F "$sweepga_sha" "$partial/sweepga.sha256" >/dev/null
+mkdir -p "$scratch/sweepga-temp"
+
+"$sweepga" "$scratch/inputs/h2.fa" "$scratch/inputs/h1.fa" \
+    --output-file "$native_paf" --num-mappings 1:1 --scaffold-jump 0 \
+    --overlap 0 --scoring log-length-ani --threads "$threads" \
+    --temp-dir "$scratch/sweepga-temp" \
+    >"$partial/sweepga.stdout" 2>"$partial/sweepga.stderr" &
+sweepga_pid=$!
+guard_log="$partial/sweepga_scratch_snapshots.jsonl"
+guard_failed=0
+while [[ $(ps -o stat= -p "$sweepga_pid" 2>/dev/null) != *Z* ]] && \
+        kill -0 "$sweepga_pid" 2>/dev/null; do
+    if ! python3 "$ROOT/analysis/fastga_scratch_guard.py" check \
+        --parent-pid "$sweepga_pid" --scratch "$scratch" \
+        --audit-jsonl "$guard_log"; then
+        guard_failed=1
+        pkill -TERM -P "$sweepga_pid" 2>/dev/null || true
+        kill -TERM "$sweepga_pid" 2>/dev/null || true
+        break
+    fi
+    sleep "${VGP_GUARD_INTERVAL_SECONDS:-5}"
+done
+if wait "$sweepga_pid"; then sweepga_status=0; else sweepga_status=$?; fi
+(( guard_failed == 0 )) || \
+    fail "hard infrastructure error: aligner escaped private node-local scratch"
+(( sweepga_status == 0 )) || exit "$sweepga_status"
+python3 "$ROOT/analysis/fastga_scratch_guard.py" finalize \
+    --scratch "$scratch" --audit-jsonl "$guard_log" \
+    --output "$partial/sweepga_scratch_contract.json"
+
+python3 -m analysis.vgp_10_pilot enforce-paf \
+    "$native_paf" "$partial/h2_to_h1.1to1.paf" \
+    >"$partial/exact_multiplicity_filter.json"
+python3 -m analysis.vgp_10_pilot audit-paf \
+    "$partial/h2_to_h1.1to1.paf" "$scratch/inputs/h1.fa" "$scratch/inputs/h2.fa" \
+    >"$partial/multiplicity.json"
+python3 - "$partial/h2_to_h1.1to1.paf" "$scratch/inputs/h1.fa" \
+    "$scratch/inputs/h2.fa" "$INPUT_DIR/h1_universe.bed" "$partial" <<'PY'
+import sys
+from pathlib import Path
+from analysis.vgp_10_pilot import (
+    low_complexity_intervals, non_acgt_intervals, paf_h1_intervals,
+    parse_fasta, parse_paf, project_h2_non_acgt_to_h1, read_bed,
+    subtract_intervals, write_bed,
+)
+paf, h1, h2, universe, out = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], Path(sys.argv[5])
+records = parse_paf(paf)
+one_to_one = paf_h1_intervals(records)
+h1_sequences = parse_fasta(h1)
+write_bed(out / "h1.1to1.bed", one_to_one)
+write_bed(out / "not_1to1.bed", subtract_intervals(read_bed(universe), one_to_one))
+write_bed(out / "h1_gap_or_N.bed", non_acgt_intervals(h1_sequences))
+write_bed(out / "h2_gap_or_N.bed", project_h2_non_acgt_to_h1(records, parse_fasta(h2)))
+write_bed(out / "repeat_or_low_complexity_primary.bed", low_complexity_intervals(h1_sequences))
+PY
+python3 - "$partial/mapping_execution.json" "$VGP_DATA_ROOT" "$SELECTION" \
+    "$BUILD_JSON" "$sweepga" "$sweepga_sha" "$build_json_sha" \
+    "$INPUT_DIR/input-manifest.json" <<'PY'
+import hashlib, json, os, sys
+from pathlib import Path
+from analysis.vgp_10_pilot import sha256_file
+manifest = json.load(open(sys.argv[8]))
+Path(sys.argv[1]).write_text(json.dumps({
+    "schema_version": "vgp-wave-mapping-execution-v1",
+    "task_id": os.environ.get("VGP_TASK_ID", "vgp-wave-20260907-v1"),
+    "authorization_id": manifest.get("authorization_id"),
+    "canonical_vgp_root": sys.argv[2],
+    "selection_id": sys.argv[3], "slurm_job_id": os.environ["SLURM_JOB_ID"],
+    "mapping_backend": "wfmash",
+    "aligner_provenance": "sweepga origin/main pinned build, --aligner fastga (backend calibration companion; wfmash companion = job 2833615)",
+    "required_option": "--num-mappings 1:1",
+    "pinned_binary": {"path": sys.argv[5], "sha256": sys.argv[6],
+                      "build_provenance_json": {"path": sys.argv[4],
+                                                "sha256": sys.argv[7]}},
+    "query_target_orientation": "h2_query_h1_target",
+    "input_manifest": {"path": sys.argv[8], "sha256": sha256_file(sys.argv[8])},
+    "h1_accession_version": manifest.get("h1_accession_version"),
+    "h2_accession_version": manifest.get("h2_accession_version"),
+    "fallback_is_species_exclusion": False,
+}, sort_keys=True) + "\n")
+PY
+python3 - "$partial" "$FINAL" "$SELECTION" "$SLURM_JOB_ID" "$VGP_DATA_ROOT" <<'PY'
+import sys
+from pathlib import Path
+from analysis.vgp_10_pilot import promote_stage_cross_filesystem
+promote_stage_cross_filesystem(Path(sys.argv[1]), Path(sys.argv[2]), {
+    "selection_id": sys.argv[3], "stage": "mapping", "atomic_promotion": True,
+    "slurm_job_id": sys.argv[4], "canonical_vgp_root": sys.argv[5],
+}, sys.argv[4])
+PY
+python3 - "$TELEMETRY/mapping.${SLURM_JOB_ID}.json" "$started" "$required_bytes" \
+    "$available_bytes" "$VGP_DATA_ROOT" "$SELECTION" <<'PY'
+import json, os, sys, time
+from pathlib import Path
+Path(sys.argv[1]).write_text(json.dumps({
+    "selection_id": sys.argv[6], "stage": "mapping",
+    "job_id": os.environ["SLURM_JOB_ID"], "disposition": "success",
+    "started_epoch": int(sys.argv[2]), "ended_epoch": int(time.time()),
+    "scratch_required_bytes": int(sys.argv[3]),
+    "scratch_available_bytes_at_start": int(sys.argv[4]),
+    "canonical_vgp_root": sys.argv[5],
+    "node_local_scratch_base": os.environ["VGP_NODE_LOCAL_BASE"],
+}, sort_keys=True) + "\n")
+PY
+printf '%s\n' "$FINAL"
