@@ -2,10 +2,15 @@
 #SBATCH --job-name=vgp-map-P09-fastga
 #SBATCH --partition=highmem
 #SBATCH --nodes=1
+#SBATCH --exclusive
 #SBATCH --exclude=octopus11
 # 2026-09-16: octopus11 empirically confirmed broken — job 2834221 assigned,
 # RUNNING per slurm, but scontrol listpids empty, 0-byte logs, never executed.
 # The legacy exclusion was justified; restored.
+# 2026-09-17: --exclusive added — job 2837797 died when the SHARED node-local
+# scratch (89 co-tenant dirs, /mnt/sdb1) transiently filled during FastGA's
+# alignment phase ("IO write to .../sweepga-temp/_pair.*.N failed"). Exclusive
+# allocation removes concurrent slurm scratch pressure on the node.
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=384G
 #SBATCH --time=72:00:00
@@ -20,21 +25,33 @@ fail() {
     exit 2
 }
 
+stage() {
+    # Progress markers land in the slurm .out DURING the run (promoted-only
+    # logging left operators blind on two failures).
+    LAST_STAGE="$*"
+    echo "[STAGE $(date -u +%FT%TZ)] $*"
+}
+
 # P09 (Heterodontus francisci, sHetFra1) whole-assembly mapping for the
 # bounded-production scale-out wave.  Produces exactly the stage contracts
 # that analysis/slurm/run_vgp_bounded_pair.sh consumes (h2_to_h1.1to1.paf,
 # h1.1to1.bed, exclusion beds, multiplicity audit, digest-complete
-# .complete.json) using the pinned origin/main SweepGA binary with the
+# .complete.json) using the pinned origin/main SweepGA binary.
 # Backend calibration companion (option C): fastga backend (sweepga default).
 # Flag set = the accepted fastga lineage provenance (P02 job 1782140:
 # --num-mappings 1:1 --scaffold-jump 0 --overlap 0 --scoring log-length-ani),
 # NOT the wfmash template extras (--map-pct-identity/--min-aln-length/overlap 0.95).
-# wfmash companion = job 2833615. Original header:
-# command + binary digest), sized for the 6.09/5.26 Gbp haplotypes.
+# Parameterized via VGP_SELECTION / VGP_INPUT_DIR / VGP_RUN_ROOT / VGP_BUILD_JSON
+# so the same script serves P09 and other wave pairs (e.g. P08/menidia).
 
 if [[ ${1:-} != --inside-guix ]]; then
     ROOT=${SLURM_SUBMIT_DIR:-$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)}
     export TIER3_ROOT="$ROOT"
+    # guix_job.sh scrubs the environment (only SLURM_*/TIER3_*/SCRATCH pass
+    # through) — forward VGP_* parameterization knobs as TIER3_VGP_*.
+    while IFS='=' read -r _name _value; do
+        case $_name in VGP_*) export "TIER3_${_name}=${_value}" ;; esac
+    done < <(env)
     exec "$ROOT/analysis/slurm/guix_job.sh" \
         "$ROOT/analysis/pilot_results/guix_environment.json" \
         bash "$0" --inside-guix
@@ -45,19 +62,29 @@ export PYTHONPATH="$ROOT"
 SUPPLEMENTAL_PROFILE=/gnu/store/8x4hx7d9hnv187yprjrzqyg0kxj2z32k-profile
 [[ -d $SUPPLEMENTAL_PROFILE ]] || fail "pinned supplemental Guix profile is unavailable"
 export PATH="$SUPPLEMENTAL_PROFILE/bin:$PATH"
-SELECTION=P09
-VGP_DATA_ROOT=${VGP_DATA_ROOT:-/moosefs/erikg/vgp}
-VGP_RUN_ID=${VGP_RUN_ID:-vgp-wave-20260907-v1}
-VGP_TASK_ID=${VGP_TASK_ID:-vgp-wave-20260907-v1}
-VGP_NODE_LOCAL_BASE=${VGP_NODE_LOCAL_BASE:-/scratch}
-BUILD_JSON="$ROOT/analysis/sweepga_origin_main_build.json"
-INPUT_DIR="$VGP_DATA_ROOT/pilot/inputs/$SELECTION"
-PAIR_RUN="$VGP_DATA_ROOT/pilot/runs/$VGP_RUN_ID/$SELECTION"
+# Parameterization knobs survive the guix re-exec via TIER3_VGP_* forwarding
+# (guix_job.sh passes TIER3_* through); direct VGP_* reads kept for
+# --inside-guix invocations (e.g. the instrumented repro).
+SELECTION=${TIER3_VGP_SELECTION:-${VGP_SELECTION:-P09}}
+VGP_DATA_ROOT=${TIER3_VGP_DATA_ROOT:-${VGP_DATA_ROOT:-/moosefs/erikg/vgp}}
+INPUT_DIR=${TIER3_VGP_INPUT_DIR:-${VGP_INPUT_DIR:-$VGP_DATA_ROOT/pilot/inputs/$SELECTION}}
+VGP_RUN_ID=${TIER3_VGP_RUN_ID:-${VGP_RUN_ID:-vgp-wave-20260907-v1}}
+RUN_ROOT=${TIER3_VGP_RUN_ROOT:-${VGP_RUN_ROOT:-$VGP_DATA_ROOT/pilot/runs/$VGP_RUN_ID}}
+VGP_TASK_ID=${TIER3_VGP_TASK_ID:-${VGP_TASK_ID:-vgp-wave-20260907-v1}}
+VGP_NODE_LOCAL_BASE=${TIER3_VGP_NODE_LOCAL_BASE:-${VGP_NODE_LOCAL_BASE:-/scratch}}
+BUILD_JSON=${TIER3_VGP_BUILD_JSON:-${VGP_BUILD_JSON:-$ROOT/analysis/sweepga_origin_main_build.json}}
+PAIR_RUN="$RUN_ROOT/$SELECTION"
 FINAL="$PAIR_RUN/mapping-fastga"
 TELEMETRY="$PAIR_RUN/telemetry-fastga"
 
+LAST_STAGE=init
+scratch=""
+required_bytes=0
+available_bytes=0
+
 [[ $SLURM_JOB_ID ]] || fail "submit this mapping with Slurm"
 [[ -d $VGP_NODE_LOCAL_BASE && -w $VGP_NODE_LOCAL_BASE ]] || fail "scratch unavailable"
+stage "scratch filesystem guard ($VGP_NODE_LOCAL_BASE)"
 case $(stat -f -c %T -- "$VGP_NODE_LOCAL_BASE") in
     nfs|nfs4|fuse*|lustre|gpfs|ceph|mfs|moosefs) fail "scratch is not node-local" ;;
 esac
@@ -67,11 +94,12 @@ if [[ -f $FINAL/.complete.json ]]; then
     exit 0
 fi
 [[ ! -e $FINAL ]] || fail "mapping final exists without completion sentinel: $FINAL"
-[[ -f $INPUT_DIR/input-manifest.json ]] || fail "P09 input manifest is absent"
+[[ -f $INPUT_DIR/input-manifest.json ]] || fail "$SELECTION input manifest is absent"
 [[ -f $BUILD_JSON ]] || fail "sweepga origin/main build provenance is absent"
 mkdir -p "$TELEMETRY" "$PAIR_RUN"
 started=$(date +%s)
 
+stage "resolve pinned sweepga binary ($BUILD_JSON)"
 readarray -t pinned < <(python3 - "$BUILD_JSON" <<'PY'
 import hashlib, json, sys
 from pathlib import Path
@@ -97,14 +125,17 @@ export WFMASH_BIN_DIR="$(dirname "$sweepga")"
 export PATH="$(dirname "$sweepga"):$PATH"
 export TMPDIR="$VGP_NODE_LOCAL_BASE" TMP="$VGP_NODE_LOCAL_BASE" TEMP="$VGP_NODE_LOCAL_BASE"
 
+stage "read input sizes ($INPUT_DIR)"
+# Test seam: repro/small-pair runs may lower the staged-scratch floor;
+# production default is 64 GiB.
+scratch_floor_bytes=${TIER3_VGP_STAGED_SCRATCH_FLOOR_BYTES:-${VGP_STAGED_SCRATCH_FLOOR_BYTES:-$((64 * 2**30))}}
 h1_bytes=$(stat -c %s -- "$INPUT_DIR/h1.fa")
 h2_bytes=$(stat -c %s -- "$INPUT_DIR/h2.fa")
-readarray -t plan < <(python3 - "$h1_bytes" "$h2_bytes" <<'PY'
+readarray -t plan < <(python3 - "$h1_bytes" "$h2_bytes" "$INPUT_DIR" "$scratch_floor_bytes" <<'PY'
 import json, sys
-resource = json.load(open(
-    "/moosefs/erikg/vgp/pilot/inputs/P09/resources.json"))["stages"]["mapping"]
+resource = json.load(open(sys.argv[3] + "/resources.json"))["stages"]["mapping"]
 staged = (int(sys.argv[1]) + int(sys.argv[2])) * 2
-print(max(int(resource["scratch_bytes_high"]), staged + 64 * 2**30))
+print(max(int(resource["scratch_bytes_high"]), staged + int(sys.argv[4])))
 print(int(resource["cpus_per_task"]))
 PY
 )
@@ -121,9 +152,10 @@ export TMPDIR="$scratch" TMP="$scratch" TEMP="$scratch"
 finish() {
     status=$?
     if (( status != 0 )); then
+        stage "FAILURE (exit $status) after: $LAST_STAGE — writing failure.json + retaining scratch"
         python3 - "$TELEMETRY/mapping.${SLURM_JOB_ID}.json" "$partial" "$status" \
             "$started" "$required_bytes" "$available_bytes" "$VGP_DATA_ROOT" \
-            "$SELECTION" <<'PY' || true
+            "$SELECTION" "$LAST_STAGE" <<'PY' || true
 import json, sys, time
 from pathlib import Path
 out, partial = Path(sys.argv[1]), Path(sys.argv[2])
@@ -140,25 +172,37 @@ out.write_text(json.dumps({
     "ended_epoch": int(time.time()),
     "scratch_required_bytes": int(sys.argv[5]),
     "scratch_available_bytes_at_start": int(sys.argv[6]),
-    "canonical_vgp_root": sys.argv[7], "diagnostic_tails": diagnostics,
+    "canonical_vgp_root": sys.argv[7], "last_stage": sys.argv[9],
+    "diagnostic_tails": diagnostics,
 }, sort_keys=True) + "\n")
 PY
+        # Failure evidence: retain the scratch workdir (rename = atomic, same
+        # filesystem) instead of deleting it. Cleanup is a manual operator step.
+        if [[ -n $scratch && -d $scratch ]]; then
+            retained="${scratch}.failed-${SLURM_JOB_ID}"
+            rm -rf -- "$retained" 2>/dev/null || true
+            mv -- "$scratch" "$retained" 2>/dev/null || true
+            echo "[STAGE $(date -u +%FT%TZ)] scratch retained at: $retained"
+        fi
+        exit "$status"
     fi
-    [[ $scratch == "$VGP_NODE_LOCAL_BASE/vgp-map-$SELECTION-${SLURM_JOB_ID}-"* ]] && \
+    [[ -z $scratch || $scratch == "$VGP_NODE_LOCAL_BASE/vgp-map-$SELECTION-${SLURM_JOB_ID}-"* ]] && \
         rm -rf -- "$scratch"
     exit "$status"
 }
 trap finish EXIT
 
+stage "stage inputs into scratch ($INPUT_DIR -> $scratch/inputs)"
 cp -- "$INPUT_DIR/h1.fa" "$scratch/inputs/h1.fa"
 cp -- "$INPUT_DIR/h2.fa" "$scratch/inputs/h2.fa"
+stage "digest audit vs input manifest"
 python3 - "$INPUT_DIR/input-manifest.json" "$scratch/inputs/h1.fa" \
-    "$scratch/inputs/h2.fa" "$partial/input_digest_audit.json" <<'PY'
+    "$scratch/inputs/h2.fa" "$partial/input_digest_audit.json" "$SELECTION" <<'PY'
 import hashlib, json, sys
 from pathlib import Path
 manifest = json.load(open(sys.argv[1]))
 audit = {"schema_version": "vgp-wave-mapping-input-digest-audit-v1",
-         "selection_id": "P09", "roles": {}}
+         "selection_id": sys.argv[5], "roles": {}}
 for role, staged in (("h1_fasta", Path(sys.argv[2])), ("h2_fasta", Path(sys.argv[3]))):
     asset = manifest["assets"][role]
     digest = hashlib.sha256(staged.read_bytes()).hexdigest()
@@ -182,6 +226,7 @@ cwd_resolved=$(readlink -f -- /proc/$$/cwd)
 
 threads=${SLURM_CPUS_PER_TASK:-32}
 native_paf="$partial/h2_to_h1.native.1to1.paf"
+stage "write command record + gate checks"
 printf '%q ' "$sweepga" "$scratch/inputs/h2.fa" "$scratch/inputs/h1.fa" \
     --output-file "$native_paf" --num-mappings 1:1 --scaffold-jump 0 \
     --overlap 0 --scoring log-length-ani --threads "$threads" \
@@ -192,12 +237,14 @@ grep -F -- '--num-mappings 1:1' "$partial/command.txt" >/dev/null
 grep -F "$sweepga_sha" "$partial/sweepga.sha256" >/dev/null
 mkdir -p "$scratch/sweepga-temp"
 
+stage "launch sweepga/fastga (pid written when backgrounded)"
 "$sweepga" "$scratch/inputs/h2.fa" "$scratch/inputs/h1.fa" \
     --output-file "$native_paf" --num-mappings 1:1 --scaffold-jump 0 \
     --overlap 0 --scoring log-length-ani --threads "$threads" \
     --temp-dir "$scratch/sweepga-temp" \
     >"$partial/sweepga.stdout" 2>"$partial/sweepga.stderr" &
 sweepga_pid=$!
+echo "[STAGE $(date -u +%FT%TZ)] sweepga pid=$sweepga_pid scratch=$scratch"
 guard_log="$partial/sweepga_scratch_snapshots.jsonl"
 guard_failed=0
 while [[ $(ps -o stat= -p "$sweepga_pid" 2>/dev/null) != *Z* ]] && \
@@ -212,6 +259,7 @@ while [[ $(ps -o stat= -p "$sweepga_pid" 2>/dev/null) != *Z* ]] && \
     fi
     sleep "${VGP_GUARD_INTERVAL_SECONDS:-5}"
 done
+stage "sweepga finished (guard_failed=$guard_failed)"
 if wait "$sweepga_pid"; then sweepga_status=0; else sweepga_status=$?; fi
 (( guard_failed == 0 )) || \
     fail "hard infrastructure error: aligner escaped private node-local scratch"
@@ -220,12 +268,14 @@ python3 "$ROOT/analysis/fastga_scratch_guard.py" finalize \
     --scratch "$scratch" --audit-jsonl "$guard_log" \
     --output "$partial/sweepga_scratch_contract.json"
 
+stage "enforce 1:1 multiplicity + audit PAF"
 python3 -m analysis.vgp_10_pilot enforce-paf \
     "$native_paf" "$partial/h2_to_h1.1to1.paf" \
     >"$partial/exact_multiplicity_filter.json"
 python3 -m analysis.vgp_10_pilot audit-paf \
     "$partial/h2_to_h1.1to1.paf" "$scratch/inputs/h1.fa" "$scratch/inputs/h2.fa" \
     >"$partial/multiplicity.json"
+stage "derive exclusion beds"
 python3 - "$partial/h2_to_h1.1to1.paf" "$scratch/inputs/h1.fa" \
     "$scratch/inputs/h2.fa" "$INPUT_DIR/h1_universe.bed" "$partial" <<'PY'
 import sys
@@ -245,6 +295,7 @@ write_bed(out / "h1_gap_or_N.bed", non_acgt_intervals(h1_sequences))
 write_bed(out / "h2_gap_or_N.bed", project_h2_non_acgt_to_h1(records, parse_fasta(h2)))
 write_bed(out / "repeat_or_low_complexity_primary.bed", low_complexity_intervals(h1_sequences))
 PY
+stage "write mapping execution record"
 python3 - "$partial/mapping_execution.json" "$VGP_DATA_ROOT" "$SELECTION" \
     "$BUILD_JSON" "$sweepga" "$sweepga_sha" "$build_json_sha" \
     "$INPUT_DIR/input-manifest.json" <<'PY'
@@ -258,8 +309,8 @@ Path(sys.argv[1]).write_text(json.dumps({
     "authorization_id": manifest.get("authorization_id"),
     "canonical_vgp_root": sys.argv[2],
     "selection_id": sys.argv[3], "slurm_job_id": os.environ["SLURM_JOB_ID"],
-    "mapping_backend": "wfmash",
-    "aligner_provenance": "sweepga origin/main pinned build, --aligner fastga (backend calibration companion; wfmash companion = job 2833615)",
+    "mapping_backend": "fastga",
+    "aligner_provenance": "sweepga origin/main pinned build; fastga backend (sweepga default), accepted-core flag semantics (P02 job 1782140)",
     "required_option": "--num-mappings 1:1",
     "pinned_binary": {"path": sys.argv[5], "sha256": sys.argv[6],
                       "build_provenance_json": {"path": sys.argv[4],
@@ -271,6 +322,7 @@ Path(sys.argv[1]).write_text(json.dumps({
     "fallback_is_species_exclusion": False,
 }, sort_keys=True) + "\n")
 PY
+stage "promote to $FINAL"
 python3 - "$partial" "$FINAL" "$SELECTION" "$SLURM_JOB_ID" "$VGP_DATA_ROOT" <<'PY'
 import sys
 from pathlib import Path
@@ -280,6 +332,7 @@ promote_stage_cross_filesystem(Path(sys.argv[1]), Path(sys.argv[2]), {
     "slurm_job_id": sys.argv[4], "canonical_vgp_root": sys.argv[5],
 }, sys.argv[4])
 PY
+stage "write telemetry"
 python3 - "$TELEMETRY/mapping.${SLURM_JOB_ID}.json" "$started" "$required_bytes" \
     "$available_bytes" "$VGP_DATA_ROOT" "$SELECTION" <<'PY'
 import json, os, sys, time
@@ -294,4 +347,5 @@ Path(sys.argv[1]).write_text(json.dumps({
     "node_local_scratch_base": os.environ["VGP_NODE_LOCAL_BASE"],
 }, sort_keys=True) + "\n")
 PY
+stage "COMPLETE: $FINAL"
 printf '%s\n' "$FINAL"
