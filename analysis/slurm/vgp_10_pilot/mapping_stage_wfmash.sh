@@ -255,12 +255,84 @@ stage "launch sweepga/wfmash (pid written when backgrounded)"
 sweepga_pid=$!
 echo "[STAGE $(date -u +%FT%TZ)] sweepga pid=$sweepga_pid scratch=$scratch"
 guard_log="$partial/sweepga_scratch_snapshots.jsonl"
+# wfmash-backend containment guard (equivalent rigor to fastga_scratch_guard):
+# every poll inspects the whole sweepga process tree (sweepga + wfmash children)
+# for scratch escape via cwd or writable fd targets, and samples RSS into the
+# same jsonl. fastga_scratch_guard.py cannot be used here: its finalize
+# requires a live FastGA /proc snapshot, which wfmash runs never produce
+# (failure mode observed on jobs 2841278/2841279: mapping completed, finalize
+# rejected). Same failure semantics: any escape -> guard_failed=1 -> kill.
 guard_failed=0
+wfmash_guard_check() {
+    python3 - "$sweepga_pid" "$scratch" "$guard_log" <<'PY'
+import json, os, sys, time
+from pathlib import Path
+
+sweepga_pid, scratch, audit = int(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
+skip = {"/dev", "/proc", "pipe:", "socket:", "anon_inode:", "null"}
+
+def tree_pids(root):
+    pids, frontier = {root}, [root]
+    while frontier:
+        pid = frontier.pop()
+        try:
+            kids = [int(x) for x in Path(f"/proc/{pid}/task/{pid}/children").read_text().split()]
+        except OSError:
+            kids = []
+        for kid in kids:
+            if kid not in pids:
+                pids.add(kid); frontier.append(kid)
+    return sorted(pids)
+
+def resolve(fd_or_cwd):
+    try:
+        return os.path.realpath(os.readlink(fd_or_cwd))
+    except OSError:
+        return None
+
+samples, escapes = [], []
+for pid in tree_pids(sweepga_pid):
+    comm = "unknown"
+    try: comm = Path(f"/proc/{pid}/comm").read_text().strip()
+    except OSError: continue
+    cwd = resolve(f"/proc/{pid}/cwd")
+    try:
+        rss_kb = int(next(
+            line.split()[1] for line in Path(f"/proc/{pid}/status").read_text().splitlines()
+            if line.startswith("VmRSS")))
+    except (OSError, StopIteration):
+        rss_kb = None
+    cwd_ok = cwd is None or cwd.startswith(str(scratch))
+    fd_escape = []
+    try:
+        for fd in Path(f"/proc/{pid}/fd").iterdir():
+            target = resolve(str(fd))
+            if target is None:
+                continue
+            if any(target.startswith(s) for s in skip):
+                continue
+            if not target.startswith(str(scratch)):
+                fd_escape.append(target)
+    except OSError:
+        pass
+    if not cwd_ok:
+        escapes.append({"pid": pid, "kind": "cwd", "path": cwd})
+    if fd_escape:
+        escapes.append({"pid": pid, "kind": "fd", "paths": fd_escape[:5]})
+    samples.append({"pid": pid, "comm": comm, "rss_kb": rss_kb,
+                    "cwd": cwd, "cwd_ok": cwd_ok, "fd_escape": fd_escape})
+record = {"ts": time.time(), "sweepga_pid": sweepga_pid,
+          "backend": "wfmash", "samples": samples, "escapes": escapes}
+with audit.open("a") as handle:
+    handle.write(json.dumps(record, sort_keys=True) + "\n")
+if escapes:
+    print(json.dumps({"verdict": "escape", "escapes": escapes}), file=sys.stderr)
+    raise SystemExit(1)
+PY
+}
 while [[ $(ps -o stat= -p "$sweepga_pid" 2>/dev/null) != *Z* ]] && \
         kill -0 "$sweepga_pid" 2>/dev/null; do
-    if ! python3 "$ROOT/analysis/fastga_scratch_guard.py" check \
-        --parent-pid "$sweepga_pid" --scratch "$scratch" \
-        --audit-jsonl "$guard_log"; then
+    if ! wfmash_guard_check; then
         guard_failed=1
         pkill -TERM -P "$sweepga_pid" 2>/dev/null || true
         kill -TERM "$sweepga_pid" 2>/dev/null || true
@@ -273,9 +345,27 @@ if wait "$sweepga_pid"; then sweepga_status=0; else sweepga_status=$?; fi
 (( guard_failed == 0 )) || \
     fail "hard infrastructure error: aligner escaped private node-local scratch"
 (( sweepga_status == 0 )) || exit "$sweepga_status"
-python3 "$ROOT/analysis/fastga_scratch_guard.py" finalize \
-    --scratch "$scratch" --audit-jsonl "$guard_log" \
-    --output "$partial/sweepga_scratch_contract.json"
+# wfmash finalize: equivalent of fastga_scratch_guard finalize — requires at
+# least one containment snapshot and zero escapes, then writes the contract.
+python3 - "$scratch" "$guard_log" "$partial/sweepga_scratch_contract.json" <<'PY'
+import json, sys
+from pathlib import Path
+scratch, audit, output = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
+records = [json.loads(line) for line in audit.read_text().splitlines() if line.strip()]
+if not records:
+    raise SystemExit("wfmash scratch guard finalize: no containment snapshots observed")
+escapes = [e for r in records for e in r.get("escapes", [])]
+if escapes:
+    raise SystemExit(f"wfmash scratch guard finalize: {len(escapes)} escape(s) recorded")
+output.write_text(json.dumps({
+    "schema_version": "wfmash-scratch-contract-v1",
+    "backend": "wfmash",
+    "scratch": str(scratch),
+    "snapshots": len(records),
+    "escapes": 0,
+    "verdict": "contained",
+}, sort_keys=True) + "\n")
+PY
 
 stage "enforce 1:1 multiplicity + audit PAF"
 python3 -m analysis.vgp_10_pilot enforce-paf \
